@@ -1,0 +1,118 @@
+[
+  {
+    "_type": "journalEntry",
+    "_id": "sample-journal-entry-morning",
+    "title": "A steadier morning",
+    "block_content": [
+      {
+        "_type": "block",
+        "_key": "blkIntro",
+        "style": "normal",
+        "children": [
+          {
+            "_type": "span",
+            "_key": "spanIntro",
+            "text": "I woke up tense but took ten minutes to breathe before email. That small pause changed the whole tone of the day.",
+            "marks": []
+          }
+        ],
+        "markDefs": []
+      },
+      {
+        "_type": "block",
+        "_key": "blkBody",
+        "style": "normal",
+        "children": [
+          {
+            "_type": "span",
+            "_key": "spanBody",
+            "text": "I want to remember that I can choose a slower entry into work.",
+            "marks": []
+          }
+        ],
+        "markDefs": []
+      }
+    ],
+    "quick_capture": false,
+    "mood_rating": 4,
+    "energy_level": 3,
+    "focus_rating": 4,
+    "wall_of_awful": ["overwhelm", "fear"],
+    "wins": ["No phone for first 30 minutes", "One focused work block before lunch"],
+    "ai_generated_category": {
+      "_type": "reference",
+      "_ref": "sample-ai-category-reflection"
+    },
+    "user_id": "sample-user-001",
+    "entry_date": "2026-05-12",
+    "created_at": "2026-05-12T07:45:00.000Z"
+  },
+  {
+    "_type": "journalEntry",
+    "_id": "sample-journal-entry-quick",
+    "title": "Tiny win",
+    "block_content": [
+      {
+        "_type": "block",
+        "_key": "blkQuick",
+        "style": "normal",
+        "children": [
+          {
+            "_type": "span",
+            "_key": "spanQuick",
+            "text": "Sent the hard message. Still shaky but it is done.",
+            "marks": []
+          }
+        ],
+        "markDefs": []
+      }
+    ],
+    "quick_capture": true,
+    "mood_rating": 3,
+    "energy_level": 2,
+    "focus_rating": 3,
+    "wall_of_awful": ["discouragement"],
+    "wins": ["Asked for help on one thing"],
+    "ai_generated_category": {
+      "_type": "reference",
+      "_ref": "sample-ai-category-processing"
+    },
+    "user_id": "sample-user-001",
+    "entry_date": "2026-05-11",
+    "created_at": "2026-05-11T21:10:00.000Z"
+  },
+  {
+    "_type": "journalEntry",
+    "_id": "sample-journal-entry-gratitude",
+    "title": "Three good things",
+    "block_content": [
+      {
+        "_type": "block",
+        "_key": "blkG1",
+        "style": "normal",
+        "children": [
+          {
+            "_type": "span",
+            "_key": "sg1",
+            "text": "Sunlight on the desk, a friend checking in, progress on the side project.",
+            "marks": []
+          }
+        ],
+        "markDefs": []
+      }
+    ],
+    "quick_capture": false,
+    "mood_rating": 5,
+    "energy_level": 4,
+    "focus_rating": 4,
+    "wall_of_awful": [],
+    "wins": ["Shipped a small UI fix", "Walk at lunch"],
+    "ai_generated_category": {
+      "_type": "reference",
+      "_ref": "sample-ai-category-gratitude"
+    },
+    "user_id": "sample-user-002",
+    "entry_date": "2026-05-10",
+    "created_at": "2026-05-10T22:00:00.000Z"
+  }
+]

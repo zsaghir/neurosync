@@ -1,0 +1,22 @@
+[
+  {
+    "_type": "aiGeneratedCategory",
+    "_id": "sample-ai-category-reflection",
+    "title": "Reflection"
+  },
+  {
+    "_type": "aiGeneratedCategory",
+    "_id": "sample-ai-category-gratitude",
+    "title": "Gratitude"
+  },
+  {
+    "_type": "aiGeneratedCategory",
+    "_id": "sample-ai-category-processing",
+    "title": "Emotional processing"
+  },
+  {
+    "_type": "aiGeneratedCategory",
+    "_id": "sample-ai-category-planning",
+    "title": "Planning & clarity"
+  }
+]
