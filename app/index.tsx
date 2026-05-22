@@ -3,8 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 export default function Home() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>clarity.journal</Text>
-      <Text style={styles.subtitle}>Your space to think clearly</Text>
+      <Text style={styles.title}>neurosync</Text>
+      <Text style={styles.subtitle}>Sync all your thoughts</Text>
     </View>
   );
 }
