@@ -1,4 +1,3 @@
-import { AlertTriangle, Info } from "@tamagui/lucide-icons";
 import React, { createContext, useContext, useState } from "react";
 import { AlertDialog, Button, Dialog, XStack, YStack } from "tamagui";
 
@@ -71,7 +70,6 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
             gap="$4"
           >
             <YStack gap="$3" style={{ alignItems: "center" }}>
-              <Info size={48} color="$purple10" />
               <Dialog.Title style={{ textAlign: "center" }}>
                 {modalConfig.title}
               </Dialog.Title>
@@ -119,7 +117,6 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
             gap="$4"
           >
             <YStack gap="$3" style={{ alignItems: "center" }}>
-              <AlertTriangle size={48} color="$red10" />
               <AlertDialog.Title style={{ textAlign: "center" }}>
                 {modalConfig.title}
               </AlertDialog.Title>

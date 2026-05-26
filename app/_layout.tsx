@@ -18,6 +18,7 @@ function tabIcon(
     />
   );
 }
+
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 if (!publishableKey) {
   throw new Error("Missing Clerk publishable key");
@@ -27,8 +28,10 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ClerkProvider publishableKey={publishableKey}>
-        <ModalProvider>
-          <TamaguiProvider config={tamaguiConfig} defaultTheme="purple">
+        <TamaguiProvider config={tamaguiConfig} defaultTheme="purple">
+          {/* ↑ TamaguiProvider MUST wrap ModalProvider */}
+          <ModalProvider>
+            {/* ↑ ModalProvider goes INSIDE because it uses Tamagui components */}
             <Tabs>
               <Tabs.Screen
                 name="index"
@@ -49,8 +52,8 @@ export default function RootLayout() {
                 }}
               />
             </Tabs>
-          </TamaguiProvider>
-        </ModalProvider>
+          </ModalProvider>
+        </TamaguiProvider>
       </ClerkProvider>
     </SafeAreaProvider>
   );

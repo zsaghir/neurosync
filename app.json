@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.clarity.journal"
     },
     "android": {
       "adaptiveIcon": {
@@ -40,11 +41,20 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-secure-store",
+      "@clerk/expo",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "EXPO_PUBLIC_CLERK_GOOGLE_WEB_CLIENT_ID": "545739117280-s75nvhsh8fqpafoh1t5u2upbjuer0nvb.apps.googleusercontent.com",
+      "EXPO_PUBLIC_CLERK_GOOGLE_IOS_CLIENT_ID": "545739117280-vumgvemjhgulrp4d7436kh0bd4vtt6cq.apps.googleusercontent.com",
+      "EXPO_PUBLIC_CLERK_GOOGLE_ANDROID_CLIENT_ID": "545739117280-ua7m5c2kv5cbnufg8b9sl85kucacolnl.apps.googleusercontent.com",
+      "EXPO_PUBLIC_CLERK_GOOGLE_IOS_URL_SCHEME": "com.googleusercontent.apps.545739117280-vumgvemjhgulrp4d7436kh0bd4vtt6cq"
     }
   }
 }

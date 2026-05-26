@@ -1,10 +1,14 @@
+import { SignOutButton } from "@/components/SignOutButton";
+import { useAuth } from "@clerk/clerk-expo";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
+  const { isLoaded, isSignedIn } = useAuth();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>neurosync</Text>
       <Text style={styles.subtitle}>Sync all your thoughts</Text>
+      {isLoaded && isSignedIn ? <SignOutButton /> : null}
     </View>
   );
 }

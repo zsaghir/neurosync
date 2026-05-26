@@ -1,131 +1,52 @@
 [
   {
     "_type": "task",
-    "_id": "sample-task-sanity-schema",
-    "title": "Finish Sanity sample data",
-    "description": [
+    "_id": "sample-task-evening-plan",
+    "title": "Plan tonight's journal entry",
+    "completed": false,
+    "timeSpentSeconds": 300,
+    "subtasks": [
       {
-        "_type": "block",
-        "_key": "td1",
-        "style": "normal",
-        "children": [
-          {
-            "_type": "span",
-            "_key": "ts1",
-            "text": "Add fixtures under sample_data with realistic Portable Text and references.",
-            "marks": []
-          }
-        ],
-        "markDefs": []
-      }
-    ],
-    "difficulty_level": 3,
-    "estimated_minutes": 45,
-    "actual_minutes": 40,
-    "broken_down_steps": [
-      {
-        "_key": "step-a",
-        "_type": "taskStep",
-        "step_text": "Draft category documents",
-        "is_completed": true
+        "title": "Outline the three highlights from today",
+        "completed": true
       },
       {
-        "_key": "step-b",
-        "_type": "taskStep",
-        "step_text": "Draft journal entries with block content",
-        "is_completed": true
-      },
-      {
-        "_key": "step-c",
-        "_type": "taskStep",
-        "step_text": "Draft tasks with steps and feedback",
-        "is_completed": false
+        "title": "Write one reflection prompt for tomorrow",
+        "completed": false
       }
     ],
-    "motivation_type": "challenging",
-    "wall_of_awful_rating": 2,
-    "reward": "Coffee and a short walk",
-    "is_completed": false,
-    "feedback": "Switching between JSON shape and Studio validation took focus.",
-    "user_id": "sample-user-001",
-    "due_date": "2026-05-13",
-    "created_at": "2026-05-12T14:00:00.000Z"
+    "alarmAt": "2026-05-24T20:00:00.000Z",
+    "notificationId": "notif-task-001",
+    "userId": "sample-user-001",
+    "createdAt": "2026-05-24T18:30:00.000Z"
   },
   {
     "_type": "task",
-    "_id": "sample-task-inbox-zero",
-    "title": "Clear personal inbox",
-    "description": [
+    "_id": "sample-task-priority-review",
+    "title": "Review tomorrow's priorities",
+    "completed": true,
+    "timeSpentSeconds": 900,
+    "subtasks": [
       {
-        "_type": "block",
-        "_key": "in1",
-        "style": "normal",
-        "children": [
-          {
-            "_type": "span",
-            "_key": "in1s",
-            "text": "Archive or reply to everything older than two weeks.",
-            "marks": []
-          }
-        ],
-        "markDefs": []
-      }
-    ],
-    "difficulty_level": 2,
-    "estimated_minutes": 30,
-    "actual_minutes": 35,
-    "broken_down_steps": [
-      {
-        "_key": "inbox-1",
-        "_type": "taskStep",
-        "step_text": "Skim and star anything that needs a real reply",
-        "is_completed": true
+        "title": "Check calendar blocks",
+        "completed": true
       },
       {
-        "_key": "inbox-2",
-        "_type": "taskStep",
-        "step_text": "Archive the rest in batches",
-        "is_completed": true
+        "title": "Pick one must-do task",
+        "completed": true
       }
     ],
-    "motivation_type": "urgent",
-    "wall_of_awful_rating": 3,
-    "reward": "Order favorite takeout",
-    "is_completed": true,
-    "feedback": "Avoiding the vague newsletters folder; should unsubscribe next time.",
-    "user_id": "sample-user-001",
-    "due_date": "2026-05-08",
-    "created_at": "2026-05-07T10:00:00.000Z"
+    "userId": "sample-user-001",
+    "createdAt": "2026-05-23T21:15:00.000Z"
   },
   {
     "_type": "task",
-    "_id": "sample-task-read-paper",
-    "title": "Read one research paper for side project",
-    "description": [],
-    "difficulty_level": 4,
-    "estimated_minutes": 90,
-    "actual_minutes": 0,
-    "broken_down_steps": [
-      {
-        "_key": "read-1",
-        "_type": "taskStep",
-        "step_text": "Download PDF and skim abstract + headings",
-        "is_completed": false
-      },
-      {
-        "_key": "read-2",
-        "_type": "taskStep",
-        "step_text": "Take notes on methods section",
-        "is_completed": false
-      }
-    ],
-    "motivation_type": "interesting",
-    "wall_of_awful_rating": 4,
-    "reward": "Watch one episode guilt-free",
-    "is_completed": false,
-    "feedback": "",
-    "user_id": "sample-user-002",
-    "due_date": "2026-05-20",
-    "created_at": "2026-05-12T09:00:00.000Z"
+    "_id": "sample-task-gratitude-note",
+    "title": "Capture a quick gratitude note",
+    "completed": false,
+    "timeSpentSeconds": 120,
+    "subtasks": [],
+    "userId": "sample-user-002",
+    "createdAt": "2026-05-24T08:05:00.000Z"
   }
 ]
