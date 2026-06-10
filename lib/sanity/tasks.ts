@@ -1,7 +1,7 @@
 import { defineQuery } from "groq";
 import { sanityClient } from "./client";
 
-interface TaskInput {
+export interface TaskInput {
   title: string;
   userId: string;
   completed?: boolean;
