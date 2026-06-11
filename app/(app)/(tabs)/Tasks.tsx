@@ -36,9 +36,6 @@ const Tasks = () => {
   const [visibleSubtasks, setVisibleSubtasks] = useState<
     Record<string, boolean>
   >({});
-  // Initialize with the first task's ID or an empty string
-  const [activeTaskId, setActiveTaskId] = useState<string>("");
-  const isActiveTask = (taskId: string) => activeTaskId === taskId;
   console.log("user in tasks screen", user);
   const loadTasks = useCallback(async () => {
     if (!user) return;
@@ -185,16 +182,6 @@ const Tasks = () => {
                     <Text style={styles.taskButtonText}>Delete</Text>
                   </Pressable>
                 </View>
-                <View style={{ marginTop: 12 }}>
-                  <Pressable onPress={() => setActiveTaskId(task._id)}>
-                    <Text style={{ color: "#9d9d9d", fontSize: 14 }}>
-                      {isActiveTask(task._id)
-                        ? "Hide Timer"
-                        : "View Timer & Details"}
-                    </Text>
-                  </Pressable>
-                  <TaskItem taskId={task._id} />
-                </View>
 
                 <View style={styles.taskMetaRow}>
                   <Text style={styles.timeText}>
@@ -211,6 +198,9 @@ const Tasks = () => {
                         : "View subtasks"}
                     </Text>
                   </Pressable>
+                </View>
+                <View style={styles.timerBlock}>
+                  <TaskItem taskId={task._id} />
                 </View>
 
                 {visibleSubtasks[task._id] ? (
@@ -355,8 +345,17 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   timeText: {
-    color: "#c6c6c6",
+    backgroundColor: "#e44332",
+    borderRadius: 7,
+    color: "#050505",
     fontSize: 14,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  timerBlock: {
+    marginTop: 12,
   },
   subtaskToggle: {
     borderColor: "#7f272d",
