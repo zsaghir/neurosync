@@ -97,6 +97,31 @@ const Tasks = () => {
     );
   };
 
+  const handleTimeCommitted = (taskId: string, seconds: number) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask._id === taskId
+          ? {
+              ...currentTask,
+              timeSpentSeconds:
+                (currentTask.timeSpentSeconds ?? 0) + Math.round(seconds),
+            }
+          : currentTask,
+      ),
+    );
+  };
+
+  const handleCompleteTask = async (taskId: string) => {
+    await toggleTaskComplete(taskId, true);
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask._id === taskId
+          ? { ...currentTask, completed: true }
+          : currentTask,
+      ),
+    );
+  };
+
   const toggleSubtasks = (taskId: string) => {
     setVisibleSubtasks((current) => ({
       ...current,
@@ -184,9 +209,12 @@ const Tasks = () => {
                 </View>
 
                 <View style={styles.taskMetaRow}>
-                  <Text style={styles.timeText}>
-                    Total running time: {formatTime(task.timeSpentSeconds)}
-                  </Text>
+                  {task.completed ? (
+                    <Text style={styles.timeText}>
+                      Time taken to complete:{" "}
+                      {formatTime(task.timeSpentSeconds)}
+                    </Text>
+                  ) : null}
 
                   <Pressable
                     style={styles.subtaskToggle}
@@ -200,7 +228,11 @@ const Tasks = () => {
                   </Pressable>
                 </View>
                 <View style={styles.timerBlock}>
-                  <TaskItem taskId={task._id} />
+                  <TaskItem
+                    taskId={task._id}
+                    onTimeCommitted={handleTimeCommitted}
+                    onComplete={handleCompleteTask}
+                  />
                 </View>
 
                 {visibleSubtasks[task._id] ? (

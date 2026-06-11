@@ -35,7 +35,7 @@ export const useTimer = (taskId: string) => {
     sessionStartRef.current = accumulatedSeconds;
   }, [isRunning, accumulatedSeconds]);
 
-  const pause = useCallback(async () => {
+  const pause = useCallback(async (): Promise<number | null> => {
     const now = Date.now();
 
     if (isRunning && startedAt != null) {
@@ -50,7 +50,11 @@ export const useTimer = (taskId: string) => {
       setstartedAt(null);
 
       await addTimeToTask(taskId, sessionSeconds);
+
+      return sessionSeconds;
     }
+
+    return null;
   }, [isRunning, startedAt, accumulatedSeconds, taskId]);
 
   const reset = useCallback(() => {

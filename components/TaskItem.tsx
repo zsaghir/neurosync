@@ -1,10 +1,47 @@
+import { useModal } from "@/context/ModalContext";
 import { useTimer } from "@/hooks/use-timer";
 import formattime from "@/lib/utils/formattime";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-const TaskItem = ({ taskId }: { taskId: string }) => {
+type TaskItemProps = {
+  taskId: string;
+  onTimeCommitted?: (taskId: string, seconds: number) => void;
+  onComplete?: (taskId: string) => void;
+};
+
+const TaskItem = ({ taskId, onTimeCommitted, onComplete }: TaskItemProps) => {
   const { elapsedSeconds, isRunning, start, pause, reset } = useTimer(taskId);
+  const { showModal } = useModal();
+
+  const handlePause = async () => {
+    const committedSeconds = await pause();
+
+    if (committedSeconds !== null) {
+      onTimeCommitted?.(taskId, committedSeconds);
+    }
+  };
+
+  const handleDone = async () => {
+    showModal({
+      type: "alert",
+      title: "Complete task?",
+      description: "Are you sure you completed this task?",
+      cancelText: "No",
+      confirmText: "Yes",
+      onConfirm: async () => {
+        const committedSeconds = await pause();
+
+        if (committedSeconds !== null) {
+          onTimeCommitted?.(taskId, committedSeconds);
+        }
+
+        onComplete?.(taskId);
+        reset();
+      },
+    });
+  };
+
   return (
     <View style={styles.timerContainer}>
       <View style={styles.timerHeader}>
@@ -22,10 +59,13 @@ const TaskItem = ({ taskId }: { taskId: string }) => {
             <Text style={styles.timerButtonText}>Start Timer</Text>
           </Pressable>
         ) : (
-          <Pressable onPress={pause} style={styles.timerButton}>
+          <Pressable onPress={handlePause} style={styles.timerButton}>
             <Text style={styles.timerButtonText}>Pause Timer</Text>
           </Pressable>
         )}
+        <Pressable onPress={handleDone} style={styles.doneButton}>
+          <Text style={styles.timerButtonText}>Done</Text>
+        </Pressable>
         <Pressable onPress={reset} style={styles.secondaryTimerButton}>
           <Text style={styles.timerButtonText}>Reset Timer</Text>
         </Pressable>
@@ -38,8 +78,8 @@ export default TaskItem;
 
 const styles = StyleSheet.create({
   timerContainer: {
-    backgroundColor: "#e44332",
-    borderColor: "#ff8a80",
+    backgroundColor: "#615d5d",
+    borderColor: "#201f1f",
     borderRadius: 8,
     borderWidth: 1,
     padding: 14,
@@ -84,6 +124,14 @@ const styles = StyleSheet.create({
   secondaryTimerButton: {
     alignItems: "center",
     backgroundColor: "#f8b5ad",
+    borderRadius: 7,
+    justifyContent: "center",
+    minHeight: 36,
+    paddingHorizontal: 14,
+  },
+  doneButton: {
+    alignItems: "center",
+    backgroundColor: "#9ccf9b",
     borderRadius: 7,
     justifyContent: "center",
     minHeight: 36,
