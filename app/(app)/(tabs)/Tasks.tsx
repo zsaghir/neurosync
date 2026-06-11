@@ -7,6 +7,7 @@
 // person has completed a task they press done and the timer stops and resets for that task. we
 // will also need to store the time spent on each task in sanity so that we can show the total
 // time spent on each task in the task list.
+import TaskItem from "@/components/TaskItem";
 import {
   createTask,
   deleteTask,
@@ -35,6 +36,9 @@ const Tasks = () => {
   const [visibleSubtasks, setVisibleSubtasks] = useState<
     Record<string, boolean>
   >({});
+  // Initialize with the first task's ID or an empty string
+  const [activeTaskId, setActiveTaskId] = useState<string>("");
+  const isActiveTask = (taskId: string) => activeTaskId === taskId;
   console.log("user in tasks screen", user);
   const loadTasks = useCallback(async () => {
     if (!user) return;
@@ -180,6 +184,16 @@ const Tasks = () => {
                   >
                     <Text style={styles.taskButtonText}>Delete</Text>
                   </Pressable>
+                </View>
+                <View style={{ marginTop: 12 }}>
+                  <Pressable onPress={() => setActiveTaskId(task._id)}>
+                    <Text style={{ color: "#9d9d9d", fontSize: 14 }}>
+                      {isActiveTask(task._id)
+                        ? "Hide Timer"
+                        : "View Timer & Details"}
+                    </Text>
+                  </Pressable>
+                  <TaskItem taskId={task._id} />
                 </View>
 
                 <View style={styles.taskMetaRow}>
