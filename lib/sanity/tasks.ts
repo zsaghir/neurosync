@@ -105,6 +105,22 @@ export const toggleTaskComplete = async (
     throw error;
   }
 };
+// creat a new subtask for a task
+export const addSubtask = async (
+  taskId: string,
+  subtaskTitle: string,
+): Promise<TaskDocument> => {
+  try {
+    const result = await sanityClient
+      .patch(taskId)
+      .append("subtasks", [{ title: subtaskTitle, completed: false }])
+      .commit();
+    return result;
+  } catch (error) {
+    console.error("Error adding subtask:", error);
+    throw error;
+  }
+};
 // Toggle subtask completion status
 export const toggleSubtaskComplete = async (
   taskId: string,
