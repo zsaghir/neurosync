@@ -7,6 +7,7 @@
 // person has completed a task they press done and the timer stops and resets for that task. we
 // will also need to store the time spent on each task in sanity so that we can show the total
 // time spent on each task in the task list.
+import Subtasks from "@/components/subtasks";
 import TaskItem from "@/components/TaskItem";
 import {
   createTask,
@@ -121,12 +122,22 @@ const Tasks = () => {
       ),
     );
   };
-
   const toggleSubtasks = (taskId: string) => {
     setVisibleSubtasks((current) => ({
       ...current,
       [taskId]: !current[taskId],
     }));
+  };
+
+  const handleSubtasksChanged = (
+    taskId: string,
+    subtasks: NonNullable<TaskInput["subtasks"]>,
+  ) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask._id === taskId ? { ...currentTask, subtasks } : currentTask,
+      ),
+    );
   };
 
   const formatTime = (seconds = 0) => {
@@ -208,25 +219,25 @@ const Tasks = () => {
                   </Pressable>
                 </View>
 
-                <View style={styles.taskMetaRow}>
-                  {task.completed ? (
+                {task.completed ? (
+                  <View style={styles.taskMetaRow}>
                     <Text style={styles.timeText}>
                       Time taken to complete:{" "}
                       {formatTime(task.timeSpentSeconds)}
                     </Text>
-                  ) : null}
+                  </View>
+                ) : null}
 
-                  <Pressable
-                    style={styles.subtaskToggle}
-                    onPress={() => toggleSubtasks(task._id)}
-                  >
-                    <Text style={styles.subtaskToggleText}>
-                      {visibleSubtasks[task._id]
-                        ? "Hide subtasks"
-                        : "View subtasks"}
-                    </Text>
-                  </Pressable>
-                </View>
+                {user ? (
+                  <Subtasks
+                    task={task}
+                    userId={user.id}
+                    isVisible={Boolean(visibleSubtasks[task._id])}
+                    onToggleVisible={toggleSubtasks}
+                    onSubtasksChanged={handleSubtasksChanged}
+                  />
+                ) : null}
+
                 <View style={styles.timerBlock}>
                   <TaskItem
                     taskId={task._id}
@@ -234,14 +245,6 @@ const Tasks = () => {
                     onComplete={handleCompleteTask}
                   />
                 </View>
-
-                {visibleSubtasks[task._id] ? (
-                  <View style={styles.subtasksContainer}>
-                    <Text style={styles.emptySubtasksText}>
-                      No subtasks yet.
-                    </Text>
-                  </View>
-                ) : null}
               </View>
             ))
           )}
@@ -388,27 +391,5 @@ const styles = StyleSheet.create({
   },
   timerBlock: {
     marginTop: 12,
-  },
-  subtaskToggle: {
-    borderColor: "#7f272d",
-    borderRadius: 7,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  subtaskToggleText: {
-    color: "#ffb3b8",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  subtasksContainer: {
-    borderTopColor: "#333333",
-    borderTopWidth: 1,
-    marginTop: 12,
-    paddingTop: 12,
-  },
-  emptySubtasksText: {
-    color: "#8f8f8f",
-    fontSize: 14,
   },
 });

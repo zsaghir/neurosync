@@ -1,7 +1,7 @@
 import { fetchTaskById } from "@/lib/sanity/tasks";
 import { openai } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
-import z from "zod";
+import { z } from "zod";
 const RequestSchema = z.object({
   userId: z.string(),
   taskId: z.string(),
@@ -28,6 +28,14 @@ export async function POST(request: Request) {
   }
   try {
     const task = await fetchTaskById(taskId);
+    if (!task) {
+      return Response.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    if (task.userId !== userId) {
+      return Response.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
     console.log("Creating subtask for task:", task.title);
     //prepare entry text for AI analysis
     const entryText = `Task: ${task.title}`;
@@ -61,8 +69,13 @@ Wash glass second
 Wash cutlery last
 Rinse the sink and wipe counter,`,
     });
-    return new Response(JSON.stringify(result), {
-      headers: { "Content-Type": "application/json" },
+    const subtasks = result.output.subtasks.map((subtask) => ({
+      title: subtask.title,
+      completed: false,
+      _key: crypto.randomUUID(),
+    }));
+    return Response.json({
+      subtasks: subtasks,
     });
   } catch (error) {
     console.error("Error generating subtasks:", error);

@@ -1,17 +1,8 @@
 import { SignOutButton } from "@/components/SignOutButton";
 import { useAuth } from "@clerk/clerk-expo";
-import OpenAI from "openai";
 import { StyleSheet, Text, View } from "react-native";
 
-const client = new OpenAI({
-  apiKey: process.env.API_KEY,
-});
-const response = await client.responses.create({
-  model: "gpt-5.5",
-  input: "Explain HTTP in one sentence",
-});
-console.log(response.output_text);
-// use
+
 export default function Home() {
   const { isLoaded, isSignedIn } = useAuth();
 

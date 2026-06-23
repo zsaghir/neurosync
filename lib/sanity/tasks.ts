@@ -7,6 +7,7 @@ export interface TaskInput {
   completed?: boolean;
   timeSpentSeconds?: number;
   subtasks?: Array<{
+    _key?: string;
     title: string;
     completed?: boolean;
   }>;
@@ -22,6 +23,7 @@ export interface TaskDocument {
   subtasks?: TaskInput["subtasks"];
   alarmAt?: string | null;
   createdAt?: string;
+  userId?: string;
 }
 
 export const TASKS_QUERY = defineQuery(`*[
@@ -34,7 +36,8 @@ export const TASKS_QUERY = defineQuery(`*[
 	timeSpentSeconds,
 	subtasks,
 	alarmAt,
-	createdAt
+	createdAt,
+	userId
 }`);
 
 export const TASK_BY_ID_QUERY = defineQuery(`*[
@@ -47,7 +50,8 @@ export const TASK_BY_ID_QUERY = defineQuery(`*[
     timeSpentSeconds,
     subtasks,
     alarmAt,
-    createdAt
+    createdAt,
+    userId
   }`);
 
 //fetch tasks for a specific user
@@ -118,6 +122,19 @@ export const addSubtask = async (
     return result;
   } catch (error) {
     console.error("Error adding subtask:", error);
+    throw error;
+  }
+};
+
+export const setTaskSubtasks = async (
+  taskId: string,
+  subtasks: NonNullable<TaskInput["subtasks"]>,
+): Promise<TaskDocument> => {
+  try {
+    const result = await sanityClient.patch(taskId).set({ subtasks }).commit();
+    return result;
+  } catch (error) {
+    console.error("Error setting subtasks:", error);
     throw error;
   }
 };
