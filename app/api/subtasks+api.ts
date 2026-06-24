@@ -1,5 +1,5 @@
 import { fetchTaskById } from "@/lib/sanity/tasks";
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 const RequestSchema = z.object({
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const entryText = `Task: ${task.title}`;
     // use ai to generate subtasks based on the task title
     const result = await generateText({
-      model: openai("gpt-5.5-2026-04-23"),
+      model: google("gemini-2.5-flash"),
       output: Output.object({
         schema: SubtaskSchema,
       }),
