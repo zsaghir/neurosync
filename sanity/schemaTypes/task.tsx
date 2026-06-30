@@ -27,6 +27,12 @@ export const task = defineType({
       validation: (rule) => rule.required().min(0),
     }),
     defineField({
+      name: 'estimatedMinutes',
+      title: 'Estimated minutes',
+      type: 'number',
+      validation: (rule) => rule.min(0),
+    }),
+    defineField({
       name: 'subtasks',
       title: 'Subtasks',
       type: 'array',
@@ -82,6 +88,11 @@ export const task = defineType({
       type: 'datetime',
       initialValue: () => new Date().toISOString(),
       validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'completedAt',
+      title: 'Completed At',
+      type: 'datetime',
     }),
   ],
   preview: {

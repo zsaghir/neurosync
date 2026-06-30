@@ -1,9 +1,10 @@
 import { useAuth } from "@clerk/clerk-expo";
 import { Stack } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { Spinner } from "tamagui";
-const _layout = () => {
+
+const AppLayout = () => {
   const { isLoaded, isSignedIn } = useAuth();
   if (!isLoaded) {
     return (
@@ -26,6 +27,4 @@ const _layout = () => {
     </Stack>
   );
 };
-export default _layout;
-
-const styles = StyleSheet.create({});
+export default AppLayout;

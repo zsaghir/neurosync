@@ -10,13 +10,17 @@ function tabIcon(
   activeName: keyof typeof Ionicons.glyphMap,
   inactiveName: keyof typeof Ionicons.glyphMap,
 ) {
-  return ({ focused, color }: { focused: boolean; color: string }) => (
-    <Ionicons
-      name={focused ? activeName : inactiveName}
-      size={24}
-      color={color}
-    />
-  );
+  const TabIcon = ({ focused, color }: { focused: boolean; color: string }) => (
+      <Ionicons
+        name={focused ? activeName : inactiveName}
+        size={24}
+        color={color}
+      />
+    );
+
+  TabIcon.displayName = "TabIcon";
+
+  return TabIcon;
 }
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;

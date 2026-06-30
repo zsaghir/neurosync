@@ -1,6 +1,5 @@
 import { useSSO } from "@clerk/clerk-expo";
 import * as AuthSession from "expo-auth-session";
-import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import React, { useCallback, useEffect } from "react";
 import { Platform } from "react-native";
@@ -24,7 +23,6 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInWithGoogle() {
   useWarmUpBrowser();
-  const router = useRouter();
 
   // Use the `useSSO()` hook to access the `startSSOFlow()` method
   const { startSSOFlow } = useSSO();
@@ -64,7 +62,7 @@ export default function SignInWithGoogle() {
       // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
     }
-  }, [router, startSSOFlow]);
+  }, [startSSOFlow]);
 
   return (
     <Button

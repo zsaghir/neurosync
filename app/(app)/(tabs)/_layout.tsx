@@ -58,6 +58,19 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="TimeMap"
+        options={{
+          title: "Time Map",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "time-sharp" : "time-outline"}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

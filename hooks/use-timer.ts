@@ -1,4 +1,3 @@
-import { addTimeToTask } from "@/lib/sanity/tasks";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const useTimer = (taskId: string) => {
@@ -9,6 +8,7 @@ export const useTimer = (taskId: string) => {
 
   const intervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sessionStartRef = useRef<number>(0);
+  const firstStartedAtRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isRunning || startedAt == null) return;
@@ -33,6 +33,7 @@ export const useTimer = (taskId: string) => {
     setIsRunning(true);
     setstartedAt(Date.now());
     sessionStartRef.current = accumulatedSeconds;
+    firstStartedAtRef.current = firstStartedAtRef.current ?? new Date().toISOString();
   }, [isRunning, accumulatedSeconds]);
 
   const pause = useCallback(async (): Promise<number | null> => {
@@ -44,14 +45,10 @@ export const useTimer = (taskId: string) => {
       setaccumulatedSeconds(newAccumulated);
       setElapsedSeconds(newAccumulated);
 
-      const sessionSeconds = newAccumulated - sessionStartRef.current;
-
       setIsRunning(false);
       setstartedAt(null);
 
-      await addTimeToTask(taskId, sessionSeconds);
-
-      return sessionSeconds;
+      return newAccumulated;
     }
 
     return null;
@@ -63,12 +60,15 @@ export const useTimer = (taskId: string) => {
     setElapsedSeconds(0);
     setstartedAt(null);
     sessionStartRef.current = 0;
+    firstStartedAtRef.current = null;
   }, []);
 
   return {
     start,
     isRunning,
     elapsedSeconds,
+    accumulatedSeconds,
+    startedAt: firstStartedAtRef.current,
     pause,
     reset,
   };

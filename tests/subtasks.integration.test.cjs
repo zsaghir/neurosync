@@ -110,9 +110,9 @@ test("subtasks API returns generated subtasks for an owned task", async () => {
         },
       ],
       [
-        "@ai-sdk/openai",
+        "@ai-sdk/google",
         {
-          openai: (model) => ({ model }),
+          google: (model) => ({ model }),
         },
       ],
       [
@@ -122,7 +122,7 @@ test("subtasks API returns generated subtasks for an owned task", async () => {
             object: ({ schema }) => ({ schema }),
           },
           generateText: async ({ model, output, prompt }) => {
-            assert.deepEqual(model, { model: "gpt-5.5-2026-04-23" });
+            assert.deepEqual(model, { model: "gemini-2.5-flash" });
             assert.ok(output.schema);
             assert.match(prompt, /Clean kitchen/);
 
@@ -177,7 +177,7 @@ test("subtasks API rejects tasks owned by another user", async () => {
           }),
         },
       ],
-      ["@ai-sdk/openai", { openai: () => ({}) }],
+      ["@ai-sdk/google", { google: () => ({}) }],
       ["ai", { Output: { object: () => ({}) }, generateText: async () => ({}) }],
     ],
     async () => {
@@ -192,6 +192,156 @@ test("subtasks API rejects tasks owned by another user", async () => {
 
       assert.equal(response.status, 403);
       assert.deepEqual(body, { error: "Unauthorized" });
+    },
+  );
+});
+
+test("time wisdom helpers normalize titles and gate review prompts", async () => {
+  clearProjectModule("lib/utils/time-wisdom.ts");
+
+  const {
+    createTaskTitleSignature,
+    shouldPromptForLongSession,
+    shouldPromptForShortSession,
+    getPersonalDefaultMinutes,
+    shouldShowDoneReflection,
+  } = require(path.join(projectRoot, "lib/utils/time-wisdom.ts"));
+
+  assert.equal(createTaskTitleSignature("Clean the kitchen!"), "clean kitchen");
+  assert.equal(createTaskTitleSignature("clean kitchen"), "clean kitchen");
+  assert.equal(createTaskTitleSignature("Tidy kitchen"), "tidy kitchen");
+
+  assert.equal(shouldPromptForShortSession(45), true);
+  assert.equal(shouldPromptForShortSession(60), false);
+  assert.equal(shouldPromptForLongSession(121 * 60, null), true);
+  assert.equal(shouldPromptForLongSession(95 * 60, 30), true);
+  assert.equal(shouldPromptForLongSession(60 * 60, 30), false);
+
+  assert.equal(getPersonalDefaultMinutes([20 * 60, 40 * 60]), null);
+  assert.equal(getPersonalDefaultMinutes([20 * 60, 40 * 60, 30 * 60]), 30);
+  assert.equal(
+    shouldShowDoneReflection({
+      cleanCountedSessionsToday: 0,
+      cleanCountedSessionsTotal: 3,
+    }),
+    true,
+  );
+  assert.equal(
+    shouldShowDoneReflection({
+      cleanCountedSessionsToday: 1,
+      cleanCountedSessionsTotal: 6,
+    }),
+    false,
+  );
+});
+
+test("task session helpers create, edit, exclude, and compare sessions", async () => {
+  clearProjectModule("lib/sanity/taskSessions.ts");
+  clearProjectModule("lib/sanity/client.ts");
+
+  const createdDocs = [];
+  const patchCalls = [];
+  const sanityClient = {
+    create: async (doc) => {
+      createdDocs.push(doc);
+      return { _id: "session-1", ...doc };
+    },
+    fetch: async () => [
+      {
+        _id: "session-1",
+        taskTitle: "Clean the kitchen",
+        taskTitleSignature: "clean kitchen",
+        actualSeconds: 1800,
+        excludedFromInsights: false,
+      },
+      {
+        _id: "session-2",
+        taskTitle: "Clean kitchen",
+        taskTitleSignature: "clean kitchen",
+        actualSeconds: 2400,
+        excludedFromInsights: true,
+      },
+      {
+        _id: "session-3",
+        taskTitle: "Tidy kitchen",
+        taskTitleSignature: "tidy kitchen",
+        actualSeconds: 1200,
+        excludedFromInsights: false,
+      },
+    ],
+    patch: (sessionId) => {
+      const call = { sessionId, operations: [] };
+      patchCalls.push(call);
+      return {
+        set: (value) => {
+          call.operations.push({ type: "set", value });
+          return {
+            commit: async () => ({ _id: sessionId, ...value }),
+          };
+        },
+      };
+    },
+  };
+
+  await withMocks(
+    [
+      [
+        path.join(projectRoot, "lib/sanity/client"),
+        {
+          sanityClient,
+        },
+      ],
+      [
+        path.join(projectRoot, "lib/sanity/client.ts"),
+        {
+          sanityClient,
+        },
+      ],
+    ],
+    async () => {
+      const {
+        createTaskSession,
+        fetchTaskSessions,
+        updateTaskSessionActualTime,
+        updateTaskSessionExclusion,
+        getComparableSessionSeconds,
+      } = require(path.join(projectRoot, "lib/sanity/taskSessions.ts"));
+
+      const created = await createTaskSession({
+        taskId: "task-1",
+        userId: "user-1",
+        taskTitle: "Clean the kitchen!",
+        estimatedMinutes: 20,
+        estimateInputType: "preset",
+        timerMeasuredSeconds: 1200,
+        actualSeconds: 1800,
+        actualSecondsSource: "userEdited",
+      });
+
+      assert.equal(created.taskTitleSignature, "clean kitchen");
+      assert.equal(created.timerMeasuredSeconds, 1200);
+      assert.equal(created.actualSeconds, 1800);
+      assert.equal(created.actualSecondsSource, "userEdited");
+      assert.equal(createdDocs[0].excludedFromInsights, false);
+
+      const sessions = await fetchTaskSessions("user-1");
+      assert.deepEqual(getComparableSessionSeconds(sessions, "clean kitchen"), [
+        1800,
+      ]);
+
+      await updateTaskSessionActualTime("session-1", 2100, "userEdited");
+      assert.equal(patchCalls[0].operations[0].value.actualSeconds, 2100);
+      assert.equal(
+        patchCalls[0].operations[0].value.actualSecondsSource,
+        "userEdited",
+      );
+
+      await updateTaskSessionExclusion("session-1", true, "weird");
+      assert.equal(
+        patchCalls[1].operations[0].value.excludedFromInsights,
+        true,
+      );
+      assert.equal(patchCalls[1].operations[0].value.excludeReason, "weird");
     },
   );
 });

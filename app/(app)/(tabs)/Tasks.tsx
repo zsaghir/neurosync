@@ -1,14 +1,10 @@
-//now we need the timer functionality inside the task screen, we will create a button for
-// every task which says start working. that button will enable the timer for that specific
-// task and show the elapsed time on the task item. we will also add a pause button to pause
-// the timer and a reset button to reset the timer for that task. we will use the same useTimer
-//  hook for this functionality but we will need to modify it to accept a taskId so that we can
-// track the time for each task separately. We will also need  a done button in timer so when a
-// person has completed a task they press done and the timer stops and resets for that task. we
-// will also need to store the time spent on each task in sanity so that we can show the total
-// time spent on each task in the task list.
 import Subtasks from "@/components/subtasks";
 import TaskItem from "@/components/TaskItem";
+import {
+  fetchTaskSessions,
+  getComparableSessionSeconds,
+  type TaskSessionDocument,
+} from "@/lib/sanity/taskSessions";
 import {
   createTask,
   deleteTask,
@@ -17,6 +13,10 @@ import {
   type TaskDocument,
   type TaskInput,
 } from "@/lib/sanity/tasks";
+import {
+  ESTIMATE_CHOICES,
+  type EstimateInputType,
+} from "@/lib/utils/time-wisdom";
 import { useUser } from "@clerk/clerk-expo";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -31,7 +31,14 @@ import {
 const Tasks = () => {
   const { user } = useUser();
   const [tasks, setTasks] = useState<TaskDocument[]>([]);
+  const [sessions, setSessions] = useState<TaskSessionDocument[]>([]);
   const [title, setTitle] = useState("");
+  const [selectedEstimateMinutes, setSelectedEstimateMinutes] = useState<
+    number | null
+  >(null);
+  const [selectedEstimateType, setSelectedEstimateType] =
+    useState<EstimateInputType>("skipped");
+  const [customEstimate, setCustomEstimate] = useState("");
   const [isLoadingTasks, setIsLoadingTasks] = useState(true);
   const [titleError, setTitleError] = useState("");
   const [visibleSubtasks, setVisibleSubtasks] = useState<
@@ -43,8 +50,12 @@ const Tasks = () => {
     try {
       setIsLoadingTasks(true);
 
-      const userTasks = await fetchTasks(user.id);
+      const [userTasks, userSessions] = await Promise.all([
+        fetchTasks(user.id),
+        fetchTaskSessions(user.id),
+      ]);
       setTasks(userTasks);
+      setSessions(userSessions);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     } finally {
@@ -62,7 +73,6 @@ const Tasks = () => {
   }, [loadTasks, user]);
 
   const handleAddTask = async () => {
-    //implementing adding task functionality
     if (user) {
       if (!title.trim()) {
         setTitleError("Please enter a task title.");
@@ -72,12 +82,35 @@ const Tasks = () => {
       const newTaskInput: TaskInput = {
         title: title.trim(),
         userId: user.id,
+        estimatedMinutes: selectedEstimateMinutes,
       };
 
       const createdTask = await createTask(newTaskInput);
       setTasks((currentTasks) => [createdTask, ...currentTasks]);
       setTitle("");
+      setSelectedEstimateMinutes(null);
+      setSelectedEstimateType("skipped");
     }
+  };
+
+  const handleEstimateChoice = (
+    minutes: number | null,
+    inputType: EstimateInputType,
+  ) => {
+    setSelectedEstimateMinutes(minutes);
+    setSelectedEstimateType(inputType);
+  };
+
+  const handleCustomEstimate = () => {
+    const parsedEstimate = Number(customEstimate);
+    const minutes =
+      Number.isFinite(parsedEstimate) && parsedEstimate > 0
+        ? Math.round(parsedEstimate)
+        : null;
+
+    setSelectedEstimateMinutes(minutes);
+    setSelectedEstimateType(minutes == null ? "skipped" : "custom");
+    setCustomEstimate("");
   };
 
   const handleToggleTask = async (task: TaskDocument) => {
@@ -121,6 +154,10 @@ const Tasks = () => {
           : currentTask,
       ),
     );
+  };
+
+  const handleSessionSaved = (session: TaskSessionDocument) => {
+    setSessions((currentSessions) => [session, ...currentSessions]);
   };
   const toggleSubtasks = (taskId: string) => {
     setVisibleSubtasks((current) => ({
@@ -172,6 +209,45 @@ const Tasks = () => {
               if (titleError) setTitleError("");
             }}
           />
+          <View style={styles.estimateBlock}>
+            <Text style={styles.estimatePrompt}>
+              How long does this feel like?
+            </Text>
+            <View style={styles.estimateChoices}>
+              {ESTIMATE_CHOICES.map((choice) => (
+                <Pressable
+                  key={`${choice.label}-${choice.inputType}`}
+                  style={[
+                    styles.estimateChip,
+                    selectedEstimateMinutes === choice.minutes &&
+                      selectedEstimateType === choice.inputType &&
+                      styles.selectedEstimateChip,
+                  ]}
+                  onPress={() =>
+                    handleEstimateChoice(choice.minutes, choice.inputType)
+                  }
+                >
+                  <Text style={styles.estimateChipText}>{choice.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={styles.customEstimateRow}>
+              <TextInput
+                style={styles.customEstimateInput}
+                placeholder="Custom min"
+                placeholderTextColor="#8f8f8f"
+                keyboardType="numeric"
+                value={customEstimate}
+                onChangeText={setCustomEstimate}
+              />
+              <Pressable
+                style={styles.smallButton}
+                onPress={handleCustomEstimate}
+              >
+                <Text style={styles.smallButtonText}>Set</Text>
+              </Pressable>
+            </View>
+          </View>
           <Pressable style={styles.primaryButton} onPress={handleAddTask}>
             <Text style={styles.primaryButtonText}>Add Task</Text>
           </Pressable>
@@ -238,13 +314,22 @@ const Tasks = () => {
                   />
                 ) : null}
 
-                <View style={styles.timerBlock}>
-                  <TaskItem
-                    taskId={task._id}
-                    onTimeCommitted={handleTimeCommitted}
-                    onComplete={handleCompleteTask}
-                  />
-                </View>
+                {user ? (
+                  <View style={styles.timerBlock}>
+                    <TaskItem
+                      task={task}
+                      userId={user.id}
+                      comparableSeconds={getComparableSessionSeconds(
+                        sessions,
+                        task.title ?? "",
+                      )}
+                      sessions={sessions}
+                      onTimeCommitted={handleTimeCommitted}
+                      onComplete={handleCompleteTask}
+                      onSessionSaved={handleSessionSaved}
+                    />
+                  </View>
+                ) : null}
               </View>
             ))
           )}
@@ -295,6 +380,70 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
+  },
+  estimateBlock: {
+    gap: 10,
+    width: "100%",
+  },
+  estimatePrompt: {
+    color: "#f4f4f4",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  estimateChoices: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    width: "100%",
+  },
+  estimateChip: {
+    alignItems: "center",
+    backgroundColor: "#181818",
+    borderColor: "#4a4a4a",
+    borderRadius: 7,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 38,
+    paddingHorizontal: 12,
+  },
+  selectedEstimateChip: {
+    backgroundColor: "#315f30",
+    borderColor: "#9ccf9b",
+  },
+  estimateChipText: {
+    color: "#f4f4f4",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  customEstimateRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    width: "100%",
+  },
+  customEstimateInput: {
+    backgroundColor: "#141414",
+    borderColor: "#4a4a4a",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#f5f5f5",
+    flex: 1,
+    fontSize: 15,
+    minHeight: 42,
+    paddingHorizontal: 12,
+  },
+  smallButton: {
+    alignItems: "center",
+    backgroundColor: "#615d5d",
+    borderRadius: 7,
+    justifyContent: "center",
+    minHeight: 42,
+    paddingHorizontal: 16,
+  },
+  smallButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "800",
   },
   primaryButton: {
     alignItems: "center",

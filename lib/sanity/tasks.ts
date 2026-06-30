@@ -13,6 +13,8 @@ export interface TaskInput {
   }>;
   alarmAt?: string | null;
   createdAt?: string;
+  completedAt?: string | null;
+  estimatedMinutes?: number | null;
 }
 
 export interface TaskDocument {
@@ -23,6 +25,8 @@ export interface TaskDocument {
   subtasks?: TaskInput["subtasks"];
   alarmAt?: string | null;
   createdAt?: string;
+  completedAt?: string | null;
+  estimatedMinutes?: number | null;
   userId?: string;
 }
 
@@ -37,6 +41,8 @@ export const TASKS_QUERY = defineQuery(`*[
 	subtasks,
 	alarmAt,
 	createdAt,
+	completedAt,
+	estimatedMinutes,
 	userId
 }`);
 
@@ -51,6 +57,8 @@ export const TASK_BY_ID_QUERY = defineQuery(`*[
     subtasks,
     alarmAt,
     createdAt,
+    completedAt,
+    estimatedMinutes,
     userId
   }`);
 
@@ -85,6 +93,8 @@ export const createTask = async (input: TaskInput): Promise<TaskDocument> => {
       timeSpentSeconds: input.timeSpentSeconds ?? 0,
       subtasks: input.subtasks ?? [],
       alarmAt: input.alarmAt ?? null,
+      completedAt: input.completedAt ?? null,
+      estimatedMinutes: input.estimatedMinutes ?? null,
       userId: input.userId,
       createdAt: input.createdAt ?? new Date().toISOString(),
     };
@@ -102,10 +112,32 @@ export const toggleTaskComplete = async (
   completed: boolean,
 ): Promise<TaskDocument> => {
   try {
-    const result = await sanityClient.patch(taskId).set({ completed }).commit();
+    const result = await sanityClient
+      .patch(taskId)
+      .set({
+        completed,
+        completedAt: completed ? new Date().toISOString() : null,
+      })
+      .commit();
     return result;
   } catch (error) {
     console.error("Error toggling task completion:", error);
+    throw error;
+  }
+};
+
+export const setTaskEstimate = async (
+  taskId: string,
+  estimatedMinutes: number | null,
+): Promise<TaskDocument> => {
+  try {
+    const result = await sanityClient
+      .patch(taskId)
+      .set({ estimatedMinutes })
+      .commit();
+    return result;
+  } catch (error) {
+    console.error("Error setting task estimate:", error);
     throw error;
   }
 };
