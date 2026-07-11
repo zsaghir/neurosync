@@ -4,6 +4,7 @@ import {
   type TaskDocument,
   type TaskInput,
 } from "@/lib/sanity/tasks";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -14,11 +15,18 @@ type GenerateSubtasksResponse = {
   error?: string;
 };
 
+type SubtaskTheme = {
+  line: string;
+  text: string;
+  subtle: string;
+  background: string;
+};
+
 type SubtasksProps = {
   task: TaskDocument;
   userId: string;
   isVisible: boolean;
-  onToggleVisible: (taskId: string) => void;
+  theme: SubtaskTheme;
   onSubtasksChanged: (
     taskId: string,
     subtasks: NonNullable<TaskInput["subtasks"]>,
@@ -29,7 +37,7 @@ const Subtasks = ({
   task,
   userId,
   isVisible,
-  onToggleVisible,
+  theme,
   onSubtasksChanged,
 }: SubtasksProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -64,10 +72,6 @@ const Subtasks = ({
 
       const savedTask = await setTaskSubtasks(task._id, body.subtasks);
       onSubtasksChanged(task._id, savedTask.subtasks ?? body.subtasks);
-
-      if (!isVisible) {
-        onToggleVisible(task._id);
-      }
     } catch (generateError) {
       console.error("Error generating subtasks:", generateError);
       setError("Could not generate subtasks. Please try again.");
@@ -101,73 +105,54 @@ const Subtasks = ({
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.actionsRow}>
-        <Pressable
-          style={styles.outlineButton}
-          onPress={() => onToggleVisible(task._id)}
-        >
-          <Text style={styles.outlineButtonText}>
-            {isVisible ? "Hide subtasks" : "View subtasks"}
-          </Text>
-        </Pressable>
+  if (!isVisible) return null;
 
+  return (
+    <View style={[styles.container, { borderColor: theme.line }]}>
+      {hasSubtasks ? (
+        subtasks.map((subtask) => (
+          <Pressable
+            key={subtask._key ?? subtask.title}
+            style={[styles.subtaskRow, { borderColor: theme.line }]}
+            disabled={updatingSubtaskKey === subtask._key}
+            onPress={() => handleToggleSubtask(subtask)}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                { borderColor: theme.subtle },
+                subtask.completed && { backgroundColor: theme.text },
+              ]}
+            >
+              {subtask.completed ? (
+                <Ionicons name="checkmark" size={14} color={theme.background} />
+              ) : null}
+            </View>
+            <Text
+              style={[
+                styles.subtaskText,
+                { color: theme.text },
+                subtask.completed && styles.completedSubtaskText,
+              ]}
+            >
+              {subtask.title}
+            </Text>
+          </Pressable>
+        ))
+      ) : (
         <Pressable
-          style={[
-            styles.generateButton,
-            isGenerating && styles.disabledButton,
-          ]}
+          style={styles.generateInlineButton}
           disabled={isGenerating}
           onPress={handleGenerateSubtasks}
         >
-          <Text style={styles.generateButtonText}>
-            {isGenerating
-              ? "Generating..."
-              : hasSubtasks
-                ? "Regenerate"
-                : "Generate"}
+          <Ionicons name="sparkles-outline" size={16} color={theme.subtle} />
+          <Text style={[styles.generateInlineText, { color: theme.subtle }]}>
+            {isGenerating ? "Generating..." : "Generate subtasks"}
           </Text>
         </Pressable>
-      </View>
+      )}
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-      {isVisible ? (
-        <View style={styles.subtasksContainer}>
-          {hasSubtasks ? (
-            subtasks.map((subtask) => (
-              <Pressable
-                key={subtask._key ?? subtask.title}
-                style={styles.subtaskRow}
-                disabled={updatingSubtaskKey === subtask._key}
-                onPress={() => handleToggleSubtask(subtask)}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    subtask.completed && styles.checkedBox,
-                  ]}
-                >
-                  {subtask.completed ? (
-                    <Text style={styles.checkmark}>X</Text>
-                  ) : null}
-                </View>
-                <Text
-                  style={[
-                    styles.subtaskText,
-                    subtask.completed && styles.completedSubtaskText,
-                  ]}
-                >
-                  {subtask.title}
-                </Text>
-              </Pressable>
-            ))
-          ) : (
-            <Text style={styles.emptyText}>No subtasks yet.</Text>
-          )}
-        </View>
-      ) : null}
     </View>
   );
 };
@@ -176,90 +161,46 @@ export default Subtasks;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 12,
+    borderTopWidth: 1,
+    marginLeft: 54,
+    marginTop: 10,
   },
-  actionsRow: {
+  subtaskRow: {
+    alignItems: "center",
+    borderBottomWidth: 1,
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
+    gap: 12,
+    minHeight: 44,
   },
-  outlineButton: {
+  checkbox: {
     alignItems: "center",
-    borderColor: "#7f272d",
-    borderRadius: 7,
+    borderRadius: 999,
     borderWidth: 1,
+    height: 26,
     justifyContent: "center",
-    minHeight: 38,
-    paddingHorizontal: 12,
+    width: 26,
   },
-  outlineButtonText: {
-    color: "#ffb3b8",
-    fontSize: 14,
-    fontWeight: "700",
+  subtaskText: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 20,
   },
-  generateButton: {
+  completedSubtaskText: {
+    textDecorationLine: "line-through",
+  },
+  generateInlineButton: {
     alignItems: "center",
-    backgroundColor: "#b3262f",
-    borderRadius: 7,
-    justifyContent: "center",
-    minHeight: 38,
-    paddingHorizontal: 12,
+    flexDirection: "row",
+    gap: 8,
+    minHeight: 42,
   },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  generateButtonText: {
-    color: "#ffffff",
+  generateInlineText: {
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "800",
   },
   errorText: {
     color: "#ff7b7b",
     fontSize: 13,
-    marginTop: 10,
-  },
-  subtasksContainer: {
-    borderTopColor: "#333333",
-    borderTopWidth: 1,
-    gap: 8,
-    marginTop: 12,
-    paddingTop: 12,
-  },
-  subtaskRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-    minHeight: 32,
-  },
-  checkbox: {
-    alignItems: "center",
-    borderColor: "#b3262f",
-    borderRadius: 5,
-    borderWidth: 1,
-    height: 22,
-    justifyContent: "center",
-    width: 22,
-  },
-  checkedBox: {
-    backgroundColor: "#b3262f",
-  },
-  checkmark: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  subtaskText: {
-    color: "#f4f4f4",
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  completedSubtaskText: {
-    color: "#9d9d9d",
-    textDecorationLine: "line-through",
-  },
-  emptyText: {
-    color: "#8f8f8f",
-    fontSize: 14,
+    marginTop: 8,
   },
 });

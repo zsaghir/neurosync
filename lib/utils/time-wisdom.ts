@@ -2,21 +2,71 @@ export type EstimateInputType = "bucket" | "preset" | "custom" | "skipped";
 
 export type ActualSecondsSource = "timer" | "userEdited" | "manual";
 
+export type TimeEstimationMode = "relative" | "minutes" | "custom";
+
+export type BucketEstimate = "quick" | "medium" | "long";
+
+export type ThemeMode = "dark" | "light";
+
+export type UserTimeSettings = {
+  preferredTimeEstimationMode: TimeEstimationMode;
+  themeMode: ThemeMode;
+};
+
 export type EstimateChoice = {
   label: string;
   minutes: number | null;
   inputType: EstimateInputType;
 };
 
-export const ESTIMATE_CHOICES: EstimateChoice[] = [
+export const RELATIVE_ESTIMATE_CHOICES: EstimateChoice[] = [
   { label: "Quick", minutes: 10, inputType: "bucket" },
   { label: "Medium", minutes: 30, inputType: "bucket" },
   { label: "Long", minutes: 60, inputType: "bucket" },
+  { label: "Skip estimation", minutes: null, inputType: "skipped" },
+];
+
+export const MINUTE_ESTIMATE_CHOICES: EstimateChoice[] = [
   { label: "15 min", minutes: 15, inputType: "preset" },
   { label: "30 min", minutes: 30, inputType: "preset" },
   { label: "60 min", minutes: 60, inputType: "preset" },
-  { label: "Skip", minutes: null, inputType: "skipped" },
+  { label: "Skip estimation", minutes: null, inputType: "skipped" },
 ];
+
+export const ESTIMATE_CHOICES: EstimateChoice[] = [
+  ...RELATIVE_ESTIMATE_CHOICES.slice(0, 3),
+  ...MINUTE_ESTIMATE_CHOICES,
+];
+
+export const DEFAULT_USER_TIME_SETTINGS: UserTimeSettings = {
+  preferredTimeEstimationMode: "relative",
+  themeMode: "dark",
+};
+
+export const BUCKET_ESTIMATE_MINUTES: Record<BucketEstimate, number> = {
+  quick: 10,
+  medium: 30,
+  long: 60,
+};
+
+export const getEstimateChoicesForMode = (
+  mode: TimeEstimationMode,
+): EstimateChoice[] => {
+  if (mode === "relative") return RELATIVE_ESTIMATE_CHOICES;
+  if (mode === "minutes") return MINUTE_ESTIMATE_CHOICES;
+
+  return [{ label: "Skip estimation", minutes: null, inputType: "skipped" }];
+};
+
+export const getTimeEstimationModeLabel = (mode: TimeEstimationMode) => {
+  if (mode === "relative") {
+    return "Quick / Medium / Long";
+  }
+
+  if (mode === "minutes") return "Minute presets";
+
+  return "Custom time entry";
+};
 
 const fillerWords = new Set(["the", "a", "an", "my"]);
 

@@ -201,6 +201,7 @@ test("time wisdom helpers normalize titles and gate review prompts", async () =>
 
   const {
     createTaskTitleSignature,
+    getEstimateChoicesForMode,
     shouldPromptForLongSession,
     shouldPromptForShortSession,
     getPersonalDefaultMinutes,
@@ -232,6 +233,19 @@ test("time wisdom helpers normalize titles and gate review prompts", async () =>
       cleanCountedSessionsTotal: 6,
     }),
     false,
+  );
+
+  assert.deepEqual(
+    getEstimateChoicesForMode("relative").map(({ label }) => label),
+    ["Quick", "Medium", "Long", "Skip estimation"],
+  );
+  assert.deepEqual(
+    getEstimateChoicesForMode("minutes").map(({ label }) => label),
+    ["15 min", "30 min", "60 min", "Skip estimation"],
+  );
+  assert.deepEqual(
+    getEstimateChoicesForMode("custom").map(({ label }) => label),
+    ["Skip estimation"],
   );
 });
 
@@ -342,6 +356,94 @@ test("task session helpers create, edit, exclude, and compare sessions", async (
         true,
       );
       assert.equal(patchCalls[1].operations[0].value.excludeReason, "weird");
+    },
+  );
+});
+
+test("user settings helpers create defaults, map legacy settings, fetch, and update preferences", async () => {
+  clearProjectModule("lib/sanity/userSettings.ts");
+  clearProjectModule("lib/sanity/client.ts");
+
+  const createdDocs = [];
+  const patchCalls = [];
+  let existingSettings = null;
+  const sanityClient = {
+    create: async (doc) => {
+      createdDocs.push(doc);
+      existingSettings = { _id: "settings-1", ...doc };
+      return existingSettings;
+    },
+    fetch: async () => existingSettings,
+    patch: (settingsId) => {
+      const call = { settingsId, operations: [] };
+      patchCalls.push(call);
+
+      return {
+        set: (value) => {
+          call.operations.push({ type: "set", value });
+          return {
+            commit: async () => {
+              existingSettings = { ...existingSettings, ...value };
+              return existingSettings;
+            },
+          };
+        },
+      };
+    },
+  };
+
+  await withMocks(
+    [
+      [
+        path.join(projectRoot, "lib/sanity/client"),
+        {
+          sanityClient,
+        },
+      ],
+      [
+        path.join(projectRoot, "lib/sanity/client.ts"),
+        {
+          sanityClient,
+        },
+      ],
+    ],
+    async () => {
+      const {
+        fetchUserSettings,
+        mapLegacyTimeEstimationMode,
+        updateUserSettings,
+      } = require(path.join(projectRoot, "lib/sanity/userSettings.ts"));
+
+      const defaults = await fetchUserSettings("user-1");
+
+      assert.equal(defaults.userId, "user-1");
+      assert.equal(defaults.preferredTimeEstimationMode, "relative");
+      assert.equal(defaults.themeMode, "dark");
+      assert.equal(createdDocs.length, 1);
+      assert.equal(mapLegacyTimeEstimationMode("bucket"), "relative");
+      assert.equal(mapLegacyTimeEstimationMode("presetMinutes"), "minutes");
+      assert.equal(mapLegacyTimeEstimationMode("customMinutes"), "custom");
+      assert.equal(mapLegacyTimeEstimationMode("skip"), "relative");
+
+      const fetched = await fetchUserSettings("user-1");
+      assert.equal(fetched._id, "settings-1");
+      assert.equal(createdDocs.length, 1);
+
+      const updatedEstimate = await updateUserSettings("settings-1", {
+        preferredTimeEstimationMode: "minutes",
+      });
+      assert.equal(updatedEstimate.preferredTimeEstimationMode, "minutes");
+
+      const updatedTheme = await updateUserSettings("settings-1", {
+        themeMode: "light",
+      });
+      assert.equal(updatedTheme.themeMode, "light");
+      assert.equal(patchCalls.length, 2);
+      assert.equal(
+        patchCalls[0].operations[0].value.preferredTimeEstimationMode,
+        "minutes",
+      );
+      assert.equal(patchCalls[1].operations[0].value.themeMode, "light");
     },
   );
 });

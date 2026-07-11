@@ -1,32 +1,35 @@
 import { useTimer } from "@/hooks/use-timer";
-import {
-  addTimeToTask,
-  type TaskDocument,
-} from "@/lib/sanity/tasks";
+import { addTimeToTask, type TaskDocument } from "@/lib/sanity/tasks";
 import {
   createTaskSession,
   type TaskSessionDocument,
 } from "@/lib/sanity/taskSessions";
 import formattime from "@/lib/utils/formattime";
 import {
-  ESTIMATE_CHOICES,
   type ActualSecondsSource,
-  type EstimateInputType,
   formatDurationLabel,
-  getPersonalDefaultMinutes,
   isCleanCountedSession,
   shouldPromptForLongSession,
   shouldPromptForShortSession,
   shouldShowDoneReflection,
+  type ThemeMode,
 } from "@/lib/utils/time-wisdom";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 type TaskItemProps = {
   task: TaskDocument;
   userId: string;
-  comparableSeconds: number[];
   sessions: TaskSessionDocument[];
+  themeMode: ThemeMode;
   onTimeCommitted?: (taskId: string, seconds: number) => void;
   onComplete?: (taskId: string) => void;
   onSessionSaved?: (session: TaskSessionDocument) => void;
@@ -52,32 +55,30 @@ const parseMinutes = (value: string) => {
 const TaskItem = ({
   task,
   userId,
-  comparableSeconds,
   sessions,
+  themeMode,
   onTimeCommitted,
   onComplete,
   onSessionSaved,
 }: TaskItemProps) => {
-  const { elapsedSeconds, accumulatedSeconds, isRunning, startedAt, start, pause, reset } =
-    useTimer(task._id);
-  const [estimatedMinutes, setEstimatedMinutes] = useState<number | null>(
-    task.estimatedMinutes ?? null,
-  );
-  const [estimateInputType, setEstimateInputType] =
-    useState<EstimateInputType>(
-      task.estimatedMinutes == null ? "skipped" : "custom",
-    );
-  const [isEstimateLocked, setIsEstimateLocked] = useState(false);
-  const [customEstimate, setCustomEstimate] = useState("");
+  const {
+    elapsedSeconds,
+    accumulatedSeconds,
+    isRunning,
+    startedAt,
+    start,
+    pause,
+    reset,
+  } = useTimer(task._id);
+  const [isOpen, setIsOpen] = useState(false);
   const [reviewState, setReviewState] = useState<ReviewState | null>(null);
   const [actualMinutesInput, setActualMinutesInput] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const personalDefaultMinutes = useMemo(
-    () => getPersonalDefaultMinutes(comparableSeconds),
-    [comparableSeconds],
-  );
+  const estimatedMinutes = task.estimatedMinutes ?? null;
+  const estimateInputType = estimatedMinutes == null ? "skipped" : "custom";
+  const theme = timerThemes[themeMode];
 
   const cleanCountedSessionsToday = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -105,27 +106,8 @@ const TaskItem = ({
     ).length;
   }, [sessions]);
 
-  const handleEstimateChoice = (
-    minutes: number | null,
-    inputType: EstimateInputType,
-  ) => {
-    if (isEstimateLocked) return;
-
-    setEstimatedMinutes(minutes);
-    setEstimateInputType(inputType);
-  };
-
-  const handleCustomEstimate = () => {
-    if (isEstimateLocked) return;
-
-    const minutes = parseMinutes(customEstimate);
-    setEstimatedMinutes(minutes > 0 ? minutes : null);
-    setEstimateInputType(minutes > 0 ? "custom" : "skipped");
-    setCustomEstimate("");
-  };
-
   const handleStart = () => {
-    setIsEstimateLocked(true);
+    setIsOpen(true);
     setFeedback("");
     start();
   };
@@ -178,12 +160,13 @@ const TaskItem = ({
       setReviewState(null);
       setActualMinutesInput("");
 
-      const shouldReflect = isCleanCountedSession({
-        actualSeconds,
-        estimatedMinutes,
-        excludedFromInsights,
-        actualSecondsSource,
-      }) &&
+      const shouldReflect =
+        isCleanCountedSession({
+          actualSeconds,
+          estimatedMinutes,
+          excludedFromInsights,
+          actualSecondsSource,
+        }) &&
         estimatedMinutes != null &&
         shouldShowDoneReflection({
           cleanCountedSessionsToday,
@@ -197,6 +180,7 @@ const TaskItem = ({
             )}. Your map learned a little more from this one.`
           : "Saved. Your map is learning.",
       );
+      setIsOpen(false);
     } finally {
       setIsSaving(false);
     }
@@ -299,157 +283,204 @@ const TaskItem = ({
   };
 
   return (
-    <View style={styles.timerContainer}>
-      <View style={styles.timerHeader}>
-        <Text style={styles.timerLabel}>Focus timer</Text>
-        <Text style={styles.timerStatus}>
-          {isRunning ? "Running" : "Paused"}
-        </Text>
-      </View>
+    <>
+      <Pressable
+        style={[styles.inlineButton, { borderColor: theme.line }]}
+        onPress={handleStart}
+      >
+        <Ionicons
+          name={isRunning ? "pause" : "play"}
+          size={16}
+          color={theme.text}
+        />
+      </Pressable>
 
-      <Text style={styles.elapsedTime}>{formattime(elapsedSeconds)}</Text>
-
-      {!isEstimateLocked ? (
-        <View style={styles.estimateBlock}>
-          <Text style={styles.helperText}>How long does this feel like?</Text>
-          {personalDefaultMinutes ? (
-            <Pressable
-              style={styles.defaultButton}
-              onPress={() => handleEstimateChoice(personalDefaultMinutes, "preset")}
-            >
-              <Text style={styles.defaultButtonText}>
-                Tasks like this tend to run about {personalDefaultMinutes} min
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+      >
+        <View style={styles.overlay}>
+          <View
+            style={[
+              styles.timerContainer,
+              { backgroundColor: theme.surface, borderColor: theme.line },
+            ]}
+          >
+            <View style={styles.timerHeader}>
+              <Text style={[styles.timerLabel, { color: theme.subtle }]}>
+                Focus timer
               </Text>
-            </Pressable>
-          ) : null}
-          <View style={styles.estimateChoices}>
-            {ESTIMATE_CHOICES.map((choice) => (
-              <Pressable
-                key={`${choice.label}-${choice.inputType}`}
-                style={[
-                  styles.estimateChip,
-                  estimatedMinutes === choice.minutes &&
-                    estimateInputType === choice.inputType &&
-                    styles.selectedEstimateChip,
-                ]}
-                onPress={() =>
-                  handleEstimateChoice(choice.minutes, choice.inputType)
-                }
-              >
-                <Text style={styles.estimateChipText}>{choice.label}</Text>
+              <Pressable onPress={() => setIsOpen(false)}>
+                <Ionicons name="close" size={22} color={theme.text} />
               </Pressable>
-            ))}
-          </View>
-          <View style={styles.customEstimateRow}>
-            <TextInput
-              style={styles.smallInput}
-              keyboardType="numeric"
-              placeholder="Custom min"
-              placeholderTextColor="#363636"
-              value={customEstimate}
-              onChangeText={setCustomEstimate}
-            />
-            <Pressable style={styles.smallButton} onPress={handleCustomEstimate}>
-              <Text style={styles.smallButtonText}>Set</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : (
-        <Text style={styles.helperText}>
-          {estimatedMinutes == null
-            ? "No estimate locked for this one."
-            : `Estimate locked at ${estimatedMinutes} min.`}
-        </Text>
-      )}
+            </View>
 
-      <View style={styles.timerActions}>
-        {!isRunning ? (
-          <Pressable onPress={handleStart} style={styles.timerButton}>
-            <Text style={styles.timerButtonText}>Start</Text>
-          </Pressable>
-        ) : (
-          <Pressable onPress={handlePause} style={styles.timerButton}>
-            <Text style={styles.timerButtonText}>Pause</Text>
-          </Pressable>
-        )}
-        <Pressable
-          onPress={handleDone}
-          style={[styles.doneButton, isSaving && styles.disabledButton]}
-          disabled={isSaving}
-        >
-          <Text style={styles.timerButtonText}>Done</Text>
-        </Pressable>
-        <Pressable onPress={reset} style={styles.secondaryTimerButton}>
-          <Text style={styles.timerButtonText}>Reset</Text>
-        </Pressable>
-        <Pressable onPress={openAdjustTime} style={styles.secondaryTimerButton}>
-          <Text style={styles.timerButtonText}>Adjust time</Text>
-        </Pressable>
-        <Pressable onPress={openManualTime} style={styles.secondaryTimerButton}>
-          <Text style={styles.timerButtonText}>Add time manually</Text>
-        </Pressable>
-      </View>
+            <Text style={[styles.elapsedTime, { color: theme.text }]}>
+              {formattime(elapsedSeconds)}
+            </Text>
+            <Text style={[styles.helperText, { color: theme.subtle }]}>
+              {estimatedMinutes == null
+                ? "No estimate for this one."
+                : `Estimate locked at ${estimatedMinutes} min.`}
+            </Text>
 
-      {reviewState ? (
-        <View style={styles.reviewBlock}>
-          <Text style={styles.reviewTitle}>{reviewState.title}</Text>
-          <Text style={styles.reviewText}>{reviewState.description}</Text>
-          <Text style={styles.reviewText}>
-            Timer measured {formatDurationLabel(reviewState.timerSeconds)}
-            {estimatedMinutes == null ? "" : ` · felt like ${estimatedMinutes} min`}
-          </Text>
-          <View style={styles.customEstimateRow}>
-            <TextInput
-              style={styles.smallInput}
-              keyboardType="numeric"
-              placeholder="Actual min"
-              placeholderTextColor="#363636"
-              value={actualMinutesInput}
-              onChangeText={setActualMinutesInput}
-            />
-            <Pressable
-              style={[styles.smallButton, isSaving && styles.disabledButton]}
-              onPress={saveReviewedTime}
-              disabled={isSaving}
-            >
-              <Text style={styles.smallButtonText}>Save this time</Text>
-            </Pressable>
-          </View>
-          <View style={styles.timerActions}>
-            {reviewState.timerSeconds > 0 ? (
+            <View style={styles.timerActions}>
+              {!isRunning ? (
+                <Pressable onPress={handleStart} style={styles.timerButton}>
+                  <Text style={styles.timerButtonText}>Start</Text>
+                </Pressable>
+              ) : (
+                <Pressable onPress={handlePause} style={styles.timerButton}>
+                  <Text style={styles.timerButtonText}>Pause</Text>
+                </Pressable>
+              )}
               <Pressable
-                style={styles.timerButton}
-                onPress={saveFullReviewedTime}
+                onPress={handleDone}
+                style={[styles.doneButton, isSaving && styles.disabledButton]}
                 disabled={isSaving}
               >
-                <Text style={styles.timerButtonText}>Keep full time</Text>
+                <Text style={styles.timerButtonText}>Done</Text>
               </Pressable>
+              <Pressable onPress={reset} style={styles.secondaryTimerButton}>
+                <Text style={styles.timerButtonText}>Reset</Text>
+              </Pressable>
+              <Pressable
+                onPress={openAdjustTime}
+                style={styles.secondaryTimerButton}
+              >
+                <Text style={styles.timerButtonText}>Adjust time</Text>
+              </Pressable>
+              <Pressable
+                onPress={openManualTime}
+                style={styles.secondaryTimerButton}
+              >
+                <Text style={styles.timerButtonText}>Add time manually</Text>
+              </Pressable>
+            </View>
+
+            {reviewState ? (
+              <View
+                style={[
+                  styles.reviewBlock,
+                  { backgroundColor: theme.review, borderColor: theme.line },
+                ]}
+              >
+                <Text style={[styles.reviewTitle, { color: theme.text }]}>
+                  {reviewState.title}
+                </Text>
+                <Text style={[styles.reviewText, { color: theme.subtle }]}>
+                  {reviewState.description}
+                </Text>
+                <Text style={[styles.reviewText, { color: theme.subtle }]}>
+                  Timer measured {formatDurationLabel(reviewState.timerSeconds)}
+                  {estimatedMinutes == null
+                    ? ""
+                    : ` · felt like ${estimatedMinutes} min`}
+                </Text>
+                <View style={styles.customEstimateRow}>
+                  <TextInput
+                    style={[
+                      styles.smallInput,
+                      {
+                        backgroundColor: theme.input,
+                        borderColor: theme.line,
+                        color: theme.text,
+                      },
+                    ]}
+                    keyboardType="numeric"
+                    placeholder="Actual min"
+                    placeholderTextColor={theme.subtle}
+                    value={actualMinutesInput}
+                    onChangeText={setActualMinutesInput}
+                  />
+                  <Pressable
+                    style={[styles.smallButton, isSaving && styles.disabledButton]}
+                    onPress={saveReviewedTime}
+                    disabled={isSaving}
+                  >
+                    <Text style={styles.smallButtonText}>Save this time</Text>
+                  </Pressable>
+                </View>
+                <View style={styles.timerActions}>
+                  {reviewState.timerSeconds > 0 ? (
+                    <Pressable
+                      style={styles.timerButton}
+                      onPress={saveFullReviewedTime}
+                      disabled={isSaving}
+                    >
+                      <Text style={styles.timerButtonText}>Keep full time</Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable
+                    style={styles.secondaryTimerButton}
+                    onPress={excludeReviewedTime}
+                    disabled={isSaving}
+                  >
+                    <Text style={styles.timerButtonText}>
+                      Do not count this one
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
             ) : null}
-            <Pressable
-              style={styles.secondaryTimerButton}
-              onPress={excludeReviewedTime}
-              disabled={isSaving}
-            >
-              <Text style={styles.timerButtonText}>Do not count this one</Text>
-            </Pressable>
+
+            {feedback ? (
+              <Text style={[styles.feedbackText, { color: theme.subtle }]}>
+                {feedback}
+              </Text>
+            ) : null}
           </View>
         </View>
-      ) : null}
-
-      {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
-    </View>
+      </Modal>
+    </>
   );
 };
 
 export default TaskItem;
 
+const timerThemes = {
+  dark: {
+    surface: "#151515",
+    review: "#202020",
+    input: "#0f0f0f",
+    line: "#f2efe6",
+    text: "#f8f5ee",
+    subtle: "#c7c0b2",
+  },
+  light: {
+    surface: "#fbf7ef",
+    review: "#f1eadf",
+    input: "#fffdf8",
+    line: "#2b2925",
+    text: "#25231f",
+    subtle: "#655f55",
+  },
+};
+
 const styles = StyleSheet.create({
+  inlineButton: {
+    alignItems: "center",
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 34,
+    justifyContent: "center",
+    width: 34,
+  },
+  overlay: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.54)",
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+  },
   timerContainer: {
-    backgroundColor: "#d8cec3",
-    borderColor: "#201f1f",
     borderRadius: 8,
     borderWidth: 1,
-    padding: 14,
+    maxWidth: 560,
+    padding: 18,
+    width: "100%",
   },
   timerHeader: {
     alignItems: "center",
@@ -458,72 +489,19 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   timerLabel: {
-    color: "#050505",
     fontSize: 13,
     fontWeight: "800",
     textTransform: "uppercase",
   },
-  timerStatus: {
-    color: "#050505",
-    fontSize: 13,
-    fontWeight: "700",
-  },
   elapsedTime: {
-    color: "#050505",
-    fontSize: 34,
+    fontSize: 42,
     fontWeight: "900",
     marginTop: 8,
   },
-  estimateBlock: {
-    borderTopColor: "#b9afa4",
-    borderTopWidth: 1,
-    gap: 10,
-    marginTop: 12,
-    paddingTop: 12,
-  },
   helperText: {
-    color: "#201f1f",
     fontSize: 14,
     fontWeight: "700",
     marginTop: 8,
-  },
-  estimateChoices: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  estimateChip: {
-    alignItems: "center",
-    backgroundColor: "#f7efe7",
-    borderColor: "#b9afa4",
-    borderRadius: 7,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 34,
-    paddingHorizontal: 12,
-  },
-  selectedEstimateChip: {
-    backgroundColor: "#9ccf9b",
-    borderColor: "#315f30",
-  },
-  estimateChipText: {
-    color: "#050505",
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  defaultButton: {
-    alignItems: "center",
-    backgroundColor: "#fff7cf",
-    borderRadius: 7,
-    justifyContent: "center",
-    minHeight: 38,
-    paddingHorizontal: 12,
-  },
-  defaultButtonText: {
-    color: "#050505",
-    fontSize: 13,
-    fontWeight: "800",
-    textAlign: "center",
   },
   customEstimateRow: {
     alignItems: "center",
@@ -532,11 +510,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   smallInput: {
-    backgroundColor: "#fffaf4",
-    borderColor: "#8c8278",
     borderRadius: 7,
     borderWidth: 1,
-    color: "#050505",
     minHeight: 38,
     minWidth: 120,
     paddingHorizontal: 10,
@@ -558,7 +533,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 12,
+    marginTop: 14,
   },
   timerButton: {
     alignItems: "center",
@@ -593,26 +568,21 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   reviewBlock: {
-    backgroundColor: "#fffaf4",
-    borderColor: "#8c8278",
     borderRadius: 8,
     borderWidth: 1,
     gap: 8,
-    marginTop: 12,
+    marginTop: 14,
     padding: 12,
   },
   reviewTitle: {
-    color: "#050505",
     fontSize: 16,
     fontWeight: "900",
   },
   reviewText: {
-    color: "#201f1f",
     fontSize: 14,
     lineHeight: 20,
   },
   feedbackText: {
-    color: "#201f1f",
     fontSize: 14,
     fontWeight: "800",
     marginTop: 12,
