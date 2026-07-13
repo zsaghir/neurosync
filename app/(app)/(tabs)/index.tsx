@@ -1,8 +1,8 @@
+import { PillButton } from "@/components/ui/PillButton";
+import { TaskRow } from "@/components/ui/TaskRow";
 import {
   AppCard,
   AppScreen,
-  CircleCheckbox,
-  PrimaryButton,
   SectionLabel,
   StatusMessage,
 } from "@/components/ui/design-system";
@@ -19,22 +19,13 @@ import {
   type TaskDocument,
 } from "@/lib/sanity/tasks";
 import { formatDurationLabel } from "@/lib/utils/time-wisdom";
-import {
-  getPreviousDaySeconds,
-  selectRandomTasks,
-} from "@/lib/utils/today";
+import { getPreviousDaySeconds, selectRandomTasks } from "@/lib/utils/today";
 import { useUser } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function Today() {
   const { user } = useUser();
@@ -129,6 +120,18 @@ export default function Today() {
 
   const openTasks = () => router.navigate("/(app)/(tabs)/Tasks");
 
+  const openTaskDetails = (task: TaskDocument) =>
+    router.push({
+      pathname: "/(app)/(tabs)/Tasks/[id]",
+      params: { id: task._id },
+    } as unknown as Href);
+
+  const startFocus = (task: TaskDocument) =>
+    router.push({
+      pathname: "/(app)/focus/[taskId]",
+      params: { taskId: task._id },
+    } as unknown as Href);
+
   return (
     <AppScreen>
       <View style={styles.header}>
@@ -154,7 +157,7 @@ export default function Today() {
           onChangeText={setCapture}
           onSubmitEditing={() => void handleCapture()}
           placeholder="Capture anything..."
-          placeholderTextColor={colors.textFaint}
+          placeholderTextColor={colors.textMuted}
           returnKeyType="done"
           style={[styles.captureInput, { color: colors.text }]}
           value={capture}
@@ -172,17 +175,21 @@ export default function Today() {
             },
           ]}
         >
-          <Ionicons name="arrow-forward" color={colors.accentText} size={18} />
+          <Ionicons name="add" color={colors.accentText} size={20} />
         </Pressable>
       </View>
 
-      {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? (
+        <Text style={[styles.error, { color: colors.danger }]}>{error}</Text>
+      ) : null}
 
       {isLoading ? (
         <StatusMessage loading>Finding three things for today...</StatusMessage>
       ) : todayTasks.length === 0 ? (
         <AppCard style={styles.emptyCard}>
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>No open tasks yet.</Text>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            No open tasks yet.
+          </Text>
           <Text style={[styles.emptyText, { color: colors.textMuted }]}>
             Capture something above or add a task from the Tasks tab.
           </Text>
@@ -192,33 +199,21 @@ export default function Today() {
           <SectionLabel style={styles.sectionLabel}>Up next</SectionLabel>
           {upNext ? (
             <AppCard style={styles.upNextCard}>
-              <View style={styles.taskTitleRow}>
-                <CircleCheckbox
-                  checked={false}
-                  label={`Complete ${upNext.title}`}
-                  onPress={() => void handleComplete(upNext)}
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={openTasks}
-                  style={styles.taskTextButton}
-                >
-                  <Text style={[styles.upNextTitle, { color: colors.text }]}>
-                    {upNext.title}
-                  </Text>
-                  <Text style={[styles.estimate, { color: colors.textMuted }]}>
-                    {upNext.estimatedMinutes == null
-                      ? "No estimate yet"
-                      : `Usually takes about ${upNext.estimatedMinutes} minutes`}
-                  </Text>
-                </Pressable>
-              </View>
-              <PrimaryButton
+              <Text style={[styles.upNextTitle, { color: colors.text }]}>
+                {upNext.title}
+              </Text>
+              <Text style={[styles.estimate, { color: colors.textMuted }]}>
+                {upNext.estimatedMinutes == null
+                  ? "No estimate yet"
+                  : `Usually takes about ${upNext.estimatedMinutes} minutes`}
+              </Text>
+              <PillButton
                 accessibilityLabel={`Start focus for ${upNext.title}`}
-                onPress={openTasks}
+                onPress={() => startFocus(upNext)}
+                style={{ marginTop: design.spacing.md }}
               >
                 Start focus
-              </PrimaryButton>
+              </PillButton>
             </AppCard>
           ) : null}
 
@@ -226,28 +221,12 @@ export default function Today() {
             <View style={styles.alsoSection}>
               <SectionLabel style={styles.sectionLabel}>Also today</SectionLabel>
               {alsoToday.map((task) => (
-                <View
+                <TaskRow
                   key={task._id}
-                  style={[styles.alsoRow, { borderBottomColor: colors.border }]}
-                >
-                  <CircleCheckbox
-                    checked={false}
-                    label={`Complete ${task.title}`}
-                    onPress={() => void handleComplete(task)}
-                  />
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={openTasks}
-                    style={styles.taskTextButton}
-                  >
-                    <Text numberOfLines={2} style={[styles.alsoTitle, { color: colors.text }]}>
-                      {task.title}
-                    </Text>
-                  </Pressable>
-                  <Text style={[styles.rowEstimate, { color: colors.textMuted }]}>
-                    {task.estimatedMinutes == null ? "—" : `${task.estimatedMinutes} min`}
-                  </Text>
-                </View>
+                  task={task}
+                  onToggleComplete={() => void handleComplete(task)}
+                  onPress={() => openTaskDetails(task)}
+                />
               ))}
             </View>
           ) : null}
@@ -259,8 +238,9 @@ export default function Today() {
         onPress={openTasks}
         style={styles.seeAllButton}
       >
-        <Text style={[styles.seeAllText, { color: colors.accent }]}>See all tasks</Text>
-        <Ionicons name="chevron-forward" color={colors.accent} size={14} />
+        <Text style={[styles.seeAllText, { color: colors.accent }]}>
+          See all tasks ›
+        </Text>
       </Pressable>
 
       <Text style={[styles.encouragement, { color: colors.textMuted }]}>
@@ -275,15 +255,14 @@ export default function Today() {
 const styles = StyleSheet.create({
   header: {
     marginBottom: design.spacing.md,
-    marginTop: design.spacing.xs,
+    marginTop: design.spacing.xxs,
   },
   greeting: {
-    fontSize: design.type.title,
-    fontWeight: "900",
-    letterSpacing: -0.5,
+    fontSize: design.type.screenTitle - 2,
+    fontWeight: "800",
   },
   subtitle: {
-    fontSize: design.type.body,
+    fontSize: design.type.meta + 1,
     lineHeight: 20,
     marginTop: design.spacing.xxs,
   },
@@ -292,101 +271,73 @@ const styles = StyleSheet.create({
     borderRadius: design.radius.pill,
     borderWidth: 1,
     flexDirection: "row",
+    gap: design.spacing.xs,
     minHeight: design.touchTarget,
-    paddingLeft: design.spacing.md,
-    paddingRight: 2,
+    paddingLeft: design.spacing.md + 2,
+    paddingRight: design.spacing.xxs,
+    paddingVertical: design.spacing.xxs,
   },
   captureInput: {
     flex: 1,
     fontSize: design.type.body,
-    minHeight: design.touchTarget,
+    minHeight: design.touchTarget - 10,
     paddingVertical: 0,
   },
   captureButton: {
     alignItems: "center",
     borderRadius: design.radius.pill,
-    height: design.touchTarget,
+    height: 34,
     justifyContent: "center",
-    width: design.touchTarget,
+    width: 34,
   },
   error: {
-    fontSize: design.type.label,
+    fontSize: design.type.meta,
     fontWeight: "700",
     marginTop: design.spacing.sm,
   },
   sectionLabel: {
-    marginBottom: design.spacing.xs,
-    marginTop: design.spacing.lg,
+    marginBottom: design.spacing.sm - 2,
+    marginTop: design.spacing.xl - 2,
   },
   upNextCard: {
-    gap: design.spacing.sm,
-    padding: design.spacing.md,
-  },
-  taskTitleRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    marginLeft: -design.spacing.sm,
-  },
-  taskTextButton: {
-    flex: 1,
-    justifyContent: "center",
-    minHeight: design.touchTarget,
+    padding: design.spacing.lg,
   },
   upNextTitle: {
-    fontSize: design.type.bodyLarge,
-    fontWeight: "900",
-    lineHeight: 22,
+    fontSize: design.type.cardTitle,
+    fontWeight: "700",
+    lineHeight: 25,
   },
   estimate: {
-    fontSize: design.type.label,
-    lineHeight: 17,
-    marginTop: design.spacing.xxs,
+    fontSize: design.type.body - 1,
+    lineHeight: 18,
+    marginTop: design.spacing.xs - 2,
   },
   alsoSection: {
-    marginTop: design.spacing.xs,
-  },
-  alsoRow: {
-    alignItems: "center",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    marginLeft: -design.spacing.sm,
-    minHeight: 52,
-  },
-  alsoTitle: {
-    fontSize: design.type.body,
-    fontWeight: "700",
-    lineHeight: 19,
-  },
-  rowEstimate: {
-    fontSize: design.type.caption,
-    marginLeft: design.spacing.sm,
+    marginTop: design.spacing.xxs,
   },
   seeAllButton: {
     alignItems: "center",
     alignSelf: "center",
-    flexDirection: "row",
-    gap: 2,
     justifyContent: "center",
-    marginTop: design.spacing.md,
+    marginTop: design.spacing.sm,
     minHeight: design.touchTarget,
     paddingHorizontal: design.spacing.md,
   },
   seeAllText: {
-    fontSize: design.type.label,
-    fontWeight: "800",
+    fontSize: design.type.body,
+    fontWeight: "700",
   },
   encouragement: {
-    fontSize: design.type.caption,
+    fontSize: design.type.meta,
     lineHeight: 16,
-    marginTop: design.spacing.xs,
     textAlign: "center",
   },
   emptyCard: {
     marginTop: design.spacing.xl,
   },
   emptyTitle: {
-    fontSize: design.type.bodyLarge,
-    fontWeight: "900",
+    fontSize: design.type.cardTitle - 1,
+    fontWeight: "700",
   },
   emptyText: {
     fontSize: design.type.body,

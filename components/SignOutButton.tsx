@@ -1,9 +1,11 @@
+import { design } from "@/constants/design";
+import { useAppTheme } from "@/context/AppThemeContext";
 import { useClerk } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { Alert, Platform, Text } from "react-native";
-import { Button } from "tamagui";
+import { Alert, Platform, Pressable, StyleSheet, Text } from "react-native";
 
 export const SignOutButton = () => {
+  const { colors } = useAppTheme();
   // Use `useClerk()` to access the `signOut()` function
   const { signOut } = useClerk();
   const router = useRouter();
@@ -37,8 +39,24 @@ export const SignOutButton = () => {
     ]);
   };
   return (
-    <Button theme="white" borderColor="white" onPress={handleSignOut}>
-      <Text>Sign out</Text>
-    </Button>
+    <Pressable
+      accessibilityLabel="Sign out"
+      accessibilityRole="button"
+      onPress={handleSignOut}
+      style={styles.target}
+    >
+      <Text style={[styles.text, { color: colors.accent }]}>Sign out</Text>
+    </Pressable>
   );
 };
+
+const styles = StyleSheet.create({
+  target: {
+    justifyContent: "center",
+    minHeight: design.touchTarget,
+  },
+  text: {
+    fontSize: design.type.meta + 1,
+    fontWeight: "700",
+  },
+});

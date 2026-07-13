@@ -1,4 +1,8 @@
+import { Checkbox } from "@/components/ui/Checkbox";
+import { design } from "@/constants/design";
+import { useAppTheme } from "@/context/AppThemeContext";
 import {
+  addSubtask,
   setTaskSubtasks,
   toggleSubtaskComplete,
   type TaskDocument,
@@ -6,7 +10,7 @@ import {
 } from "@/lib/sanity/tasks";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 type Subtask = NonNullable<TaskInput["subtasks"]>[number];
 
@@ -15,18 +19,10 @@ type GenerateSubtasksResponse = {
   error?: string;
 };
 
-type SubtaskTheme = {
-  line: string;
-  text: string;
-  subtle: string;
-  background: string;
-};
-
 type SubtasksProps = {
   task: TaskDocument;
   userId: string;
   isVisible: boolean;
-  theme: SubtaskTheme;
   onSubtasksChanged: (
     taskId: string,
     subtasks: NonNullable<TaskInput["subtasks"]>,
@@ -37,13 +33,16 @@ const Subtasks = ({
   task,
   userId,
   isVisible,
-  theme,
   onSubtasksChanged,
 }: SubtasksProps) => {
+  const { colors } = useAppTheme();
   const [isGenerating, setIsGenerating] = useState(false);
   const [updatingSubtaskKey, setUpdatingSubtaskKey] = useState<string | null>(
     null,
   );
+  const [isAddingRow, setIsAddingRow] = useState(false);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [error, setError] = useState("");
   const subtasks = task.subtasks ?? [];
   const hasSubtasks = subtasks.length > 0;
@@ -105,54 +104,117 @@ const Subtasks = ({
     }
   };
 
+  const handleAddSubtask = async () => {
+    const title = draftTitle.trim();
+    if (!title || isSavingDraft) return;
+
+    setError("");
+    setIsSavingDraft(true);
+
+    try {
+      const savedTask = await addSubtask(task._id, title);
+      onSubtasksChanged(
+        task._id,
+        savedTask.subtasks ?? [...subtasks, { title, completed: false }],
+      );
+      setDraftTitle("");
+      setIsAddingRow(false);
+    } catch (addError) {
+      console.error("Error adding subtask:", addError);
+      setError("Could not add the subtask. Please try again.");
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
-    <View style={[styles.container, { borderColor: theme.line }]}>
-      {hasSubtasks ? (
-        subtasks.map((subtask) => (
-          <Pressable
-            key={subtask._key ?? subtask.title}
-            style={[styles.subtaskRow, { borderColor: theme.line }]}
-            disabled={updatingSubtaskKey === subtask._key}
-            onPress={() => handleToggleSubtask(subtask)}
-          >
-            <View
-              style={[
-                styles.checkbox,
-                { borderColor: theme.subtle },
-                subtask.completed && { backgroundColor: theme.text },
-              ]}
+    <View style={styles.container}>
+      {hasSubtasks
+        ? subtasks.map((subtask) => (
+            <Pressable
+              key={subtask._key ?? subtask.title}
+              style={[styles.subtaskRow, { borderTopColor: colors.border }]}
+              disabled={updatingSubtaskKey === subtask._key}
+              onPress={() => handleToggleSubtask(subtask)}
             >
-              {subtask.completed ? (
-                <Ionicons name="checkmark" size={14} color={theme.background} />
-              ) : null}
-            </View>
+              <Checkbox
+                checked={Boolean(subtask.completed)}
+                label={subtask.title}
+                size={18}
+                variant="fill"
+                onPress={() => handleToggleSubtask(subtask)}
+              />
+              <Text
+                style={[
+                  styles.subtaskText,
+                  { color: colors.text },
+                  subtask.completed && {
+                    color: colors.textFaint,
+                    textDecorationLine: "line-through",
+                  },
+                ]}
+              >
+                {subtask.title}
+              </Text>
+            </Pressable>
+          ))
+        : !isAddingRow && (
+            <Pressable
+              style={styles.generateInlineButton}
+              disabled={isGenerating}
+              onPress={handleGenerateSubtasks}
+            >
+              <Ionicons name="sparkles-outline" size={16} color={colors.textMuted} />
+              <Text style={[styles.generateInlineText, { color: colors.textMuted }]}>
+                {isGenerating ? "Generating..." : "Generate subtasks"}
+              </Text>
+            </Pressable>
+          )}
+
+      {isAddingRow ? (
+        <View style={[styles.addRow, { borderTopColor: colors.border }]}>
+          <TextInput
+            autoFocus
+            style={[styles.addInput, { color: colors.text }]}
+            placeholder="New subtask"
+            placeholderTextColor={colors.textMuted}
+            value={draftTitle}
+            onChangeText={setDraftTitle}
+            onSubmitEditing={handleAddSubtask}
+            returnKeyType="done"
+          />
+          <Pressable
+            onPress={handleAddSubtask}
+            disabled={isSavingDraft || !draftTitle.trim()}
+            style={styles.addSubtaskTarget}
+          >
             <Text
               style={[
-                styles.subtaskText,
-                { color: theme.text },
-                subtask.completed && styles.completedSubtaskText,
+                styles.addSubtaskText,
+                { color: colors.accent },
+                (isSavingDraft || !draftTitle.trim()) && { opacity: 0.5 },
               ]}
             >
-              {subtask.title}
+              Add
             </Text>
           </Pressable>
-        ))
+        </View>
       ) : (
         <Pressable
-          style={styles.generateInlineButton}
-          disabled={isGenerating}
-          onPress={handleGenerateSubtasks}
+          style={styles.addSubtaskTarget}
+          onPress={() => setIsAddingRow(true)}
         >
-          <Ionicons name="sparkles-outline" size={16} color={theme.subtle} />
-          <Text style={[styles.generateInlineText, { color: theme.subtle }]}>
-            {isGenerating ? "Generating..." : "Generate subtasks"}
+          <Text style={[styles.addSubtaskText, { color: colors.accent }]}>
+            + Add subtask
           </Text>
         </Pressable>
       )}
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? (
+        <Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
+      ) : null}
     </View>
   );
 };
@@ -161,46 +223,52 @@ export default Subtasks;
 
 const styles = StyleSheet.create({
   container: {
-    borderTopWidth: 1,
-    marginLeft: 54,
-    marginTop: 10,
+    marginTop: design.spacing.xs,
   },
   subtaskRow: {
     alignItems: "center",
-    borderBottomWidth: 1,
+    borderTopWidth: 1,
     flexDirection: "row",
-    gap: 12,
-    minHeight: 44,
-  },
-  checkbox: {
-    alignItems: "center",
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 26,
-    justifyContent: "center",
-    width: 26,
+    gap: design.spacing.sm,
+    minHeight: design.touchTarget,
   },
   subtaskText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: design.type.body - 0.5,
     lineHeight: 20,
-  },
-  completedSubtaskText: {
-    textDecorationLine: "line-through",
   },
   generateInlineButton: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 8,
-    minHeight: 42,
+    gap: design.spacing.xs,
+    minHeight: design.touchTarget,
   },
   generateInlineText: {
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: design.type.meta,
+    fontWeight: "700",
+  },
+  addRow: {
+    alignItems: "center",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: design.spacing.sm,
+    minHeight: design.touchTarget,
+  },
+  addInput: {
+    flex: 1,
+    fontSize: design.type.body - 0.5,
+  },
+  addSubtaskTarget: {
+    justifyContent: "center",
+    minHeight: design.touchTarget,
+    paddingVertical: design.spacing.xs,
+  },
+  addSubtaskText: {
+    fontSize: design.type.meta,
+    fontWeight: "700",
   },
   errorText: {
-    color: "#ff7b7b",
-    fontSize: 13,
-    marginTop: 8,
+    fontSize: design.type.meta,
+    marginTop: design.spacing.xs,
   },
 });

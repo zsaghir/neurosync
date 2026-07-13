@@ -44,3 +44,47 @@ export const getPreviousDaySeconds = <
     return isYesterday ? total + session.actualSeconds : total;
   }, 0);
 };
+
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+export type DayMinutes = {
+  label: string;
+  minutes: number;
+  isToday: boolean;
+};
+
+/** Trailing 7 calendar days (ending today) of logged minutes, for the Time Map bar graph. */
+export const getWeeklyMinutesByDay = <
+  Session extends {
+    actualSeconds: number;
+    endedAt: string;
+    excludedFromInsights?: boolean;
+  },
+>(sessions: Session[], now = new Date()): DayMinutes[] => {
+  const days: DayMinutes[] = [];
+
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = new Date(now);
+    day.setDate(day.getDate() - offset);
+
+    const totalSeconds = sessions.reduce((total, session) => {
+      if (session.excludedFromInsights) return total;
+
+      const endedAt = new Date(session.endedAt);
+      const sameDay =
+        endedAt.getFullYear() === day.getFullYear() &&
+        endedAt.getMonth() === day.getMonth() &&
+        endedAt.getDate() === day.getDate();
+
+      return sameDay ? total + session.actualSeconds : total;
+    }, 0);
+
+    days.push({
+      label: WEEKDAY_LABELS[day.getDay()],
+      minutes: Math.round(totalSeconds / 60),
+      isToday: offset === 0,
+    });
+  }
+
+  return days;
+};

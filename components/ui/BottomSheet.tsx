@@ -95,8 +95,8 @@ const styles = StyleSheet.create({
     marginBottom: design.spacing.md,
   },
   title: {
-    fontSize: design.type.bodyLarge,
-    fontWeight: "900",
+    fontSize: design.type.cardTitle - 1,
+    fontWeight: "700",
   },
   closeButton: {
     alignItems: "center",

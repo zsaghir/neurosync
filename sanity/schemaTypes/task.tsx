@@ -66,6 +66,11 @@ export const task = defineType({
       ],
     }),
     defineField({
+      name: 'notes',
+      title: 'Notes',
+      type: 'text',
+    }),
+    defineField({
       name: 'alarmAt',
       title: 'Alarm At',
       type: 'datetime',

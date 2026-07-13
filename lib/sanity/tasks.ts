@@ -15,6 +15,7 @@ export interface TaskInput {
   createdAt?: string;
   completedAt?: string | null;
   estimatedMinutes?: number | null;
+  notes?: string | null;
 }
 
 export interface TaskDocument {
@@ -27,6 +28,7 @@ export interface TaskDocument {
   createdAt?: string;
   completedAt?: string | null;
   estimatedMinutes?: number | null;
+  notes?: string | null;
   userId?: string;
 }
 
@@ -43,6 +45,7 @@ export const TASKS_QUERY = defineQuery(`*[
 	createdAt,
 	completedAt,
 	estimatedMinutes,
+	notes,
 	userId
 }`);
 
@@ -59,6 +62,7 @@ export const TASK_BY_ID_QUERY = defineQuery(`*[
     createdAt,
     completedAt,
     estimatedMinutes,
+    notes,
     userId
   }`);
 
@@ -95,6 +99,7 @@ export const createTask = async (input: TaskInput): Promise<TaskDocument> => {
       alarmAt: input.alarmAt ?? null,
       completedAt: input.completedAt ?? null,
       estimatedMinutes: input.estimatedMinutes ?? null,
+      notes: input.notes ?? null,
       userId: input.userId,
       createdAt: input.createdAt ?? new Date().toISOString(),
     };
@@ -138,6 +143,21 @@ export const setTaskEstimate = async (
     return result;
   } catch (error) {
     console.error("Error setting task estimate:", error);
+    throw error;
+  }
+};
+export const setTaskNotes = async (
+  taskId: string,
+  notes: string | null,
+): Promise<TaskDocument> => {
+  try {
+    const result = await sanityClient
+      .patch(taskId)
+      .set({ notes })
+      .commit();
+    return result;
+  } catch (error) {
+    console.error("Error setting task notes:", error);
     throw error;
   }
 };

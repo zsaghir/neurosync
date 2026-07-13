@@ -1,3 +1,8 @@
+import { Checkbox } from "@/components/ui/Checkbox";
+import { AppCard, SectionLabel } from "@/components/ui/design-system";
+import { SignOutButton } from "@/components/SignOutButton";
+import { design } from "@/constants/design";
+import { useAppTheme } from "@/context/AppThemeContext";
 import {
   fetchUserSettings,
   updateUserSettings,
@@ -9,13 +14,18 @@ import {
   type ThemeMode,
   type TimeEstimationMode,
 } from "@/lib/utils/time-wisdom";
-import { useUser } from "@clerk/clerk-expo";
+import { useClerk, useUser } from "@clerk/clerk-expo";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const Settings = () => {
+const timeEstimationModes: TimeEstimationMode[] = ["relative", "minutes", "custom"];
+
+export default function Settings() {
   const { user } = useUser();
+  const clerk = useClerk();
+  const { colors, refreshSettings } = useAppTheme();
   const [settings, setSettings] = useState<UserSettingsDocument | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState("");
@@ -27,7 +37,6 @@ const Settings = () => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  const theme = settingsThemes[activeSettings.themeMode];
 
   const loadSettings = useCallback(async () => {
     if (!user) return;
@@ -43,7 +52,7 @@ const Settings = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadSettings();
+      void loadSettings();
     }, [loadSettings]),
   );
 
@@ -60,6 +69,8 @@ const Settings = () => {
     try {
       const updatedSettings = await updateUserSettings(settings._id, input);
       setSettings(updatedSettings);
+      // Keep the app-wide theme (tab bar, screens) in sync immediately.
+      await refreshSettings();
       setStatus("Saved");
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -69,189 +80,244 @@ const Settings = () => {
     }
   };
 
+  const googleAccount = user?.externalAccounts?.find(
+    (account) => account.provider === "google",
+  );
+  const connectedEmail =
+    googleAccount?.emailAddress ?? user?.primaryEmailAddress?.emailAddress ?? "";
+
+  const handleManage = () => {
+    const openUserProfile = (clerk as { openUserProfile?: () => void })
+      .openUserProfile;
+
+    if (typeof openUserProfile === "function") {
+      openUserProfile();
+      return;
+    }
+
+    Alert.alert(
+      "Manage sign-in",
+      googleAccount
+        ? "Manage or disconnect Google sign-in from your Google account settings."
+        : "Manage your email sign-in from your account provider.",
+    );
+  };
+
   return (
-    <ScrollView
-      style={[styles.screen, { backgroundColor: theme.background }]}
-      contentContainerStyle={styles.contentContainer}
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.panel}>
-        <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
+    <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: theme.surface, borderColor: theme.line },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Preferred Time Estimation Method
-          </Text>
-          <View style={styles.optionStack}>
-            {timeEstimationModes.map((mode) => (
-              <Pressable
-                key={mode}
-                style={styles.radioRow}
-                onPress={() =>
-                  saveSettings({ preferredTimeEstimationMode: mode })
-                }
-                disabled={isSaving}
-              >
-                <View
-                  style={[
-                    styles.radio,
-                    { borderColor: theme.text },
-                    activeSettings.preferredTimeEstimationMode === mode && {
-                      backgroundColor: theme.text,
-                    },
-                  ]}
-                />
-                <Text style={[styles.optionText, { color: theme.text }]}>
-                  {getTimeEstimationModeLabel(mode)}
-                </Text>
-              </Pressable>
-            ))}
+        <AppCard style={styles.profileRow}>
+          <View style={styles.profileText}>
+            <Text style={[styles.profileName, { color: colors.text }]}>
+              {user?.fullName || user?.firstName || "Your account"}
+            </Text>
+            <Text style={[styles.profileEmail, { color: colors.textMuted }]}>
+              {connectedEmail}
+            </Text>
           </View>
-        </View>
+          <SignOutButton />
+        </AppCard>
 
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: theme.surface, borderColor: theme.line },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Appearance
-          </Text>
-          <View style={styles.optionGrid}>
-            {(["dark", "light"] as ThemeMode[]).map((mode) => (
+        <SectionLabel style={styles.sectionLabel}>Sign-in method</SectionLabel>
+        <AppCard style={styles.signInRow}>
+          <View
+            style={[
+              styles.googleMark,
+              { backgroundColor: "#FFFFFF", borderColor: colors.border },
+            ]}
+          >
+            <Text style={styles.googleMarkText}>G</Text>
+          </View>
+          <View style={styles.profileText}>
+            <Text style={[styles.signInTitle, { color: colors.text }]}>
+              {googleAccount ? "Connected with Google" : "Signed in with email"}
+            </Text>
+            <Text style={[styles.signInEmail, { color: colors.textMuted }]}>
+              {connectedEmail}
+            </Text>
+          </View>
+          <Pressable onPress={handleManage} style={styles.manageTarget}>
+            <Text style={[styles.manageText, { color: colors.textMuted }]}>Manage</Text>
+          </Pressable>
+        </AppCard>
+
+        <SectionLabel style={styles.sectionLabel}>Preferred time estimation</SectionLabel>
+        <AppCard style={styles.optionCard}>
+          {timeEstimationModes.map((mode) => {
+            const selected = activeSettings.preferredTimeEstimationMode === mode;
+            return (
               <Pressable
                 key={mode}
                 style={[
-                  styles.themeOption,
-                  { borderColor: theme.line },
-                  activeSettings.themeMode === mode && styles.selectedOption,
+                  styles.radioRow,
+                  selected && { backgroundColor: colors.accentSoft },
                 ]}
-                onPress={() => saveSettings({ themeMode: mode })}
+                onPress={() => void saveSettings({ preferredTimeEstimationMode: mode })}
                 disabled={isSaving}
               >
-                <Text style={[styles.themeOptionText, { color: theme.text }]}>
+                <Checkbox
+                  checked={selected}
+                  label={getTimeEstimationModeLabel(mode)}
+                  size={18}
+                  onPress={() => void saveSettings({ preferredTimeEstimationMode: mode })}
+                />
+                <Text
+                  style={[
+                    styles.optionText,
+                    { color: colors.text },
+                    selected && { fontWeight: "700" },
+                  ]}
+                >
+                  {getTimeEstimationModeLabel(mode)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </AppCard>
+
+        <SectionLabel style={styles.sectionLabel}>Appearance</SectionLabel>
+        <View style={styles.appearanceRow}>
+          {(["light", "dark"] as ThemeMode[]).map((mode) => {
+            const selected = activeSettings.themeMode === mode;
+            return (
+              <Pressable
+                key={mode}
+                style={[
+                  styles.appearancePill,
+                  selected
+                    ? { backgroundColor: colors.accent }
+                    : { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },
+                ]}
+                onPress={() => void saveSettings({ themeMode: mode })}
+                disabled={isSaving}
+              >
+                <Text
+                  style={[
+                    styles.appearanceText,
+                    { color: selected ? colors.accentText : colors.text },
+                  ]}
+                >
                   {mode === "dark" ? "Dark" : "Light"}
                 </Text>
               </Pressable>
-            ))}
-          </View>
+            );
+          })}
         </View>
 
         {status ? (
-          <Text style={[styles.statusText, { color: theme.subtle }]}>
-            {status}
-          </Text>
+          <Text style={[styles.statusText, { color: colors.textMuted }]}>{status}</Text>
         ) : null}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
-};
-
-export default Settings;
-
-const timeEstimationModes: TimeEstimationMode[] = [
-  "relative",
-  "minutes",
-  "custom",
-];
-
-const settingsThemes = {
-  dark: {
-    background: "#050505",
-    surface: "#151515",
-    line: "#f2efe6",
-    text: "#f8f5ee",
-    subtle: "#bdb6aa",
-  },
-  light: {
-    background: "#fbf7ef",
-    surface: "#fffdf8",
-    line: "#2b2925",
-    text: "#25231f",
-    subtle: "#6f685f",
-  },
-};
+}
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  contentContainer: {
-    alignItems: "center",
-    flexGrow: 1,
-    paddingHorizontal: 18,
-    paddingVertical: 32,
-  },
-  panel: {
-    gap: 18,
-    maxWidth: 720,
-    width: "100%",
+  content: {
+    paddingBottom: design.spacing.huge,
+    paddingHorizontal: design.spacing.lg,
+    paddingTop: design.spacing.md,
   },
   title: {
-    fontSize: 26,
+    fontSize: design.type.screenTitle,
     fontWeight: "800",
-    textAlign: "center",
+    marginBottom: design.spacing.md,
   },
-  section: {
-    borderRadius: 8,
+  profileRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: design.spacing.lg - 2,
+  },
+  profileText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  profileName: {
+    fontSize: design.type.body + 1,
+    fontWeight: "700",
+  },
+  profileEmail: {
+    fontSize: design.type.meta,
+    marginTop: 1,
+  },
+  sectionLabel: {
+    marginBottom: design.spacing.xs,
+  },
+  signInRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: design.spacing.sm,
+    marginBottom: design.spacing.lg - 2,
+  },
+  googleMark: {
+    alignItems: "center",
+    borderRadius: 11,
     borderWidth: 1,
-    gap: 16,
-    padding: 16,
+    height: 22,
+    justifyContent: "center",
+    width: 22,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "900",
+  googleMarkText: {
+    color: "#4285F4",
+    fontSize: 12,
+    fontWeight: "800",
   },
-  optionStack: {
-    gap: 16,
+  signInTitle: {
+    fontSize: design.type.body,
+    fontWeight: "600",
+  },
+  signInEmail: {
+    fontSize: design.type.caption + 0.5,
+    marginTop: 1,
+  },
+  manageTarget: {
+    justifyContent: "center",
+    minHeight: design.touchTarget,
+  },
+  manageText: {
+    fontSize: design.type.meta,
+    fontWeight: "700",
+  },
+  optionCard: {
+    gap: 2,
+    marginBottom: design.spacing.lg - 2,
+    padding: design.spacing.xxs,
   },
   radioRow: {
     alignItems: "center",
+    borderRadius: design.radius.md,
     flexDirection: "row",
-    gap: 12,
-    minHeight: 32,
-  },
-  radio: {
-    borderRadius: 999,
-    borderWidth: 2,
-    height: 22,
-    width: 22,
+    gap: design.spacing.sm,
+    minHeight: design.touchTarget,
+    paddingHorizontal: design.spacing.sm + 2,
   },
   optionText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "800",
+    fontSize: design.type.body,
   },
-  optionGrid: {
+  appearanceRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
+    gap: design.spacing.sm,
   },
-  themeOption: {
+  appearancePill: {
     alignItems: "center",
-    borderRadius: 4,
-    borderWidth: 1,
+    borderRadius: design.radius.pill,
     justifyContent: "center",
-    minHeight: 38,
-    paddingHorizontal: 14,
+    minHeight: design.touchTarget,
+    paddingHorizontal: design.spacing.xl - 2,
   },
-  selectedOption: {
-    backgroundColor: "#9ccf9b",
-    borderColor: "#315f30",
-  },
-  themeOptionText: {
-    fontSize: 14,
-    fontWeight: "800",
+  appearanceText: {
+    fontSize: design.type.meta + 1,
+    fontWeight: "700",
   },
   statusText: {
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: design.type.meta,
+    marginTop: design.spacing.md,
     textAlign: "center",
   },
 });

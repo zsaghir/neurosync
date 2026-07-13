@@ -1,6 +1,5 @@
 import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -75,78 +74,6 @@ export function AppCard({
   );
 }
 
-type PrimaryButtonProps = {
-  accessibilityLabel?: string;
-  children: React.ReactNode;
-  disabled?: boolean;
-  onPress: () => void;
-  style?: StyleProp<ViewStyle>;
-};
-
-export function PrimaryButton({
-  accessibilityLabel,
-  children,
-  disabled,
-  onPress,
-  style,
-}: PrimaryButtonProps) {
-  const { colors } = useAppTheme();
-
-  return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.primaryButton,
-        { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-        disabled && styles.disabled,
-        style,
-      ]}
-    >
-      <Text style={[styles.primaryButtonText, { color: colors.accentText }]}>
-        {children}
-      </Text>
-    </Pressable>
-  );
-}
-
-export function CircleCheckbox({
-  checked,
-  label,
-  onPress,
-}: {
-  checked: boolean;
-  label: string;
-  onPress: () => void;
-}) {
-  const { colors } = useAppTheme();
-
-  return (
-    <Pressable
-      accessibilityLabel={label}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked }}
-      hitSlop={4}
-      onPress={onPress}
-      style={styles.checkboxTarget}
-    >
-      <View
-        style={[
-          styles.checkbox,
-          { borderColor: colors.border },
-          checked && { backgroundColor: colors.accent, borderColor: colors.accent },
-        ]}
-      >
-        {checked ? (
-          <Ionicons name="checkmark" color={colors.accentText} size={14} />
-        ) : null}
-      </View>
-    </Pressable>
-  );
-}
-
 export function EstimateChip({
   label,
   onPress,
@@ -166,7 +93,7 @@ export function EstimateChip({
       style={[
         styles.chip,
         {
-          backgroundColor: selected ? colors.accent : colors.surface,
+          backgroundColor: selected ? colors.accent : colors.surfaceMuted,
           borderColor: selected ? colors.accent : colors.border,
         },
       ]}
@@ -235,37 +162,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   card: {
-    borderRadius: design.radius.md,
+    borderRadius: design.radius.lg,
     borderWidth: 1,
-    padding: design.spacing.md,
-  },
-  primaryButton: {
-    alignItems: "center",
-    borderRadius: design.radius.pill,
-    justifyContent: "center",
-    minHeight: design.touchTarget,
-    paddingHorizontal: design.spacing.lg,
-  },
-  primaryButtonText: {
-    fontSize: design.type.body,
-    fontWeight: "800",
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  checkboxTarget: {
-    alignItems: "center",
-    height: design.touchTarget,
-    justifyContent: "center",
-    width: design.touchTarget,
-  },
-  checkbox: {
-    alignItems: "center",
-    borderRadius: design.radius.pill,
-    borderWidth: 1.5,
-    height: 22,
-    justifyContent: "center",
-    width: 22,
+    padding: design.spacing.lg,
   },
   chip: {
     alignItems: "center",
@@ -276,13 +175,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: design.spacing.md,
   },
   chipText: {
-    fontSize: design.type.label,
-    fontWeight: "800",
+    fontSize: design.type.meta,
+    fontWeight: "700",
   },
   sectionLabel: {
-    fontSize: design.type.caption,
-    fontWeight: "800",
-    letterSpacing: 0.7,
+    fontSize: design.type.sectionLabel,
+    fontWeight: "700",
+    letterSpacing: design.letterSpacing.sectionLabel,
     textTransform: "uppercase",
   },
   statusRow: {

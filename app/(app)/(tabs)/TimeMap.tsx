@@ -1,3 +1,9 @@
+import { InsightBanner } from "@/components/ui/InsightBanner";
+import { StatCard } from "@/components/ui/StatCard";
+import { WeeklyBarGraph } from "@/components/ui/WeeklyBarGraph";
+import { AppCard, SectionLabel } from "@/components/ui/design-system";
+import { design } from "@/constants/design";
+import { useAppTheme } from "@/context/AppThemeContext";
 import {
   fetchTaskSessions,
   updateTaskSessionActualTime,
@@ -5,14 +11,17 @@ import {
   type TaskSessionDocument,
 } from "@/lib/sanity/taskSessions";
 import { addTimeToTask } from "@/lib/sanity/tasks";
+import { getWeeklyMinutesByDay } from "@/lib/utils/today";
 import {
   formatDurationLabel,
   isCleanCountedSession,
   median,
 } from "@/lib/utils/time-wisdom";
 import { useUser } from "@clerk/clerk-expo";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -20,6 +29,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const formatSource = (source: TaskSessionDocument["actualSecondsSource"]) => {
   if (source === "manual") return "manual";
@@ -28,12 +38,16 @@ const formatSource = (source: TaskSessionDocument["actualSecondsSource"]) => {
   return "timer";
 };
 
-const TimeMap = () => {
+const RECENT_SESSIONS_PREVIEW = 5;
+
+export default function TimeMap() {
   const { user } = useUser();
+  const { colors } = useAppTheme();
   const [sessions, setSessions] = useState<TaskSessionDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editedMinutes, setEditedMinutes] = useState("");
+  const [isAllSessionsVisible, setIsAllSessionsVisible] = useState(false);
 
   const loadSessions = useCallback(async () => {
     if (!user) {
@@ -41,23 +55,24 @@ const TimeMap = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       setSessions(await fetchTaskSessions(user.id));
     } finally {
       setIsLoading(false);
     }
   }, [user]);
 
-  useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadSessions();
+    }, [loadSessions]),
+  );
 
   const countedSessions = useMemo(
     () =>
       sessions.filter(
-        (session) =>
-          !session.excludedFromInsights && session.actualSeconds >= 60,
+        (session) => !session.excludedFromInsights && session.actualSeconds >= 60,
       ),
     [sessions],
   );
@@ -78,6 +93,12 @@ const TimeMap = () => {
   const medianSeconds = useMemo(
     () => median(countedSessions.map((session) => session.actualSeconds)),
     [countedSessions],
+  );
+
+  const weeklyDays = useMemo(() => getWeeklyMinutesByDay(sessions), [sessions]);
+  const weeklyTotalSeconds = useMemo(
+    () => weeklyDays.reduce((total, day) => total + day.minutes * 60, 0),
+    [weeklyDays],
   );
 
   const improvementMessage = useMemo(() => {
@@ -110,6 +131,12 @@ const TimeMap = () => {
 
     return "You're reading your own time better lately. Nice.";
   }, [cleanSessions]);
+
+  const insightText =
+    improvementMessage ??
+    (medianSeconds == null
+      ? "We're learning your real numbers so you can stop guessing."
+      : "Your map is filling in with real numbers.");
 
   const handleStartEdit = (session: TaskSessionDocument) => {
     setEditingSessionId(session._id);
@@ -165,288 +192,223 @@ const TimeMap = () => {
     );
   };
 
+  const visibleSessions = isAllSessionsVisible
+    ? sessions
+    : sessions.slice(0, RECENT_SESSIONS_PREVIEW);
+
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <View style={styles.panel}>
-        <Text style={styles.title}>Time Map</Text>
-        <Text style={styles.subtitle}>
-          Your private place to notice real patterns, gently.
+    <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={[styles.title, { color: colors.text }]}>Time Map</Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          A private look at how your time actually goes.
         </Text>
 
         {isLoading ? (
-          <Text style={styles.statusText}>Loading your time map...</Text>
+          <View style={styles.statusBlock}>
+            <ActivityIndicator color={colors.accent} />
+          </View>
         ) : sessions.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>
+          <AppCard style={styles.emptyCard}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
               Your time map is just getting started.
             </Text>
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
               Every task you time fills it in a little more.
             </Text>
-          </View>
+          </AppCard>
         ) : (
           <>
-            <View style={styles.summaryBand}>
-              <Text style={styles.summaryLabel}>Counted sessions</Text>
-              <Text style={styles.summaryValue}>{countedSessions.length}</Text>
-              <Text style={styles.summaryHint}>
-                {medianSeconds == null
-                  ? "We're learning your real numbers so you can stop guessing."
-                  : `Typical counted session: ${formatDurationLabel(
-                      medianSeconds,
-                    )}.`}
-              </Text>
-              {improvementMessage ? (
-                <Text style={styles.winText}>{improvementMessage}</Text>
+            <View style={styles.statRow}>
+              <StatCard
+                value={medianSeconds == null ? "—" : formatDurationLabel(medianSeconds)}
+                label="Typical session"
+              />
+              <StatCard value={String(countedSessions.length)} label="Sessions counted" />
+              <StatCard value={formatDurationLabel(weeklyTotalSeconds)} label="This week" />
+            </View>
+
+            <AppCard style={styles.graphCard}>
+              <SectionLabel>Minutes per day</SectionLabel>
+              <WeeklyBarGraph days={weeklyDays} />
+            </AppCard>
+
+            <InsightBanner textStyle={styles.insightSpacing}>{insightText}</InsightBanner>
+
+            <View style={styles.sessionsHeader}>
+              <SectionLabel>Recent sessions</SectionLabel>
+              {sessions.length > RECENT_SESSIONS_PREVIEW ? (
+                <Pressable onPress={() => setIsAllSessionsVisible((visible) => !visible)}>
+                  <Text style={[styles.seeAllText, { color: colors.accent }]}>
+                    {isAllSessionsVisible ? "Show less" : "See all ›"}
+                  </Text>
+                </Pressable>
               ) : null}
             </View>
 
-            <View style={styles.sessionList}>
-              {sessions.map((session) => (
-                <View key={session._id} style={styles.sessionCard}>
+            <View>
+              {visibleSessions.map((session) => (
+                <View key={session._id} style={[styles.sessionRow, { borderTopColor: colors.border }]}>
                   <View style={styles.sessionHeader}>
-                    <Text style={styles.sessionTitle}>
+                    <Text style={[styles.sessionTitle, { color: colors.text }]} numberOfLines={1}>
                       {session.taskTitle || "Untitled task"}
                     </Text>
-                    <Text
-                      style={[
-                        styles.countedPill,
-                        session.excludedFromInsights && styles.excludedPill,
-                      ]}
-                    >
-                      {session.excludedFromInsights ? "not counted" : "counted"}
-                    </Text>
+                    {session.excludedFromInsights ? (
+                      <Text style={[styles.excludedTag, { color: colors.textFaint }]}>
+                        not counted
+                      </Text>
+                    ) : null}
                   </View>
-                  <Text style={styles.sessionMeta}>
-                    Felt like{" "}
+                  <Text style={[styles.sessionMeta, { color: colors.textMuted }]}>
                     {session.estimatedMinutes == null
-                      ? "not set"
-                      : `${session.estimatedMinutes} min`}{" "}
+                      ? "No estimate"
+                      : `Guessed ${session.estimatedMinutes}`}{" "}
                     · ran {formatDurationLabel(session.actualSeconds)} ·{" "}
                     {formatSource(session.actualSecondsSource)}
-                  </Text>
-                  <Text style={styles.sessionMeta}>
-                    Timer saw {formatDurationLabel(session.timerMeasuredSeconds)}
                   </Text>
 
                   {editingSessionId === session._id ? (
                     <View style={styles.editRow}>
                       <TextInput
-                        style={styles.editInput}
+                        style={[
+                          styles.editInput,
+                          { borderColor: colors.border, color: colors.text, backgroundColor: colors.surfaceMuted },
+                        ]}
                         keyboardType="numeric"
                         placeholder="Actual min"
-                        placeholderTextColor="#8f8f8f"
+                        placeholderTextColor={colors.textMuted}
                         value={editedMinutes}
                         onChangeText={setEditedMinutes}
                       />
-                      <Pressable
-                        style={styles.actionButton}
-                        onPress={() => handleSaveEdit(session)}
-                      >
-                        <Text style={styles.actionButtonText}>Save</Text>
+                      <Pressable onPress={() => void handleSaveEdit(session)} style={styles.inlineAction}>
+                        <Text style={[styles.inlineActionText, { color: colors.accent }]}>Save</Text>
                       </Pressable>
                     </View>
-                  ) : null}
-
-                  <View style={styles.actionsRow}>
-                    <Pressable
-                      style={styles.actionButton}
-                      onPress={() => handleStartEdit(session)}
-                    >
-                      <Text style={styles.actionButtonText}>Edit time</Text>
-                    </Pressable>
-                    <Pressable
-                      style={styles.secondaryButton}
-                      onPress={() => handleToggleCounted(session)}
-                    >
-                      <Text style={styles.actionButtonText}>
-                        {session.excludedFromInsights
-                          ? "Count this"
-                          : "Don't count this one"}
-                      </Text>
-                    </Pressable>
-                  </View>
+                  ) : (
+                    <View style={styles.actionsRow}>
+                      <Pressable onPress={() => handleStartEdit(session)} style={styles.inlineAction}>
+                        <Text style={[styles.inlineActionText, { color: colors.textMuted }]}>
+                          Edit time
+                        </Text>
+                      </Pressable>
+                      <Pressable onPress={() => void handleToggleCounted(session)} style={styles.inlineAction}>
+                        <Text style={[styles.inlineActionText, { color: colors.textMuted }]}>
+                          {session.excludedFromInsights ? "Count this" : "Don't count this one"}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  )}
                 </View>
               ))}
             </View>
           </>
         )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
-};
-
-export default TimeMap;
+}
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#050505",
-  },
-  contentContainer: {
-    flexGrow: 1,
-    alignItems: "center",
-    paddingHorizontal: 18,
-    paddingVertical: 32,
-  },
-  panel: {
-    width: "100%",
-    maxWidth: 720,
+  content: {
+    paddingBottom: design.spacing.huge * 2,
+    paddingHorizontal: design.spacing.lg,
+    paddingTop: design.spacing.md,
   },
   title: {
-    color: "#f4f4f4",
-    fontSize: 30,
+    fontSize: design.type.screenTitle,
     fontWeight: "800",
-    marginBottom: 8,
-    textAlign: "center",
   },
   subtitle: {
-    color: "#c9c9c9",
-    fontSize: 15,
-    lineHeight: 21,
-    marginBottom: 22,
-    textAlign: "center",
+    fontSize: design.type.meta + 0.5,
+    marginTop: design.spacing.xxs,
   },
-  statusText: {
-    color: "#c9c9c9",
-    fontSize: 16,
-    textAlign: "center",
+  statusBlock: {
+    alignItems: "center",
+    paddingTop: design.spacing.xxl,
   },
-  emptyState: {
-    backgroundColor: "#101010",
-    borderColor: "#3a3a3a",
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 18,
+  emptyCard: {
+    marginTop: design.spacing.xl,
   },
   emptyTitle: {
-    color: "#f4f4f4",
-    fontSize: 19,
-    fontWeight: "800",
-    marginBottom: 8,
+    fontSize: design.type.cardTitle - 1,
+    fontWeight: "700",
   },
   emptyText: {
-    color: "#c9c9c9",
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: design.type.body,
+    lineHeight: 20,
+    marginTop: design.spacing.xs,
   },
-  summaryBand: {
-    backgroundColor: "#d8cec3",
-    borderRadius: 8,
-    gap: 6,
-    marginBottom: 18,
-    padding: 16,
+  statRow: {
+    flexDirection: "row",
+    gap: design.spacing.xs + 2,
+    marginTop: design.spacing.md,
   },
-  summaryLabel: {
-    color: "#201f1f",
-    fontSize: 13,
-    fontWeight: "800",
-    textTransform: "uppercase",
+  graphCard: {
+    marginTop: design.spacing.sm + 2,
   },
-  summaryValue: {
-    color: "#050505",
-    fontSize: 36,
-    fontWeight: "900",
+  insightSpacing: {
+    marginTop: design.spacing.sm - 2,
   },
-  summaryHint: {
-    color: "#201f1f",
-    fontSize: 15,
-    lineHeight: 22,
+  sessionsHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: design.spacing.md - 2,
   },
-  winText: {
-    color: "#315f30",
-    fontSize: 15,
-    fontWeight: "900",
-    lineHeight: 22,
+  seeAllText: {
+    fontSize: design.type.meta + 1,
+    fontWeight: "700",
   },
-  sessionList: {
-    gap: 12,
-  },
-  sessionCard: {
-    backgroundColor: "#101010",
-    borderColor: "#3a3a3a",
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 14,
+  sessionRow: {
+    borderTopWidth: 1,
+    paddingVertical: design.spacing.sm - 2,
   },
   sessionHeader: {
     alignItems: "center",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
+    gap: design.spacing.xs,
     justifyContent: "space-between",
   },
   sessionTitle: {
-    color: "#f4f4f4",
     flex: 1,
-    fontSize: 17,
-    fontWeight: "800",
-    minWidth: 150,
+    fontSize: design.type.body,
+    fontWeight: "600",
   },
-  countedPill: {
-    backgroundColor: "#315f30",
-    borderRadius: 7,
-    color: "#f4f4f4",
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  excludedPill: {
-    backgroundColor: "#615d5d",
+  excludedTag: {
+    fontSize: design.type.caption,
+    fontWeight: "700",
   },
   sessionMeta: {
-    color: "#c9c9c9",
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 8,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12,
-  },
-  actionButton: {
-    alignItems: "center",
-    backgroundColor: "#9ccf9b",
-    borderRadius: 7,
-    justifyContent: "center",
-    minHeight: 38,
-    paddingHorizontal: 12,
-  },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#615d5d",
-    borderRadius: 7,
-    justifyContent: "center",
-    minHeight: 38,
-    paddingHorizontal: 12,
-  },
-  actionButtonText: {
-    color: "#050505",
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: design.type.meta,
+    marginTop: 2,
   },
   editRow: {
     alignItems: "center",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12,
+    gap: design.spacing.xs,
+    marginTop: design.spacing.xs,
   },
   editInput: {
-    backgroundColor: "#141414",
-    borderColor: "#4a4a4a",
-    borderRadius: 8,
+    borderRadius: design.radius.sm,
     borderWidth: 1,
-    color: "#f5f5f5",
-    minHeight: 40,
-    minWidth: 120,
-    paddingHorizontal: 12,
+    minHeight: 38,
+    minWidth: 100,
+    paddingHorizontal: design.spacing.sm,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    gap: design.spacing.lg,
+    marginTop: design.spacing.xs,
+  },
+  inlineAction: {
+    justifyContent: "center",
+    minHeight: design.touchTarget - 8,
+  },
+  inlineActionText: {
+    fontSize: design.type.caption + 0.5,
+    fontWeight: "700",
   },
 });
