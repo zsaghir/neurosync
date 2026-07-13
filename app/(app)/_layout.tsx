@@ -1,30 +1,41 @@
+import { design } from "@/constants/design";
+import { AppThemeProvider } from "@/context/AppThemeContext";
 import { useAuth } from "@clerk/clerk-expo";
 import { Stack } from "expo-router";
 import React from "react";
-import { View } from "react-native";
-import { Spinner } from "tamagui";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-const AppLayout = () => {
+export default function AppLayout() {
   const { isLoaded, isSignedIn } = useAuth();
+
   if (!isLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Spinner size="large" />
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator color={design.colors.light.accent} size="large" />
       </View>
     );
   }
 
   return (
-    //we return the stack screens here
-    <Stack>
-      <Stack.Protected guard={isSignedIn}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack.Protected>
-      <Stack.Protected guard={!isSignedIn}>
-        <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-        <Stack.Screen name="sign-up" options={{ headerShown: false }} />
-      </Stack.Protected>
-    </Stack>
+    <AppThemeProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={Boolean(isSignedIn)}>
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+        <Stack.Protected guard={!isSignedIn}>
+          <Stack.Screen name="sign-in" />
+          <Stack.Screen name="sign-up" />
+        </Stack.Protected>
+      </Stack>
+    </AppThemeProvider>
   );
-};
-export default AppLayout;
+}
+
+const styles = StyleSheet.create({
+  loadingScreen: {
+    alignItems: "center",
+    backgroundColor: design.colors.light.background,
+    flex: 1,
+    justifyContent: "center",
+  },
+});

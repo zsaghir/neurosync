@@ -1,89 +1,84 @@
+import { design } from "@/constants/design";
+import { useAppTheme } from "@/context/AppThemeContext";
 import { Tabs } from "expo-router";
+import { StyleSheet, View } from "react-native";
 
-import Ionicons from "@expo/vector-icons/Ionicons";
+function TabDot({ color, focused }: { color: string; focused: boolean }) {
+  return (
+    <View
+      style={[
+        styles.tabDot,
+        { backgroundColor: focused ? color : "transparent" },
+      ]}
+    />
+  );
+}
 
 export default function TabLayout() {
+  const { colors } = useAppTheme();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#ffd33d",
-        headerStyle: {
-          backgroundColor: "#25292e",
-        },
-        headerShadowVisible: false,
-        headerTintColor: "#fff",
-        tabBarStyle: {
-          backgroundColor: "#25292e",
-        },
+        headerShown: false,
+        sceneStyle: { backgroundColor: colors.background },
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarHideOnKeyboard: true,
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarStyle: [
+          styles.tabBar,
+          { backgroundColor: colors.background, borderTopColor: colors.border },
+        ],
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "home-sharp" : "home-outline"}
-              color={color}
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="about"
-        options={{
-          title: "About",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={
-                focused ? "information-circle" : "information-circle-outline"
-              }
-              color={color}
-              size={24}
-            />
-          ),
+          title: "Today",
+          tabBarIcon: TabDot,
         }}
       />
       <Tabs.Screen
         name="Tasks"
         options={{
           title: "Tasks",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "list-sharp" : "list-outline"}
-              color={color}
-              size={24}
-            />
-          ),
+          tabBarIcon: TabDot,
         }}
       />
       <Tabs.Screen
         name="TimeMap"
         options={{
           title: "Time Map",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "time-sharp" : "time-outline"}
-              color={color}
-              size={24}
-            />
-          ),
+          tabBarIcon: TabDot,
         }}
       />
       <Tabs.Screen
         name="Settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "settings-sharp" : "settings-outline"}
-              color={color}
-              size={24}
-            />
-          ),
+          tabBarIcon: TabDot,
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    borderTopWidth: 1,
+    height: 68,
+    paddingBottom: 8,
+    paddingTop: 8,
+  },
+  tabLabel: {
+    fontSize: design.type.caption,
+    fontWeight: "700",
+  },
+  tabDot: {
+    borderRadius: design.radius.pill,
+    height: 5,
+    marginTop: 4,
+    width: 5,
+  },
+});

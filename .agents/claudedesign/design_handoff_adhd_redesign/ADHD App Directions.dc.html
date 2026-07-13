@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics="">
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+.dv-turn{padding:40px 44px 60px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 6px;flex-wrap:wrap;row-gap:4px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 14px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-intro{font:14px/1.6 system-ui,sans-serif;color:rgba(0,0,0,.6);max-width:800px;margin:0 0 26px}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px;width:max-content}
+.dv-oid{font:600 11px ui-monospace,Menlo,monospace;padding:3px 8px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:700 16px/1.3 system-ui,sans-serif;color:#1a1a1a}
+.dv-odesc{font:13px/1.55 system-ui,sans-serif;color:rgba(0,0,0,.55);max-width:660px;margin:2px 0 4px}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+.dv-row{display:flex;gap:22px;flex-wrap:nowrap}
+.dv-screen-label{font:600 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-bottom:8px;text-align:center}
+.phone{width:390px;height:844px;border-radius:40px;border:1px solid rgba(0,0,0,.16);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.dv-next{margin:26px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.dv-tradeoffs{max-width:800px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:10px;padding:20px 22px;margin-top:8px;font:13px/1.65 system-ui,sans-serif;color:#2a2a2a}
+.dv-tradeoffs h4{margin:0 0 6px;font-size:13px}
+.dv-tradeoffs+.dv-tradeoffs{margin-top:12px}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t4">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">Final design — complete screen set</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="4a">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Final design</div>
+<div class="dv-odesc">Turn-3 system everywhere · dark focus timer kept from <a class="dv-oid" href="#2a">2a</a> · Time Map upgraded to a weekly graph + analytics · Settings carried over from <a class="dv-oid" href="#2a">2a</a> and restyled.</div>
+<div class="dv-row">
+
+<!-- 4a Today -->
+<div><div class="dv-screen-label">Today</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18;font-family:system-ui">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:24px;font-weight:800;color:#1c1b18">Good afternoon, Maya</div>
+<div style="font-size:14px;color:#7d766b;margin-top:4px;line-height:1.5">Three things today. Start wherever feels right.</div>
+<div style="margin-top:16px;display:flex;align-items:center;gap:10px;background:#fffefb;border:1px solid #e6e0d5;border-radius:24px;padding:6px 8px 6px 18px">
+<span style="flex:1;font-size:15px;color:#7d766b">Capture anything…</span>
+<div style="width:34px;height:34px;border-radius:17px;background:#9c5b3f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">+</div>
+</div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin:22px 0 10px">Up next</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:20px">
+<div style="font-size:20px;font-weight:700;color:#1c1b18;line-height:1.3">Debug recursive parser (Lab 4)</div>
+<div style="font-size:14px;color:#7d766b;margin-top:6px">Usually takes about 45 minutes</div>
+<div style="margin-top:16px;background:#9c5b3f;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:999px;height:52px;display:flex;align-items:center;justify-content:center">Start focus</div>
+</div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin:22px 0 4px">Also today</div>
+<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid #e6e0d5"><div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;font-size:15.5px;color:#1c1b18">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#7d766b">30 min</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid #e6e0d5;border-bottom:1px solid #e6e0d5"><div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;font-size:15.5px;color:#1c1b18">Office hours: hash collisions</div><div style="font-size:12.5px;color:#7d766b">15 min</div></div>
+<div style="text-align:center;padding:12px 0;font-size:14px;font-weight:700;color:#9c5b3f">See all tasks ›</div>
+<div style="text-align:center;font-size:13px;color:#7d766b">You showed up for 1h 40m yesterday.</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;display:flex;flex-shrink:0;background:#f7f4ef">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#9c5b3f"></div><span style="font-size:11px;font-weight:700;color:#9c5b3f">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Settings</span></div>
+</div>
+</div></div>
+
+<!-- 4a Tasks -->
+<div><div class="dv-screen-label">Tasks</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;position:relative;font-family:system-ui">
+<div style="font-size:26px;font-weight:800;color:#1c1b18;margin-bottom:14px">Tasks</div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Debug recursive parser (Lab 4)</div><div style="font-size:13px;color:#7d766b;margin-top:2px">45 min · 2 of 4 subtasks</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Read Ch. 6 — Distributed Consensus</div><div style="font-size:13px;color:#7d766b;margin-top:2px">30 min</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Office hours: ask about hash collisions</div><div style="font-size:13px;color:#7d766b;margin-top:2px">15 min</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Write unit tests for Trie class</div><div style="font-size:13px;color:#7d766b;margin-top:2px">25 min</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5;border-bottom:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Push final commit + tag release</div><div style="font-size:13px;color:#7d766b;margin-top:2px">10 min</div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0"><span style="font-size:14px;font-weight:700;color:#7d766b">Completed (2)</span><span style="font-size:15px;color:#c9c2b4">›</span></div>
+<div style="position:absolute;right:20px;bottom:20px;width:56px;height:56px;border-radius:28px;background:#9c5b3f;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center">+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;display:flex;flex-shrink:0;background:#f7f4ef">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#9c5b3f"></div><span style="font-size:11px;font-weight:700;color:#9c5b3f">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Settings</span></div>
+</div>
+</div></div>
+
+<!-- 4a Add task -->
+<div><div class="dv-screen-label">Add task</div><div class="phone" style="background:#2a221c">
+<div style="flex:1;position:relative;font-family:system-ui">
+<div style="position:absolute;inset:0;background:rgba(20,15,10,.5)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fffefb;border-radius:24px 24px 0 0;padding:22px 22px 30px">
+<div style="width:38px;height:4px;background:#e6e0d5;border-radius:2px;margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:19px;font-weight:700;color:#1c1b18">New task</span><span style="color:#7d766b;font-size:18px">×</span></div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:12px;padding:14px 16px;margin-bottom:16px"><span style="font-size:16px;color:#1c1b18">Refactor hash map resize logic</span></div>
+<div style="font-size:13px;color:#9c5b3f;margin-bottom:10px;font-weight:700">▾ Add estimate</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px">
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">Quick · 10m</div>
+<div style="background:#9c5b3f;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#fff">Medium · 30m</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">Long · 60m</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">Skip</div>
+</div>
+<div style="background:#9c5b3f;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:999px;height:50px;display:flex;align-items:center;justify-content:center">Add task</div>
+</div>
+</div>
+</div></div>
+
+<!-- 4a Task details -->
+<div><div class="dv-screen-label">Task details</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:12px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="color:#7d766b;font-size:19px;margin-bottom:16px">‹ Tasks</div>
+<div style="display:flex;align-items:flex-start;gap:14px">
+<div style="width:26px;height:26px;border-radius:13px;border:1.5px solid #c9c2b4;flex-shrink:0;margin-top:3px"></div>
+<div style="font-size:22px;font-weight:700;color:#1c1b18;line-height:1.3">Debug recursive parser (Lab 4)</div>
+</div>
+<div style="font-size:13.5px;color:#7d766b;margin:8px 0 18px 40px">Usually takes about 45 min · 18 min logged</div>
+<div style="margin-left:40px;background:#9c5b3f;color:#fff;text-align:center;font-size:15px;font-weight:700;border-radius:999px;height:50px;display:flex;align-items:center;justify-content:center">Start focus</div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin:24px 0 6px 40px">Subtasks · 2 of 4</div>
+<div style="margin-left:40px">
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #e6e0d5"><div style="width:18px;height:18px;border-radius:9px;background:#1c1b18"></div><span style="font-size:14.5px;color:#a39b8d;text-decoration:line-through">Reproduce failing test</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #e6e0d5"><div style="width:18px;height:18px;border-radius:9px;background:#1c1b18"></div><span style="font-size:14.5px;color:#a39b8d;text-decoration:line-through">Add print traces</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #e6e0d5"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c2b4"></div><span style="font-size:14.5px;color:#1c1b18;font-weight:600">Fix base case</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #e6e0d5;border-bottom:1px solid #e6e0d5"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c2b4"></div><span style="font-size:14.5px;color:#1c1b18;font-weight:600">Rerun full test suite</span></div>
+<div style="font-size:13.5px;color:#9c5b3f;padding:10px 0;font-weight:700">+ Add subtask</div>
+</div>
+<div style="margin:14px 0 0 40px;font-size:13.5px;color:#7d766b;font-weight:700">▸ Notes</div>
+<div style="margin:24px 0 0 40px;display:flex;gap:20px;flex-wrap:wrap"><span style="font-size:13px;color:#7d766b">Adjust time</span><span style="font-size:13px;color:#7d766b">Add time manually</span><span style="font-size:13px;color:#a14b3f">Delete</span></div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;flex-shrink:0"></div>
+</div></div>
+
+<!-- 4a Active timer -->
+<div><div class="dv-screen-label">Active focus timer</div><div class="phone" style="background:#1c1b18">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#fff">9:41</span><span style="color:#6f695f;font-size:18px">×</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;font-family:system-ui">
+<div style="font-size:14px;color:#8f887b">Debug recursive parser</div>
+<div style="font-size:76px;font-weight:800;color:#fff;margin:22px 0;letter-spacing:-.02em">18:42</div>
+<div style="font-size:13px;color:#6f695f;margin-bottom:44px">45 min estimated</div>
+<div style="font-size:16px;font-weight:700;color:#e0a458">Done</div>
+<div style="margin-top:22px;font-size:13px;color:#6f695f">Pause</div>
+</div>
+</div></div>
+
+<!-- 4a Review -->
+<div><div class="dv-screen-label">Timer review</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;flex-shrink:0"></div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 30px;font-family:system-ui">
+<div style="font-size:15px;color:#7d766b">24 minutes.</div>
+<div style="font-size:24px;font-weight:800;color:#1c1b18;margin-top:4px">Nice work showing up.</div>
+<div style="background:#f0e2da;border-radius:16px;padding:16px;margin-top:20px"><div style="font-size:13.5px;color:#7a4128;line-height:1.6">You guessed 45 — it ran shorter. That's useful data, not a miss.</div></div>
+<div style="margin-top:26px;background:#9c5b3f;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:999px;height:52px;display:flex;align-items:center;justify-content:center">Save</div>
+<div style="display:flex;justify-content:center;gap:24px;margin-top:16px"><span style="font-size:13px;color:#9c5b3f;font-weight:700">Adjust time</span><span style="font-size:13px;color:#7d766b">Don't count this one</span></div>
+</div>
+</div></div>
+
+<!-- 4a Time Map -->
+<div><div class="dv-screen-label">Time Map — graph &amp; analytics</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:12px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:26px;font-weight:800;color:#1c1b18">Time Map</div>
+<div style="font-size:13.5px;color:#7d766b;margin-top:4px">A private look at how your time actually goes.</div>
+<div style="display:flex;gap:10px;margin-top:16px">
+<div style="flex:1;background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:14px"><div style="font-size:24px;font-weight:800;color:#1c1b18">22m</div><div style="font-size:11.5px;color:#7d766b;margin-top:2px">Typical session</div></div>
+<div style="flex:1;background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:14px"><div style="font-size:24px;font-weight:800;color:#1c1b18">14</div><div style="font-size:11.5px;color:#7d766b;margin-top:2px">Sessions counted</div></div>
+<div style="flex:1;background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:14px"><div style="font-size:24px;font-weight:800;color:#1c1b18">5h 20m</div><div style="font-size:11.5px;color:#7d766b;margin-top:2px">This week</div></div>
+</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:16px;margin-top:12px">
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b">Minutes per day</div>
+<div style="display:flex;align-items:flex-end;gap:10px;height:110px;margin-top:14px">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><div style="width:100%;height:38%;background:#e3cabc;border-radius:6px 6px 0 0"></div><span style="font-size:10.5px;color:#7d766b">Mon</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><div style="width:100%;height:62%;background:#e3cabc;border-radius:6px 6px 0 0"></div><span style="font-size:10.5px;color:#7d766b">Tue</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><div style="width:100%;height:24%;background:#e3cabc;border-radius:6px 6px 0 0"></div><span style="font-size:10.5px;color:#7d766b">Wed</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><div style="width:100%;height:78%;background:#e3cabc;border-radius:6px 6px 0 0"></div><span style="font-size:10.5px;color:#7d766b">Thu</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><div style="width:100%;height:52%;background:#e3cabc;border-radius:6px 6px 0 0"></div><span style="font-size:10.5px;color:#7d766b">Fri</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><div style="width:100%;height:14%;background:#e3cabc;border-radius:6px 6px 0 0"></div><span style="font-size:10.5px;color:#7d766b">Sat</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><div style="width:100%;height:88%;background:#9c5b3f;border-radius:6px 6px 0 0"></div><span style="font-size:10.5px;font-weight:700;color:#9c5b3f">Sun</span></div>
+</div>
+</div>
+<div style="background:#f0e2da;border-radius:12px;padding:12px 14px;margin-top:10px"><div style="font-size:13px;color:#7a4128;line-height:1.5">Your guesses are getting closer to reality than last month.</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px"><span style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b">Recent sessions</span><span style="font-size:13px;font-weight:700;color:#9c5b3f">See all ›</span></div>
+<div style="border-top:1px solid #e6e0d5;padding:10px 0;margin-top:6px"><div style="font-size:14.5px;font-weight:600;color:#1c1b18">Debug recursive parser</div><div style="font-size:12.5px;color:#7d766b;margin-top:2px">Guessed 45 · ran 24 min · timer</div></div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;display:flex;flex-shrink:0;background:#f7f4ef">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#9c5b3f"></div><span style="font-size:11px;font-weight:700;color:#9c5b3f">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Settings</span></div>
+</div>
+</div></div>
+
+<!-- 4a Settings -->
+<div><div class="dv-screen-label">Settings</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:12px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:26px;font-weight:800;color:#1c1b18;margin-bottom:16px">Settings</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+<div><div style="font-size:16px;font-weight:700;color:#1c1b18">Maya Chen</div><div style="font-size:13px;color:#7d766b">maya.chen@cs.edu</div></div>
+<div style="font-size:13px;color:#9c5b3f;font-weight:700">Sign out</div>
+</div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin-bottom:8px">Sign-in method</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:18px">
+<div style="width:22px;height:22px;border-radius:11px;background:#fff;border:1px solid #e6e0d5;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#4285f4">G</div>
+<div style="flex:1"><div style="font-size:15px;font-weight:600;color:#1c1b18">Connected with Google</div><div style="font-size:12.5px;color:#7d766b;margin-top:1px">maya.chen@cs.edu</div></div>
+<div style="font-size:13px;color:#7d766b;font-weight:700">Manage</div>
+</div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin-bottom:8px">Preferred time estimation</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:4px;display:flex;flex-direction:column;gap:2px;margin-bottom:18px">
+<div style="background:#f0e2da;border-radius:12px;padding:13px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;background:#9c5b3f"></div><span style="font-size:15px;color:#1c1b18;font-weight:700">Quick / Medium / Long</span></div>
+<div style="padding:13px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c2b4"></div><span style="font-size:15px;color:#1c1b18">Minute presets</span></div>
+<div style="padding:13px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c2b4"></div><span style="font-size:15px;color:#1c1b18">Custom time entry</span></div>
+</div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin-bottom:8px">Appearance</div>
+<div style="display:flex;gap:10px">
+<div style="background:#9c5b3f;color:#fff;border-radius:999px;padding:10px 22px;font-size:14px;font-weight:700">Light</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;border-radius:999px;padding:10px 22px;font-size:14px;font-weight:700;color:#1c1b18">Dark</div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;display:flex;flex-shrink:0;background:#f7f4ef">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#9c5b3f"></div><span style="font-size:11px;font-weight:700;color:#9c5b3f">Settings</span></div>
+</div>
+</div></div>
+
+<!-- 4a Manual time entry -->
+<div><div class="dv-screen-label">Add time manually</div><div class="phone" style="background:#2a221c">
+<div style="flex:1;position:relative;font-family:system-ui">
+<div style="position:absolute;inset:0;background:rgba(20,15,10,.5)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fffefb;border-radius:24px 24px 0 0;padding:22px 22px 30px">
+<div style="width:38px;height:4px;background:#e6e0d5;border-radius:2px;margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:19px;font-weight:700;color:#1c1b18">Add time manually</span><span style="color:#7d766b;font-size:18px">×</span></div>
+<div style="font-size:13.5px;color:#7d766b;line-height:1.5;margin-bottom:18px">No timer needed. What should we count for "Debug recursive parser (Lab 4)"?</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:12px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:16px;color:#1c1b18">20</span><span style="font-size:13px;color:#7d766b">minutes</span></div>
+<div style="display:flex;gap:8px;margin-bottom:22px">
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">5m</div>
+<div style="background:#9c5b3f;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#fff">20m</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">30m</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">60m</div>
+</div>
+<div style="background:#9c5b3f;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:999px;height:50px;display:flex;align-items:center;justify-content:center">Save time</div>
+</div>
+</div>
+</div></div>
+
+</div>
+</div>
+</div>
+<p class="dv-next">Try next: "show dark mode for <a class="dv-oid" href="#4a">4a</a>" · "add the completed-expanded state" · "export this as a handoff doc"</p>
+</section>
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Refining <a class="dv-oid" href="#2a">2a</a> + <a class="dv-oid" href="#2c">2c</a> — Today &amp; Tasks + design system</span></div>
+<div class="dv-opts">
+
+<!-- 3a Today -->
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Today</div>
+<div class="dv-odesc">One recommended task, one dominant action, frictionless capture, no analytics. Estimate reads as "usually takes," not a deadline.</div>
+<div class="dv-row">
+<div><div class="dv-screen-label">3a · Today</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18;font-family:system-ui">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:24px;font-weight:800;color:#1c1b18">Afternoon, Maya</div>
+<div style="font-size:14px;color:#7d766b;margin-top:4px">Let's ease into it.</div>
+
+<div style="margin-top:18px;display:flex;align-items:center;gap:10px;background:#fffefb;border:1px solid #e6e0d5;border-radius:24px;padding:6px 8px 6px 18px">
+<span style="flex:1;font-size:15px;color:#7d766b">Capture anything…</span>
+<div style="width:34px;height:34px;border-radius:17px;background:#9c5b3f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">+</div>
+</div>
+
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin:24px 0 10px">Up next</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:20px">
+<div style="font-size:20px;font-weight:700;color:#1c1b18;line-height:1.3">Debug recursive parser (Lab 4)</div>
+<div style="font-size:14px;color:#7d766b;margin-top:6px">Usually takes about 45 minutes</div>
+<div style="margin-top:16px;background:#9c5b3f;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:999px;height:52px;display:flex;align-items:center;justify-content:center">Start focus</div>
+</div>
+
+<div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d766b;margin:24px 0 4px">Also today</div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #e6e0d5"><div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;font-size:15.5px;color:#1c1b18">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#7d766b">30 min</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #e6e0d5"><div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;font-size:15.5px;color:#1c1b18">Office hours: hash collisions</div><div style="font-size:12.5px;color:#7d766b">15 min</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #e6e0d5;border-bottom:1px solid #e6e0d5"><div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;font-size:15.5px;color:#1c1b18">Write unit tests for Trie class</div><div style="font-size:12.5px;color:#7d766b">25 min</div></div>
+<div style="text-align:center;padding:16px 0;font-size:14px;font-weight:700;color:#9c5b3f">See all tasks ›</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;display:flex;flex-shrink:0;background:#f7f4ef">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#9c5b3f"></div><span style="font-size:11px;font-weight:700;color:#9c5b3f">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Settings</span></div>
+</div>
+</div></div>
+</div>
+</div>
+
+<!-- 3b Tasks default -->
+<div class="dv-opt" id="3b">
+<div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Tasks — default</div>
+<div class="dv-odesc">Collapsed rows show only checkbox, title, optional estimate, optional subtask progress. Everything else (timer adjust, manual time, delete) lives in task detail. Includes a long-title row and a many-subtask row. Completed stays collapsed.</div>
+<div class="dv-row">
+<div><div class="dv-screen-label">3b · Tasks — default</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;position:relative;font-family:system-ui">
+<div style="font-size:26px;font-weight:800;color:#1c1b18;margin-bottom:14px">Tasks</div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Debug recursive parser (Lab 4)</div><div style="font-size:13px;color:#7d766b;margin-top:2px">45 min · 2 of 4 subtasks</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Read Ch. 6 — Distributed Consensus</div><div style="font-size:13px;color:#7d766b;margin-top:2px">30 min</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0;margin-top:1px"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18;line-height:1.35">Refactor the hash map resizing logic so it stops rehashing on every third insert</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Prepare conference lightning talk slides</div><div style="font-size:13px;color:#7d766b;margin-top:2px">3 of 9 subtasks</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5;border-bottom:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Office hours: ask about hash collisions</div><div style="font-size:13px;color:#7d766b;margin-top:2px">15 min</div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0"><span style="font-size:14px;font-weight:700;color:#7d766b">Completed (2)</span><span style="font-size:15px;color:#c9c2b4">›</span></div>
+<div style="position:absolute;right:20px;bottom:20px;width:56px;height:56px;border-radius:28px;background:#9c5b3f;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center">+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;display:flex;flex-shrink:0;background:#f7f4ef">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#9c5b3f"></div><span style="font-size:11px;font-weight:700;color:#9c5b3f">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#7d766b">Settings</span></div>
+</div>
+</div></div>
+</div>
+</div>
+
+<!-- 3c Tasks empty -->
+<div class="dv-opt" id="3c">
+<div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>Tasks — empty</div>
+<div class="dv-odesc">Quick capture stays available even with nothing on the list yet.</div>
+<div class="dv-row">
+<div><div class="dv-screen-label">3c · Tasks — empty</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;font-family:system-ui;display:flex;flex-direction:column">
+<div style="font-size:26px;font-weight:800;color:#1c1b18;margin-bottom:14px">Tasks</div>
+<div style="display:flex;align-items:center;gap:10px;background:#fffefb;border:1px solid #e6e0d5;border-radius:24px;padding:6px 8px 6px 18px;margin-bottom:40px">
+<span style="flex:1;font-size:15px;color:#7d766b">Capture anything…</span>
+<div style="width:34px;height:34px;border-radius:17px;background:#9c5b3f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:60px">
+<div style="font-size:18px;font-weight:700;color:#1c1b18">Nothing on your list yet.</div>
+<div style="font-size:14px;color:#7d766b;margin-top:8px;line-height:1.5;max-width:240px">Add your first task whenever you're ready.</div>
+<div style="margin-top:22px;background:#9c5b3f;color:#fff;text-align:center;font-size:15px;font-weight:700;border-radius:999px;height:48px;padding:0 24px;display:flex;align-items:center;justify-content:center">Add a task</div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;flex-shrink:0"></div>
+</div></div>
+</div>
+</div>
+
+<!-- 3d Tasks loading -->
+<div class="dv-opt" id="3d">
+<div class="dv-olabel"><a class="dv-oid" href="#3d">3d</a>Tasks — loading</div>
+<div class="dv-odesc">Static skeleton rows, no spinner urgency.</div>
+<div class="dv-row">
+<div><div class="dv-screen-label">3d · Tasks — loading</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:26px;font-weight:800;color:#1c1b18;margin-bottom:6px">Tasks</div>
+<div style="font-size:13px;color:#7d766b;margin-bottom:18px">Loading your tasks…</div>
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:center;gap:12px"><div style="width:24px;height:24px;border-radius:12px;background:#e6e0d5;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:12px;width:70%;background:#e6e0d5;border-radius:6px"></div><div style="height:10px;width:35%;background:#ede8de;border-radius:5px"></div></div></div>
+<div style="display:flex;align-items:center;gap:12px"><div style="width:24px;height:24px;border-radius:12px;background:#e6e0d5;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:12px;width:55%;background:#e6e0d5;border-radius:6px"></div><div style="height:10px;width:30%;background:#ede8de;border-radius:5px"></div></div></div>
+<div style="display:flex;align-items:center;gap:12px"><div style="width:24px;height:24px;border-radius:12px;background:#e6e0d5;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:12px;width:60%;background:#e6e0d5;border-radius:6px"></div></div></div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;flex-shrink:0"></div>
+</div></div>
+</div>
+</div>
+
+<!-- 3e Tasks error -->
+<div class="dv-opt" id="3e">
+<div class="dv-olabel"><a class="dv-oid" href="#3e">3e</a>Tasks — error</div>
+<div class="dv-odesc">Muted, non-alarming error banner — no red flash, just a calm retry.</div>
+<div class="dv-row">
+<div><div class="dv-screen-label">3e · Tasks — error</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:26px;font-weight:800;color:#1c1b18;margin-bottom:16px">Tasks</div>
+<div style="background:#f5e6e2;border-radius:16px;padding:18px">
+<div style="font-size:14.5px;color:#a14b3f;line-height:1.55">We couldn't load your tasks. Check your connection and try again.</div>
+<div style="margin-top:14px;background:#fffefb;border:1px solid #d9b6ac;color:#a14b3f;text-align:center;font-size:14px;font-weight:700;border-radius:999px;height:42px;display:flex;align-items:center;justify-content:center">Retry</div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;flex-shrink:0"></div>
+</div></div>
+</div>
+</div>
+
+<!-- 3f Tasks active timer -->
+<div class="dv-opt" id="3f">
+<div class="dv-olabel"><a class="dv-oid" href="#3f">3f</a>Tasks — active timer</div>
+<div class="dv-odesc">A running session shows as a quiet tinted row with a small live label — pause/done controls stay in task detail, not on the list.</div>
+<div class="dv-row">
+<div><div class="dv-screen-label">3f · Tasks — active timer</div><div class="phone" style="background:#f7f4ef">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#1c1b18">9:41</span><div style="width:20px;height:11px;border:1.5px solid #1c1b18;border-radius:3px"></div></div>
+<div style="flex:1;padding:14px 20px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:26px;font-weight:800;color:#1c1b18;margin-bottom:14px">Tasks</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 12px;margin:0 -12px 4px;background:#f0e2da;border-radius:14px"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #9c5b3f;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Debug recursive parser (Lab 4)</div><div style="font-size:13px;color:#9c5b3f;margin-top:2px;font-weight:700">● Focusing · 12:04</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Read Ch. 6 — Distributed Consensus</div><div style="font-size:13px;color:#7d766b;margin-top:2px">30 min</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:15px 0;border-top:1px solid #e6e0d5;border-bottom:1px solid #e6e0d5"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#1c1b18">Office hours: ask about hash collisions</div><div style="font-size:13px;color:#7d766b;margin-top:2px">15 min</div></div></div>
+</div>
+<div style="height:82px;border-top:1px solid #e6e0d5;flex-shrink:0"></div>
+</div></div>
+</div>
+</div>
+
+<!-- 3g Manual time entry -->
+<div class="dv-opt" id="3g">
+<div class="dv-olabel"><a class="dv-oid" href="#3g">3g</a>Manual time entry — updated tokens</div>
+<div class="dv-odesc"><a class="dv-oid" href="#2c">2c</a> restyled onto the new warm off-white system.</div>
+<div class="dv-row">
+<div><div class="dv-screen-label">3g · Add time manually</div><div class="phone" style="background:#2a221c">
+<div style="flex:1;position:relative;font-family:system-ui">
+<div style="position:absolute;inset:0;background:rgba(20,15,10,.5)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fffefb;border-radius:24px 24px 0 0;padding:22px 22px 30px">
+<div style="width:38px;height:4px;background:#e6e0d5;border-radius:2px;margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:19px;font-weight:700;color:#1c1b18">Add time manually</span><span style="color:#7d766b;font-size:18px">×</span></div>
+<div style="font-size:13.5px;color:#7d766b;line-height:1.5;margin-bottom:18px">No timer needed. What should we count for "Debug recursive parser (Lab 4)"?</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:12px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:16px;color:#1c1b18">20</span><span style="font-size:13px;color:#7d766b">minutes</span></div>
+<div style="display:flex;gap:8px;margin-bottom:22px">
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">5m</div>
+<div style="background:#9c5b3f;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#fff">20m</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">30m</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:#1c1b18">60m</div>
+</div>
+<div style="background:#9c5b3f;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:999px;height:50px;display:flex;align-items:center;justify-content:center">Save time</div>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+
+<!-- 3h Design system -->
+<div class="dv-opt" id="3h">
+<div class="dv-olabel"><a class="dv-oid" href="#3h">3h</a>Mini design system</div>
+<div class="dv-odesc">Warm off-white surfaces, near-black text, one muted accent, subtle borders, minimal shadow. Reused by every screen above.</div>
+<div class="dv-row">
+<div style="width:460px;background:#fffefb;border:1px solid #e6e0d5;border-radius:16px;padding:28px;font-family:system-ui;color:#1c1b18">
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Colors</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px">
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#f7f4ef;border:1px solid #e6e0d5"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">bg</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#fffefb;border:1px solid #e6e0d5"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">surface</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#1c1b18"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">text</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#7d766b"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">subtle</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#e6e0d5"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">border</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#9c5b3f"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">accent</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#f0e2da"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">accent soft</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#5c7a5f"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">success</div></div>
+<div style="width:74px"><div style="height:44px;border-radius:8px;background:#a14b3f"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">error (muted)</div></div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Typography — system-ui</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:26px">
+<div style="font-size:26px;font-weight:800">Screen title 26/800</div>
+<div style="font-size:20px;font-weight:700">Card title 20/700</div>
+<div style="font-size:17px;font-weight:600">Task row title 17/600</div>
+<div style="font-size:15px;font-weight:500;color:#3a362f">Body 15/500</div>
+<div style="font-size:13px;color:#7d766b">Meta / caption 13/400</div>
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b">Section label 12/700 uppercase</div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Spacing — 8px scale</div>
+<div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:26px">
+<div><div style="width:4px;height:4px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">4</div></div>
+<div><div style="width:8px;height:8px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">8</div></div>
+<div><div style="width:12px;height:12px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">12</div></div>
+<div><div style="width:16px;height:16px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">16</div></div>
+<div><div style="width:20px;height:20px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">20</div></div>
+<div><div style="width:24px;height:24px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">24</div></div>
+<div><div style="width:32px;height:32px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">32</div></div>
+<div><div style="width:40px;height:40px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">40</div></div>
+<div><div style="width:48px;height:48px;background:#9c5b3f"></div><div style="font-size:10px;color:#7d766b;margin-top:4px">48</div></div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Corner radii</div>
+<div style="display:flex;gap:14px;margin-bottom:26px">
+<div><div style="width:52px;height:52px;background:#f0e2da;border-radius:8px"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">sm 8</div></div>
+<div><div style="width:52px;height:52px;background:#f0e2da;border-radius:12px"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">md 12</div></div>
+<div><div style="width:52px;height:52px;background:#f0e2da;border-radius:16px"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">lg 16</div></div>
+<div><div style="width:52px;height:52px;background:#f0e2da;border-radius:26px"></div><div style="font-size:10.5px;color:#7d766b;margin-top:4px">pill 999</div></div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Buttons</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px;align-items:center">
+<div style="background:#9c5b3f;color:#fff;font-size:14px;font-weight:700;border-radius:999px;height:44px;padding:0 20px;display:flex;align-items:center">Primary</div>
+<div style="background:#fffefb;border:1px solid #e6e0d5;color:#1c1b18;font-size:14px;font-weight:700;border-radius:999px;height:44px;padding:0 20px;display:flex;align-items:center">Secondary</div>
+<div style="color:#9c5b3f;font-size:14px;font-weight:700;height:44px;display:flex;align-items:center">Text button</div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Inputs</div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:26px">
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:12px;height:48px;display:flex;align-items:center;padding:0 14px;font-size:15px;color:#7d766b">Default — placeholder text</div>
+<div style="background:#fffefb;border:1.5px solid #9c5b3f;border-radius:12px;height:48px;display:flex;align-items:center;padding:0 14px;font-size:15px;color:#1c1b18">Focused — user input</div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Task row</div>
+<div style="border-top:1px solid #e6e0d5;border-bottom:1px solid #e6e0d5;margin-bottom:26px">
+<div style="display:flex;align-items:center;gap:12px;padding:14px 0"><div style="width:24px;height:24px;border-radius:12px;border:1.5px solid #c9c2b4;flex-shrink:0"></div><div style="flex:1"><div style="font-size:17px;font-weight:600">Task title</div><div style="font-size:13px;color:#7d766b;margin-top:2px">Estimate · subtasks (both optional)</div></div></div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Bottom navigation</div>
+<div style="display:flex;border-top:1px solid #e6e0d5;padding-top:10px;margin-bottom:26px">
+<div style="flex:1;text-align:center"><div style="width:5px;height:5px;border-radius:3px;background:#9c5b3f;margin:0 auto 4px"></div><span style="font-size:11px;font-weight:700;color:#9c5b3f">Active</span></div>
+<div style="flex:1;text-align:center"><div style="width:5px;height:5px;margin:0 auto 4px"></div><span style="font-size:11px;color:#7d766b">Inactive</span></div>
+<div style="flex:1;text-align:center"><div style="width:5px;height:5px;margin:0 auto 4px"></div><span style="font-size:11px;color:#7d766b">Inactive</span></div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Bottom sheet</div>
+<div style="background:#f7f4ef;border:1px solid #e6e0d5;border-radius:16px 16px 0 0;padding:14px;margin-bottom:26px">
+<div style="width:34px;height:4px;background:#e6e0d5;border-radius:2px;margin:0 auto 10px"></div>
+<div style="font-size:14px;font-weight:700;text-align:center">Sheet title</div>
+</div>
+
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7d766b;margin-bottom:12px">Status &amp; feedback</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:13px;color:#7d766b">Loading — "Loading your tasks…"</div>
+<div style="background:#f5e6e2;color:#a14b3f;border-radius:10px;padding:10px 12px;font-size:13px">Error — muted, calm, always paired with Retry</div>
+<div style="background:#f0e2da;color:#7a4128;border-radius:10px;padding:10px 12px;font-size:13px">Saved — "Saved. Your map is learning."</div>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show the task detail screen for 3b" · "make 3f's active-timer tint even quieter" · "apply this system to Time Map and Settings too"</p>
+</section>
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Three follow-ups on <a class="dv-oid" href="#1a">1a</a>/<a class="dv-oid" href="#1b">1b</a>/<a class="dv-oid" href="#1c">1c</a></span></div>
+<div class="dv-opts">
+
+<!-- 2a: hybrid -->
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Hybrid — <a class="dv-oid" href="#1c">1c</a> Tasks &amp; Timer, <a class="dv-oid" href="#1b">1b</a> Time Map &amp; Settings</div>
+<div class="dv-odesc">The two highest-frequency, highest-distraction-risk screens run minimal (1c); the two reflective, lower-pressure screens keep 1b's softer flat-block warmth.</div>
+<div class="dv-row">
+
+<div><div class="dv-screen-label">2a · Tasks list (1c)</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:20px 28px 0;overflow:hidden;position:relative;font-family:system-ui">
+<div style="font-size:22px;font-weight:700;color:#17171a;margin-bottom:18px">Tasks</div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Debug recursive parser (Lab 4)</div><div style="font-size:12.5px;color:#8a8a8f">45m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#8a8a8f">30m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Office hours: hash collisions</div><div style="font-size:12.5px;color:#8a8a8f">15m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee;border-bottom:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Write unit tests for Trie class</div><div style="font-size:12.5px;color:#8a8a8f">25m</div></div>
+<div style="font-size:12px;color:#8a8a8f;margin:18px 0 6px">Completed (1)</div>
+<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;background:#c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#b3b3b8;text-decoration:line-through">Review Big-O notes before quiz</div></div>
+<div style="position:absolute;right:22px;bottom:22px;width:52px;height:52px;border-radius:26px;background:#17171a;color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center">+</div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;flex-shrink:0"></div>
+</div></div>
+
+<div><div class="dv-screen-label">2a · Active focus timer (1c)</div><div class="phone" style="background:#17171a">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#fff">9:41</span><span style="color:#6b6b70;font-size:18px">×</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;font-family:system-ui">
+<div style="font-size:14px;color:#8a8a8f">Debug recursive parser</div>
+<div style="font-size:76px;font-weight:800;color:#fff;margin:22px 0;letter-spacing:-.02em">18:42</div>
+<div style="font-size:13px;color:#6b6b70;margin-bottom:44px">45 min estimated</div>
+<div style="font-size:16px;font-weight:700;color:#e0a458">Done</div>
+<div style="margin-top:22px;font-size:13px;color:#6b6b70">Pause</div>
+</div>
+</div></div>
+
+<div><div class="dv-screen-label">2a · Time Map (1b)</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#243128">9:41</span><div style="width:20px;height:11px;border:1.5px solid #243128;border-radius:3px"></div></div>
+<div style="flex:1;padding:10px 22px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:23px;font-weight:700;color:#243128">Time Map</div>
+<div style="font-size:13.5px;color:#6d7d73;margin-top:4px;line-height:1.5">A private look at how your time actually goes.</div>
+<div style="background:#dcebe1;border-radius:18px;padding:18px;margin-top:16px">
+<div style="font-size:32px;font-weight:800;color:#243128">22 min</div>
+<div style="font-size:12.5px;color:#4d5f52">Typical focus session · 14 counted this month</div>
+</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;margin-top:10px"><div style="font-size:13px;color:#4f7a63;line-height:1.5">You're estimating coding tasks closer to reality than last month.</div></div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px">Recent sessions</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px"><div style="font-size:14.5px;font-weight:700;color:#243128">Debug recursive parser</div><div style="font-size:12.5px;color:#6d7d73;margin-top:2px">Estimated 45 · ran 24 min · timer</div></div>
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px"><div style="font-size:14.5px;font-weight:700;color:#243128">Review Big-O notes</div><div style="font-size:12.5px;color:#6d7d73;margin-top:2px">Estimated 20 · ran 18 min · timer</div></div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #dde6df;flex-shrink:0"></div>
+</div></div>
+
+<div><div class="dv-screen-label">2a · Settings (1b)</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#243128">9:41</span><div style="width:20px;height:11px;border:1.5px solid #243128;border-radius:3px"></div></div>
+<div style="flex:1;padding:10px 22px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:23px;font-weight:700;color:#243128;margin-bottom:16px">Settings</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+<div><div style="font-size:16px;font-weight:700;color:#243128">Maya Chen</div><div style="font-size:13px;color:#6d7d73">maya.chen@cs.edu</div></div>
+<div style="font-size:13px;color:#4f7a63;font-weight:700">Sign out</div>
+</div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Preferred time estimation</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:4px;display:flex;flex-direction:column;gap:2px;margin-bottom:18px">
+<div style="background:#dcebe1;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;background:#4f7a63"></div><span style="font-size:15px;color:#243128;font-weight:700">Quick / Medium / Long</span></div>
+<div style="padding:12px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;border:2px solid #a9bcae"></div><span style="font-size:15px;color:#243128">Minute presets</span></div>
+<div style="padding:12px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;border:2px solid #a9bcae"></div><span style="font-size:15px;color:#243128">Custom time entry</span></div>
+</div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Appearance</div>
+<div style="display:flex;gap:10px">
+<div style="background:#4f7a63;color:#fff;border-radius:16px;padding:9px 20px;font-size:14px;font-weight:700">Light</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:9px 20px;font-size:14px;font-weight:700;color:#243128">Dark</div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #dde6df;flex-shrink:0"></div>
+</div></div>
+
+</div>
+</div>
+
+<!-- 2b: light/dark for 1c -->
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Light / dark for <a class="dv-oid" href="#1c">1c</a></div>
+<div class="dv-odesc">Dark mode inverts to near-black with off-white text; the single amber accent and hairline dividers carry over so the two modes feel like the same app, not a re-theme.</div>
+<div class="dv-row">
+
+<div><div class="dv-screen-label">2b · Today — Light</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:26px 28px 0;overflow:hidden;font-family:system-ui;display:flex;flex-direction:column">
+<div style="font-size:13px;color:#8a8a8f">Wednesday</div>
+<div style="font-size:12px;color:#8a8a8f;text-transform:uppercase;letter-spacing:.08em;margin-top:32px">Now</div>
+<div style="font-size:26px;font-weight:700;color:#17171a;margin-top:8px;line-height:1.3">Debug recursive parser<br>(Lab 4)</div>
+<div style="font-size:13.5px;color:#8a8a8f;margin-top:8px">45 min</div>
+<div style="margin-top:28px;background:#17171a;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:26px;height:52px;display:flex;align-items:center;justify-content:center">Start</div>
+<div style="flex:1"></div>
+<div style="font-size:13px;color:#8a8a8f;margin-bottom:28px">2 more today</div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;flex-shrink:0"></div>
+</div></div>
+
+<div><div class="dv-screen-label">2b · Today — Dark</div><div class="phone" style="background:#17171a">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#f4f4f5">9:41</span><div style="width:20px;height:11px;border:1.5px solid #f4f4f5;border-radius:3px"></div></div>
+<div style="flex:1;padding:26px 28px 0;overflow:hidden;font-family:system-ui;display:flex;flex-direction:column">
+<div style="font-size:13px;color:#8a8a8f">Wednesday</div>
+<div style="font-size:12px;color:#8a8a8f;text-transform:uppercase;letter-spacing:.08em;margin-top:32px">Now</div>
+<div style="font-size:26px;font-weight:700;color:#f4f4f5;margin-top:8px;line-height:1.3">Debug recursive parser<br>(Lab 4)</div>
+<div style="font-size:13.5px;color:#8a8a8f;margin-top:8px">45 min</div>
+<div style="margin-top:28px;background:#f4f4f5;color:#17171a;text-align:center;font-size:16px;font-weight:700;border-radius:26px;height:52px;display:flex;align-items:center;justify-content:center">Start</div>
+<div style="flex:1"></div>
+<div style="font-size:13px;color:#8a8a8f;margin-bottom:28px">2 more today</div>
+</div>
+<div style="height:82px;border-top:1px solid #2a2a2e;flex-shrink:0"></div>
+</div></div>
+
+<div><div class="dv-screen-label">2b · Tasks — Light</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:20px 28px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:22px;font-weight:700;color:#17171a;margin-bottom:18px">Tasks</div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Debug recursive parser (Lab 4)</div><div style="font-size:12.5px;color:#8a8a8f">45m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee;border-bottom:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#8a8a8f">30m</div></div>
+<div style="font-size:12px;color:#8a8a8f;margin:18px 0 6px">Completed (1)</div>
+<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;background:#c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#b3b3b8;text-decoration:line-through">Review Big-O notes before quiz</div></div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;flex-shrink:0"></div>
+</div></div>
+
+<div><div class="dv-screen-label">2b · Tasks — Dark</div><div class="phone" style="background:#17171a">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#f4f4f5">9:41</span><div style="width:20px;height:11px;border:1.5px solid #f4f4f5;border-radius:3px"></div></div>
+<div style="flex:1;padding:20px 28px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:22px;font-weight:700;color:#f4f4f5;margin-bottom:18px">Tasks</div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #2a2a2e"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #4a4a4e;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#f4f4f5">Debug recursive parser (Lab 4)</div><div style="font-size:12.5px;color:#8a8a8f">45m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #2a2a2e;border-bottom:1px solid #2a2a2e"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #4a4a4e;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#f4f4f5">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#8a8a8f">30m</div></div>
+<div style="font-size:12px;color:#8a8a8f;margin:18px 0 6px">Completed (1)</div>
+<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #2a2a2e"><div style="width:20px;height:20px;border-radius:10px;background:#4a4a4e;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#6b6b70;text-decoration:line-through">Review Big-O notes before quiz</div></div>
+</div>
+<div style="height:82px;border-top:1px solid #2a2a2e;flex-shrink:0"></div>
+</div></div>
+
+</div>
+</div>
+
+<!-- 2c: manual time entry for 1b -->
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Manual time entry, added to <a class="dv-oid" href="#1b">1b</a></div>
+<div class="dv-odesc">Reached from a task's timer sheet via "Add time manually" — for work done away from the app. Same soft-block sheet style as Add Task.</div>
+<div class="dv-row">
+
+<div><div class="dv-screen-label">2c · Add time manually (1b)</div><div class="phone" style="background:#1c2a22">
+<div style="flex:1;position:relative;font-family:system-ui">
+<div style="position:absolute;inset:0;background:rgba(10,18,14,.5)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#ffffff;border-radius:24px 24px 0 0;padding:22px 22px 30px">
+<div style="width:38px;height:4px;background:#dde6df;border-radius:2px;margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:19px;font-weight:700;color:#243128">Add time manually</span><span style="color:#6d7d73;font-size:18px">×</span></div>
+<div style="font-size:13.5px;color:#6d7d73;line-height:1.5;margin-bottom:18px">No timer needed. What should we count for "Debug recursive parser (Lab 4)"?</div>
+<div style="background:#f4f7f4;border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+<span style="font-size:16px;color:#243128">20</span>
+<span style="font-size:13px;color:#6d7d73">minutes</span>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:22px">
+<div style="background:#f4f7f4;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#243128">5m</div>
+<div style="background:#4f7a63;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#fff">20m</div>
+<div style="background:#f4f7f4;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#243128">30m</div>
+<div style="background:#f4f7f4;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#243128">60m</div>
+</div>
+<div style="background:#4f7a63;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:16px;height:50px;display:flex;align-items:center;justify-content:center">Save time</div>
+</div>
+</div>
+</div></div>
+
+</div>
+</div>
+
+<p class="dv-next">Try next: "use <a class="dv-oid" href="#2a">2a</a> as the base direction everywhere" · "add dark mode to <a class="dv-oid" href="#1b">1b</a> too" · "wire up the timer review copy for the short-session case"</p>
+</div></section>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Three ADHD-friendly design directions</span></div>
+<p class="dv-intro">Same underlying product — tasks, subtasks, estimates, timers, manual time entry, Time Map insights, themes, auth, settings — three different calm-UI treatments. Each shows: Today, Tasks list, Add-task, Task details, Active timer, Timer review, Time Map, Settings.</p>
+
+<div class="dv-opts">
+
+<!-- ============ DIRECTION A ============ -->
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Direction A — Warm &amp; Editorial</div>
+<div class="dv-odesc">Cream paper background, a serif headline voice, terracotta accent, and rule-line lists instead of boxed cards. Reads like a well-kept journal, not a productivity dashboard.</div>
+<div class="dv-row">
+
+<!-- A1 Today -->
+<div><div class="dv-screen-label">A1 · Today</div><div class="phone" style="background:#faf5ec">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#2b2420;font-family:system-ui">9:41</span><div style="width:20px;height:11px;border:1.5px solid #2b2420;border-radius:3px"></div></div>
+<div style="flex:1;padding:6px 24px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin-bottom:6px">Wednesday, July 8</div>
+<div style="font-family:Georgia,serif;font-size:27px;font-weight:700;color:#2b2420;line-height:1.2">Good afternoon, Maya</div>
+<div style="font-size:14.5px;color:#8a7d6d;margin-top:6px;line-height:1.5">Three things today. Start wherever feels right.</div>
+<div style="height:1px;background:#e4d9c8;margin:20px 0"></div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin-bottom:10px">Up next</div>
+<div style="background:#fffdf9;border:1px solid #e4d9c8;border-radius:12px;padding:18px">
+<div style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:#2b2420">Debug recursive parser (Lab 4)</div>
+<div style="font-size:13px;color:#8a7d6d;margin-top:5px">45 min estimate · 2 of 4 subtasks done</div>
+<div style="margin-top:14px;background:#b5502f;color:#fffdf6;text-align:center;font-size:15px;font-weight:700;border-radius:24px;height:46px;display:flex;align-items:center;justify-content:center">Start focus timer</div>
+</div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin:22px 0 6px">Also today</div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #8a7d6d;flex-shrink:0"></div>
+<div><div style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#2b2420">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#8a7d6d">30 min</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #8a7d6d;flex-shrink:0"></div>
+<div><div style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#2b2420">Office hours: ask about hash collisions</div><div style="font-size:12.5px;color:#8a7d6d">15 min</div></div>
+</div>
+<div style="margin-top:22px;font-family:Georgia,serif;font-style:italic;font-size:13.5px;color:#8a7d6d;text-align:center">Yesterday you focused for 1h 40m.</div>
+</div>
+<div style="height:82px;border-top:1px solid #e4d9c8;display:flex;flex-shrink:0;background:#faf5ec">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#b5502f"></div><span style="font-size:11px;font-weight:700;color:#b5502f">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Settings</span></div>
+</div>
+</div></div>
+
+<!-- A2 Tasks list -->
+<div><div class="dv-screen-label">A2 · Tasks list</div><div class="phone" style="background:#faf5ec">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#2b2420">9:41</span><div style="width:20px;height:11px;border:1.5px solid #2b2420;border-radius:3px"></div></div>
+<div style="flex:1;padding:12px 24px 0;overflow:hidden;position:relative;font-family:system-ui">
+<div style="font-family:Georgia,serif;font-size:25px;font-weight:700;color:#2b2420;margin-bottom:14px">Tasks</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #8a7d6d;flex-shrink:0"></div>
+<div style="flex:1"><div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700;color:#2b2420">Debug recursive parser (Lab 4)</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">45 min · 2/4 subtasks · 18m logged</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #8a7d6d;flex-shrink:0"></div>
+<div style="flex:1"><div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700;color:#2b2420">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">30 min</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #8a7d6d;flex-shrink:0"></div>
+<div style="flex:1"><div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700;color:#2b2420">Office hours: ask about hash collisions</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">15 min</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #8a7d6d;flex-shrink:0"></div>
+<div style="flex:1"><div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700;color:#2b2420">Write unit tests for Trie class</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">25 min</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #e4d9c8;border-bottom:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;border:1.5px solid #8a7d6d;flex-shrink:0"></div>
+<div style="flex:1"><div style="font-family:Georgia,serif;font-size:16.5px;font-weight:700;color:#2b2420">Push final commit + tag release</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">10 min</div></div>
+</div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin:18px 0 4px">Completed</div>
+<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid #e4d9c8">
+<div style="width:22px;height:22px;border-radius:11px;background:#2b2420;flex-shrink:0"></div>
+<div style="flex:1"><div style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#8a7d6d;text-decoration:line-through">Review Big-O notes before quiz</div><div style="font-size:12.5px;color:#8a7d6d">18m actual</div></div>
+</div>
+<div style="position:absolute;right:20px;bottom:20px;width:56px;height:56px;border-radius:28px;background:#b5502f;color:#fffdf6;font-size:26px;display:flex;align-items:center;justify-content:center;font-weight:400">+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e4d9c8;display:flex;flex-shrink:0;background:#faf5ec">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#b5502f"></div><span style="font-size:11px;font-weight:700;color:#b5502f">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Settings</span></div>
+</div>
+</div></div>
+
+<!-- A3 Add task -->
+<div><div class="dv-screen-label">A3 · Add task</div><div class="phone" style="background:#2b2420">
+<div style="flex:1;position:relative;font-family:system-ui">
+<div style="position:absolute;inset:0;background:rgba(20,16,12,.55)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fffdf9;border-radius:22px 22px 0 0;padding:22px 22px 28px">
+<div style="width:38px;height:4px;background:#e4d9c8;border-radius:2px;margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px"><span style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#2b2420">New task</span><span style="color:#8a7d6d;font-size:18px">×</span></div>
+<div style="border-bottom:2px solid #2b2420;padding-bottom:10px;margin-bottom:20px"><span style="font-family:Georgia,serif;font-size:19px;color:#2b2420">Refactor hash map resize logic</span></div>
+<div style="font-size:13px;color:#8a7d6d;margin-bottom:10px;font-weight:700">▾ Add estimate</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px">
+<div style="border:1.5px solid #e4d9c8;border-radius:20px;padding:9px 16px;font-size:13px;font-weight:700;color:#2b2420">Quick · 10m</div>
+<div style="border:1.5px solid #b5502f;background:#f2ded2;border-radius:20px;padding:9px 16px;font-size:13px;font-weight:700;color:#b5502f">Medium · 30m</div>
+<div style="border:1.5px solid #e4d9c8;border-radius:20px;padding:9px 16px;font-size:13px;font-weight:700;color:#2b2420">Long · 60m</div>
+<div style="border:1.5px solid #e4d9c8;border-radius:20px;padding:9px 16px;font-size:13px;font-weight:700;color:#2b2420">Skip</div>
+</div>
+<div style="background:#b5502f;color:#fffdf6;text-align:center;font-size:16px;font-weight:700;border-radius:24px;height:50px;display:flex;align-items:center;justify-content:center">Add task</div>
+</div>
+</div>
+</div></div>
+
+<!-- A4 Task details -->
+<div><div class="dv-screen-label">A4 · Task details</div><div class="phone" style="background:#faf5ec">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#2b2420">9:41</span><div style="width:20px;height:11px;border:1.5px solid #2b2420;border-radius:3px"></div></div>
+<div style="flex:1;padding:8px 24px 0;overflow:hidden;font-family:system-ui">
+<div style="color:#8a7d6d;font-size:20px;margin-bottom:14px">‹ Tasks</div>
+<div style="display:flex;align-items:flex-start;gap:14px">
+<div style="width:26px;height:26px;border-radius:13px;border:2px solid #8a7d6d;flex-shrink:0;margin-top:4px"></div>
+<div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#2b2420;line-height:1.25">Debug recursive parser (Lab 4)</div>
+</div>
+<div style="font-size:13.5px;color:#8a7d6d;margin:10px 0 20px 40px">45 min estimate · 18 min so far</div>
+<div style="margin-left:40px;background:#b5502f;color:#fffdf6;text-align:center;font-size:15px;font-weight:700;border-radius:24px;height:48px;display:flex;align-items:center;justify-content:center">Start focus timer</div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin:24px 0 8px 40px">Subtasks · 2 of 4</div>
+<div style="margin-left:40px">
+<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #e4d9c8"><div style="width:18px;height:18px;border-radius:9px;background:#2b2420"></div><span style="font-size:14.5px;color:#8a7d6d;text-decoration:line-through">Reproduce failing test</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #e4d9c8"><div style="width:18px;height:18px;border-radius:9px;background:#2b2420"></div><span style="font-size:14.5px;color:#8a7d6d;text-decoration:line-through">Add print traces</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #e4d9c8"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #8a7d6d"></div><span style="font-size:14.5px;color:#2b2420;font-weight:600">Fix base case</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #e4d9c8;border-bottom:1px solid #e4d9c8"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #8a7d6d"></div><span style="font-size:14.5px;color:#2b2420;font-weight:600">Rerun full test suite</span></div>
+<div style="font-size:13.5px;color:#8a7d6d;padding:10px 0;font-weight:700">+ Add subtask</div>
+</div>
+<div style="margin:16px 0 0 40px;font-size:13.5px;color:#8a7d6d;font-weight:700">▸ Notes</div>
+<div style="margin:26px 0 0 40px;font-size:13px;color:#8a7d6d">Delete task</div>
+</div>
+<div style="height:82px;border-top:1px solid #e4d9c8;flex-shrink:0"></div>
+</div></div>
+
+<!-- A5 Active timer -->
+<div><div class="dv-screen-label">A5 · Active focus timer</div><div class="phone" style="background:#2b2420">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#faf5ec">9:41</span><span style="color:#8a7d6d;font-size:18px">×</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;font-family:system-ui">
+<div style="font-family:Georgia,serif;font-size:17px;color:#e4d9c8">Debug recursive parser (Lab 4)</div>
+<div style="font-family:Georgia,serif;font-size:66px;font-weight:700;color:#faf5ec;margin:22px 0">18:42</div>
+<div style="font-family:Georgia,serif;font-style:italic;font-size:14px;color:#a89a89;margin-bottom:36px">Estimated 45 min — no rush.</div>
+<div style="width:100%;background:#e2a186;color:#2b2420;text-align:center;font-size:16px;font-weight:700;border-radius:26px;height:52px;display:flex;align-items:center;justify-content:center">Pause</div>
+<div style="margin-top:16px;font-size:15px;font-weight:700;color:#faf5ec">Done</div>
+<div style="margin-top:26px;display:flex;gap:22px"><span style="font-size:12.5px;color:#8a7d6d">Add time manually</span><span style="font-size:12.5px;color:#8a7d6d">Reset</span></div>
+</div>
+</div></div>
+
+<!-- A6 Review -->
+<div><div class="dv-screen-label">A6 · Timer completion / review</div><div class="phone" style="background:#faf5ec">
+<div style="height:44px;flex-shrink:0"></div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 30px;font-family:system-ui">
+<div style="font-family:Georgia,serif;font-size:27px;font-weight:700;color:#2b2420;text-align:center">Nice focus.</div>
+<div style="font-size:15px;color:#8a7d6d;text-align:center;margin-top:8px">You worked for 24 minutes.</div>
+<div style="background:#f2ded2;border-radius:12px;padding:16px;margin-top:22px">
+<div style="font-size:13.5px;color:#7a4028;line-height:1.6">Estimated 45, ran shorter. Good data for next time — not a miss.</div>
+</div>
+<div style="margin-top:26px;background:#b5502f;color:#fffdf6;text-align:center;font-size:16px;font-weight:700;border-radius:24px;height:50px;display:flex;align-items:center;justify-content:center">Save</div>
+<div style="display:flex;justify-content:center;gap:26px;margin-top:16px"><span style="font-size:13px;color:#8a7d6d;font-weight:700">Adjust time</span><span style="font-size:13px;color:#8a7d6d">Don't count this one</span></div>
+</div>
+</div></div>
+
+<!-- A7 Time Map -->
+<div><div class="dv-screen-label">A7 · Time Map / Insights</div><div class="phone" style="background:#faf5ec">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#2b2420">9:41</span><div style="width:20px;height:11px;border:1.5px solid #2b2420;border-radius:3px"></div></div>
+<div style="flex:1;padding:10px 24px 0;overflow:hidden;font-family:system-ui">
+<div style="font-family:Georgia,serif;font-size:25px;font-weight:700;color:#2b2420">Time Map</div>
+<div style="font-size:13.5px;color:#8a7d6d;margin-top:4px;line-height:1.5">A private look at how your time actually goes.</div>
+<div style="background:#fffdf9;border:1px solid #e4d9c8;border-radius:12px;padding:18px;margin-top:18px">
+<div style="font-family:Georgia,serif;font-size:34px;font-weight:700;color:#2b2420">22 min</div>
+<div style="font-size:12.5px;color:#8a7d6d">Typical focus session · 14 counted this month</div>
+</div>
+<div style="background:#f2ded2;border-radius:12px;padding:14px;margin-top:12px"><div style="font-size:13px;color:#7a4028;line-height:1.5">You're estimating coding tasks closer to reality than last month.</div></div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin:20px 0 6px">Recent sessions</div>
+<div style="border-top:1px solid #e4d9c8;padding:11px 0"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#2b2420">Debug recursive parser</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">Estimated 45 · ran 24 min · timer</div></div>
+<div style="border-top:1px solid #e4d9c8;padding:11px 0"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#2b2420">Review Big-O notes</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">Estimated 20 · ran 18 min · timer</div></div>
+<div style="border-top:1px solid #e4d9c8;border-bottom:1px solid #e4d9c8;padding:11px 0"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#2b2420">Email TA about extension</div><div style="font-size:12.5px;color:#8a7d6d;margin-top:2px">Not set · ran 4 min · manual</div></div>
+</div>
+<div style="height:82px;border-top:1px solid #e4d9c8;display:flex;flex-shrink:0;background:#faf5ec">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#b5502f"></div><span style="font-size:11px;font-weight:700;color:#b5502f">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Settings</span></div>
+</div>
+</div></div>
+
+<!-- A8 Settings -->
+<div><div class="dv-screen-label">A8 · Settings</div><div class="phone" style="background:#faf5ec">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#2b2420">9:41</span><div style="width:20px;height:11px;border:1.5px solid #2b2420;border-radius:3px"></div></div>
+<div style="flex:1;padding:10px 24px 0;overflow:hidden;font-family:system-ui">
+<div style="font-family:Georgia,serif;font-size:25px;font-weight:700;color:#2b2420;margin-bottom:16px">Settings</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid #e4d9c8">
+<div><div style="font-size:16px;font-weight:700;color:#2b2420">Maya Chen</div><div style="font-size:13px;color:#8a7d6d">maya.chen@cs.edu</div></div>
+<div style="font-size:13px;color:#8a7d6d;font-weight:700">Sign out</div>
+</div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin:20px 0 10px">Preferred time estimation</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="width:20px;height:20px;border-radius:10px;background:#2b2420"></div><span style="font-size:15.5px;color:#2b2420;font-weight:600">Quick / Medium / Long</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="width:20px;height:20px;border-radius:10px;border:2px solid #8a7d6d"></div><span style="font-size:15.5px;color:#2b2420">Minute presets</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="width:20px;height:20px;border-radius:10px;border:2px solid #8a7d6d"></div><span style="font-size:15.5px;color:#2b2420">Custom time entry</span></div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a7d6d;margin:20px 0 10px">Appearance</div>
+<div style="display:flex;gap:10px">
+<div style="border:1.5px solid #2b2420;background:#2b2420;color:#faf5ec;border-radius:20px;padding:9px 20px;font-size:14px;font-weight:700">Light</div>
+<div style="border:1.5px solid #e4d9c8;border-radius:20px;padding:9px 20px;font-size:14px;font-weight:700;color:#2b2420">Dark</div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #e4d9c8;display:flex;flex-shrink:0;background:#faf5ec">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a7d6d">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#b5502f"></div><span style="font-size:11px;font-weight:700;color:#b5502f">Settings</span></div>
+</div>
+</div></div>
+
+</div>
+</div>
+<!-- ============ END DIRECTION A ============ -->
+
+<!-- ============ DIRECTION B ============ -->
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Direction B — Calm &amp; Softly Structured</div>
+<div class="dv-odesc">Soft sage-and-slate palette, generously rounded flat-tint blocks (no shadows, no left-border stripes), friendly rounded sans throughout. The "up next" and timer screens carry a Tiimo-like sense of gentle structure without a literal chart.</div>
+<div class="dv-row">
+
+<!-- B1 Today -->
+<div><div class="dv-screen-label">B1 · Today</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#243128;font-family:system-ui">9:41</span><div style="width:20px;height:11px;border:1.5px solid #243128;border-radius:3px"></div></div>
+<div style="flex:1;padding:8px 22px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:22px;font-weight:700;color:#243128">Good afternoon, Maya</div>
+<div style="font-size:14.5px;color:#6d7d73;margin-top:6px;line-height:1.5">Three things today. Start wherever feels right.</div>
+<div style="background:#dcebe1;border-radius:20px;padding:18px;margin-top:20px">
+<div style="font-size:12px;font-weight:700;color:#4f7a63;text-transform:uppercase;letter-spacing:.04em">Up next</div>
+<div style="font-size:18.5px;font-weight:700;color:#243128;margin-top:6px">Debug recursive parser (Lab 4)</div>
+<div style="font-size:13px;color:#4d5f52;margin-top:4px">45 min estimate</div>
+<div style="margin-top:14px;background:#4f7a63;color:#fff;text-align:center;font-size:15px;font-weight:700;border-radius:16px;height:48px;display:flex;align-items:center;justify-content:center">Start focus timer</div>
+</div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin:20px 0 10px">Also today</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px">
+<div style="width:22px;height:22px;border-radius:11px;border:2px solid #a9bcae;flex-shrink:0"></div>
+<div><div style="font-size:15.5px;font-weight:600;color:#243128">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#6d7d73">30 min</div></div>
+</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px">
+<div style="width:22px;height:22px;border-radius:11px;border:2px solid #a9bcae;flex-shrink:0"></div>
+<div><div style="font-size:15.5px;font-weight:600;color:#243128">Office hours: ask about hash collisions</div><div style="font-size:12.5px;color:#6d7d73">15 min</div></div>
+</div>
+<div style="margin-top:20px;font-size:13px;color:#6d7d73;text-align:center">You focused for 1h 40m yesterday.</div>
+</div>
+<div style="height:82px;border-top:1px solid #dde6df;display:flex;flex-shrink:0;background:#eef2ee">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px;border-radius:3px;background:#4f7a63"></div><span style="font-size:11px;font-weight:700;color:#4f7a63">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Settings</span></div>
+</div>
+</div></div>
+
+<!-- B2 Tasks -->
+<div><div class="dv-screen-label">B2 · Tasks list</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#243128">9:41</span><div style="width:20px;height:11px;border:1.5px solid #243128;border-radius:3px"></div></div>
+<div style="flex:1;padding:10px 22px 0;overflow:hidden;position:relative;font-family:system-ui">
+<div style="font-size:23px;font-weight:700;color:#243128;margin-bottom:14px">Tasks</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px"><div style="width:22px;height:22px;border-radius:11px;border:2px solid #a9bcae;flex-shrink:0"></div><div><div style="font-size:15.5px;font-weight:600;color:#243128">Debug recursive parser (Lab 4)</div><div style="font-size:12.5px;color:#6d7d73">45 min · 2/4 subtasks · 18m logged</div></div></div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px"><div style="width:22px;height:22px;border-radius:11px;border:2px solid #a9bcae;flex-shrink:0"></div><div><div style="font-size:15.5px;font-weight:600;color:#243128">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#6d7d73">30 min</div></div></div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px"><div style="width:22px;height:22px;border-radius:11px;border:2px solid #a9bcae;flex-shrink:0"></div><div><div style="font-size:15.5px;font-weight:600;color:#243128">Office hours: ask about hash collisions</div><div style="font-size:12.5px;color:#6d7d73">15 min</div></div></div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px"><div style="width:22px;height:22px;border-radius:11px;border:2px solid #a9bcae;flex-shrink:0"></div><div><div style="font-size:15.5px;font-weight:600;color:#243128">Write unit tests for Trie class</div><div style="font-size:12.5px;color:#6d7d73">25 min</div></div></div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px"><div style="width:22px;height:22px;border-radius:11px;border:2px solid #a9bcae;flex-shrink:0"></div><div><div style="font-size:15.5px;font-weight:600;color:#243128">Push final commit + tag release</div><div style="font-size:12.5px;color:#6d7d73">10 min</div></div></div>
+</div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px">Completed</div>
+<div style="background:#e7ebe6;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px"><div style="width:22px;height:22px;border-radius:11px;background:#4f7a63;flex-shrink:0"></div><div><div style="font-size:15px;font-weight:600;color:#6d7d73;text-decoration:line-through">Review Big-O notes before quiz</div><div style="font-size:12.5px;color:#6d7d73">18m actual</div></div></div>
+<div style="position:absolute;right:20px;bottom:20px;width:56px;height:56px;border-radius:28px;background:#4f7a63;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center">+</div>
+</div>
+<div style="height:82px;border-top:1px solid #dde6df;display:flex;flex-shrink:0;background:#eef2ee">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px;border-radius:3px;background:#4f7a63"></div><span style="font-size:11px;font-weight:700;color:#4f7a63">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Settings</span></div>
+</div>
+</div></div>
+
+<!-- B3 Add task -->
+<div><div class="dv-screen-label">B3 · Add task</div><div class="phone" style="background:#1c2a22">
+<div style="flex:1;position:relative;font-family:system-ui">
+<div style="position:absolute;inset:0;background:rgba(10,18,14,.5)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#ffffff;border-radius:24px 24px 0 0;padding:22px 22px 28px">
+<div style="width:38px;height:4px;background:#dde6df;border-radius:2px;margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px"><span style="font-size:19px;font-weight:700;color:#243128">New task</span><span style="color:#6d7d73;font-size:18px">×</span></div>
+<div style="background:#f4f7f4;border-radius:14px;padding:14px 16px;margin-bottom:18px"><span style="font-size:16px;color:#243128">Refactor hash map resize logic</span></div>
+<div style="font-size:13px;color:#4f7a63;margin-bottom:10px;font-weight:700">▾ Add estimate</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px">
+<div style="background:#f4f7f4;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#243128">Quick · 10m</div>
+<div style="background:#4f7a63;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#fff">Medium · 30m</div>
+<div style="background:#f4f7f4;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#243128">Long · 60m</div>
+<div style="background:#f4f7f4;border-radius:18px;padding:9px 16px;font-size:13px;font-weight:700;color:#243128">Skip</div>
+</div>
+<div style="background:#4f7a63;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:16px;height:50px;display:flex;align-items:center;justify-content:center">Add task</div>
+</div>
+</div>
+</div></div>
+
+<!-- B4 Task details -->
+<div><div class="dv-screen-label">B4 · Task details</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#243128">9:41</span><div style="width:20px;height:11px;border:1.5px solid #243128;border-radius:3px"></div></div>
+<div style="flex:1;padding:8px 22px 0;overflow:hidden;font-family:system-ui">
+<div style="color:#6d7d73;font-size:20px;margin-bottom:14px">‹ Tasks</div>
+<div style="background:#dcebe1;border-radius:20px;padding:18px">
+<div style="display:flex;align-items:flex-start;gap:12px">
+<div style="width:24px;height:24px;border-radius:12px;border:2px solid #4f7a63;flex-shrink:0;margin-top:2px"></div>
+<div style="font-size:19.5px;font-weight:700;color:#243128;line-height:1.3">Debug recursive parser (Lab 4)</div>
+</div>
+<div style="font-size:13px;color:#4d5f52;margin:8px 0 16px 36px">45 min estimate · 18 min so far</div>
+<div style="margin-left:36px;background:#4f7a63;color:#fff;text-align:center;font-size:15px;font-weight:700;border-radius:16px;height:48px;display:flex;align-items:center;justify-content:center">Start focus timer</div>
+</div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin:20px 0 8px">Subtasks · 2 of 4</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px"><div style="width:18px;height:18px;border-radius:9px;background:#4f7a63"></div><span style="font-size:14.5px;color:#6d7d73;text-decoration:line-through">Reproduce failing test</span></div>
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px"><div style="width:18px;height:18px;border-radius:9px;background:#4f7a63"></div><span style="font-size:14.5px;color:#6d7d73;text-decoration:line-through">Add print traces</span></div>
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px"><div style="width:18px;height:18px;border-radius:9px;border:2px solid #a9bcae"></div><span style="font-size:14.5px;color:#243128;font-weight:600">Fix base case</span></div>
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px"><div style="width:18px;height:18px;border-radius:9px;border:2px solid #a9bcae"></div><span style="font-size:14.5px;color:#243128;font-weight:600">Rerun full test suite</span></div>
+</div>
+<div style="font-size:13.5px;color:#4f7a63;font-weight:700;margin-top:12px">+ Add subtask</div>
+<div style="margin-top:16px;font-size:13.5px;color:#6d7d73;font-weight:700">▸ Notes</div>
+<div style="margin-top:22px;font-size:13px;color:#8a938e">Delete task</div>
+</div>
+<div style="height:82px;border-top:1px solid #dde6df;flex-shrink:0"></div>
+</div></div>
+
+<!-- B5 Active timer -->
+<div><div class="dv-screen-label">B5 · Active focus timer</div><div class="phone" style="background:#1c2a22">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#eef2ee">9:41</span><span style="color:#8fa596;font-size:18px">×</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;font-family:system-ui">
+<div style="font-size:16px;color:#c3d2c8">Debug recursive parser (Lab 4)</div>
+<div style="font-size:64px;font-weight:800;color:#eef2ee;margin:22px 0">18:42</div>
+<div style="background:rgba(255,255,255,.08);border-radius:14px;padding:10px 16px;font-size:13.5px;color:#c3d2c8;margin-bottom:36px">Estimated 45 min — no rush</div>
+<div style="width:100%;background:#9ccf9b;color:#16241a;text-align:center;font-size:16px;font-weight:700;border-radius:18px;height:52px;display:flex;align-items:center;justify-content:center">Pause</div>
+<div style="margin-top:16px;font-size:15px;font-weight:700;color:#eef2ee">Done</div>
+<div style="margin-top:26px;display:flex;gap:22px"><span style="font-size:12.5px;color:#8fa596">Add time manually</span><span style="font-size:12.5px;color:#8fa596">Reset</span></div>
+</div>
+</div></div>
+
+<!-- B6 Review -->
+<div><div class="dv-screen-label">B6 · Timer completion / review</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;flex-shrink:0"></div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 26px;font-family:system-ui">
+<div style="font-size:24px;font-weight:700;color:#243128;text-align:center">Nice focus.</div>
+<div style="font-size:15px;color:#6d7d73;text-align:center;margin-top:8px">You worked for 24 minutes.</div>
+<div style="background:#dcebe1;border-radius:16px;padding:16px;margin-top:22px"><div style="font-size:13.5px;color:#365c46;line-height:1.6">Estimated 45, ran shorter. Good data for next time — not a miss.</div></div>
+<div style="margin-top:24px;background:#4f7a63;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:16px;height:50px;display:flex;align-items:center;justify-content:center">Save</div>
+<div style="display:flex;justify-content:center;gap:24px;margin-top:16px"><span style="font-size:13px;color:#4f7a63;font-weight:700">Adjust time</span><span style="font-size:13px;color:#6d7d73">Don't count this one</span></div>
+</div>
+</div></div>
+
+<!-- B7 Time Map -->
+<div><div class="dv-screen-label">B7 · Time Map / Insights</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#243128">9:41</span><div style="width:20px;height:11px;border:1.5px solid #243128;border-radius:3px"></div></div>
+<div style="flex:1;padding:10px 22px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:23px;font-weight:700;color:#243128">Time Map</div>
+<div style="font-size:13.5px;color:#6d7d73;margin-top:4px;line-height:1.5">A private look at how your time actually goes.</div>
+<div style="background:#dcebe1;border-radius:18px;padding:18px;margin-top:16px">
+<div style="font-size:32px;font-weight:800;color:#243128">22 min</div>
+<div style="font-size:12.5px;color:#4d5f52">Typical focus session · 14 counted this month</div>
+</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;margin-top:10px"><div style="font-size:13px;color:#4f7a63;line-height:1.5">You're estimating coding tasks closer to reality than last month.</div></div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px">Recent sessions</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px"><div style="font-size:14.5px;font-weight:700;color:#243128">Debug recursive parser</div><div style="font-size:12.5px;color:#6d7d73;margin-top:2px">Estimated 45 · ran 24 min · timer</div></div>
+<div style="background:#f4f7f4;border-radius:14px;padding:12px 14px"><div style="font-size:14.5px;font-weight:700;color:#243128">Review Big-O notes</div><div style="font-size:12.5px;color:#6d7d73;margin-top:2px">Estimated 20 · ran 18 min · timer</div></div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #dde6df;display:flex;flex-shrink:0;background:#eef2ee">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px;border-radius:3px;background:#4f7a63"></div><span style="font-size:11px;font-weight:700;color:#4f7a63">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Settings</span></div>
+</div>
+</div></div>
+
+<!-- B8 Settings -->
+<div><div class="dv-screen-label">B8 · Settings</div><div class="phone" style="background:#eef2ee">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#243128">9:41</span><div style="width:20px;height:11px;border:1.5px solid #243128;border-radius:3px"></div></div>
+<div style="flex:1;padding:10px 22px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:23px;font-weight:700;color:#243128;margin-bottom:16px">Settings</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+<div><div style="font-size:16px;font-weight:700;color:#243128">Maya Chen</div><div style="font-size:13px;color:#6d7d73">maya.chen@cs.edu</div></div>
+<div style="font-size:13px;color:#4f7a63;font-weight:700">Sign out</div>
+</div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Preferred time estimation</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:4px;display:flex;flex-direction:column;gap:2px;margin-bottom:18px">
+<div style="background:#dcebe1;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;background:#4f7a63"></div><span style="font-size:15px;color:#243128;font-weight:700">Quick / Medium / Long</span></div>
+<div style="padding:12px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;border:2px solid #a9bcae"></div><span style="font-size:15px;color:#243128">Minute presets</span></div>
+<div style="padding:12px 14px;display:flex;align-items:center;gap:12px"><div style="width:18px;height:18px;border-radius:9px;border:2px solid #a9bcae"></div><span style="font-size:15px;color:#243128">Custom time entry</span></div>
+</div>
+<div style="font-size:12px;font-weight:700;color:#6d7d73;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Appearance</div>
+<div style="display:flex;gap:10px">
+<div style="background:#4f7a63;color:#fff;border-radius:16px;padding:9px 20px;font-size:14px;font-weight:700">Light</div>
+<div style="background:#f4f7f4;border-radius:16px;padding:9px 20px;font-size:14px;font-weight:700;color:#243128">Dark</div>
+</div>
+</div>
+<div style="height:82px;border-top:1px solid #dde6df;display:flex;flex-shrink:0;background:#eef2ee">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px"></div><span style="font-size:11px;color:#6d7d73">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:6px;height:6px;border-radius:3px;background:#4f7a63"></div><span style="font-size:11px;font-weight:700;color:#4f7a63">Settings</span></div>
+</div>
+</div></div>
+
+</div>
+</div>
+<!-- ============ END DIRECTION B ============ -->
+
+<!-- ============ DIRECTION C ============ -->
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Direction C — Extremely Minimal &amp; Focus-Oriented</div>
+<div class="dv-odesc">Near-monochrome, hairline dividers only, one thing on screen at a time. Today shows a single "Now" task; nearly everything else sits behind a small text disclosure. One sparing amber accent marks the one primary action.</div>
+<div class="dv-row">
+
+<!-- C1 Today -->
+<div><div class="dv-screen-label">C1 · Today</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a;font-family:system-ui">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:26px 28px 0;overflow:hidden;font-family:system-ui;display:flex;flex-direction:column">
+<div style="font-size:13px;color:#8a8a8f">Wednesday</div>
+<div style="font-size:12px;color:#8a8a8f;text-transform:uppercase;letter-spacing:.08em;margin-top:32px">Now</div>
+<div style="font-size:26px;font-weight:700;color:#17171a;margin-top:8px;line-height:1.3">Debug recursive parser<br>(Lab 4)</div>
+<div style="font-size:13.5px;color:#8a8a8f;margin-top:8px">45 min</div>
+<div style="margin-top:28px;background:#17171a;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:26px;height:52px;display:flex;align-items:center;justify-content:center">Start</div>
+<div style="flex:1"></div>
+<div style="font-size:13px;color:#8a8a8f;margin-bottom:28px">2 more today</div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;display:flex;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#17171a"></div><span style="font-size:11px;font-weight:700;color:#17171a">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Settings</span></div>
+</div>
+</div></div>
+
+<!-- C2 Tasks -->
+<div><div class="dv-screen-label">C2 · Tasks list</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:20px 28px 0;overflow:hidden;position:relative;font-family:system-ui">
+<div style="font-size:22px;font-weight:700;color:#17171a;margin-bottom:18px">Tasks</div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Debug recursive parser (Lab 4)</div><div style="font-size:12.5px;color:#8a8a8f">45m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Read Ch. 6 — Distributed Consensus</div><div style="font-size:12.5px;color:#8a8a8f">30m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Office hours: hash collisions</div><div style="font-size:12.5px;color:#8a8a8f">15m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Write unit tests for Trie class</div><div style="font-size:12.5px;color:#8a8a8f">25m</div></div>
+<div style="display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid #ececee;border-bottom:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;border:1.5px solid #c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#17171a">Push final commit + tag release</div><div style="font-size:12.5px;color:#8a8a8f">10m</div></div>
+<div style="font-size:12px;color:#8a8a8f;margin:18px 0 6px">Completed (1)</div>
+<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #ececee"><div style="width:20px;height:20px;border-radius:10px;background:#c9c9cd;flex-shrink:0"></div><div style="flex:1;font-size:16px;color:#b3b3b8;text-decoration:line-through">Review Big-O notes before quiz</div></div>
+<div style="position:absolute;right:22px;bottom:22px;width:52px;height:52px;border-radius:26px;background:#17171a;color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center">+</div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;display:flex;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#17171a"></div><span style="font-size:11px;font-weight:700;color:#17171a">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Settings</span></div>
+</div>
+</div></div>
+
+<!-- C3 Add task -->
+<div><div class="dv-screen-label">C3 · Add task</div><div class="phone" style="background:#17171a">
+<div style="flex:1;position:relative;font-family:system-ui">
+<div style="position:absolute;inset:0;background:rgba(0,0,0,.5)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;padding:26px 26px 32px">
+<div style="width:36px;height:4px;background:#ececee;border-radius:2px;margin:0 auto 20px"></div>
+<div style="border-bottom:2px solid #17171a;padding-bottom:12px;margin-bottom:16px"><span style="font-size:19px;color:#17171a">Refactor hash map resize logic</span></div>
+<div style="font-size:13px;color:#8a8a8f;margin-bottom:22px">+ estimate</div>
+<div style="background:#17171a;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:26px;height:52px;display:flex;align-items:center;justify-content:center">Add</div>
+</div>
+</div>
+</div></div>
+
+<!-- C4 Task details -->
+<div><div class="dv-screen-label">C4 · Task details</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:20px 28px 0;overflow:hidden;font-family:system-ui">
+<div style="color:#8a8a8f;font-size:20px;margin-bottom:20px">‹</div>
+<div style="font-size:23px;font-weight:700;color:#17171a;line-height:1.3">Debug recursive parser (Lab 4)</div>
+<div style="font-size:13.5px;color:#8a8a8f;margin-top:8px">45 min · 18 min so far</div>
+<div style="margin-top:24px;background:#17171a;color:#fff;text-align:center;font-size:15px;font-weight:700;border-radius:26px;height:50px;display:flex;align-items:center;justify-content:center">Start</div>
+<div style="font-size:12px;color:#8a8a8f;margin:28px 0 10px">Subtasks — 2/4</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #ececee"><div style="width:18px;height:18px;border-radius:9px;background:#17171a"></div><span style="font-size:15px;color:#b3b3b8;text-decoration:line-through">Reproduce failing test</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #ececee"><div style="width:18px;height:18px;border-radius:9px;background:#17171a"></div><span style="font-size:15px;color:#b3b3b8;text-decoration:line-through">Add print traces</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #ececee"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c9cd"></div><span style="font-size:15px;color:#17171a">Fix base case</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #ececee;border-bottom:1px solid #ececee"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c9cd"></div><span style="font-size:15px;color:#17171a">Rerun full test suite</span></div>
+<div style="font-size:13px;color:#8a8a8f;margin-top:22px">Notes · Delete</div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;flex-shrink:0"></div>
+</div></div>
+
+<!-- C5 Active timer -->
+<div><div class="dv-screen-label">C5 · Active focus timer</div><div class="phone" style="background:#17171a">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#fff">9:41</span><span style="color:#6b6b70;font-size:18px">×</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;font-family:system-ui">
+<div style="font-size:14px;color:#8a8a8f">Debug recursive parser</div>
+<div style="font-size:76px;font-weight:800;color:#fff;margin:22px 0;letter-spacing:-.02em">18:42</div>
+<div style="font-size:13px;color:#6b6b70;margin-bottom:44px">45 min estimated</div>
+<div style="font-size:16px;font-weight:700;color:#e0a458">Done</div>
+<div style="margin-top:22px;font-size:13px;color:#6b6b70">Pause</div>
+</div>
+</div></div>
+
+<!-- C6 Review -->
+<div><div class="dv-screen-label">C6 · Timer completion / review</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;flex-shrink:0"></div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 32px;font-family:system-ui">
+<div style="font-size:15px;color:#8a8a8f">24 minutes.</div>
+<div style="font-size:24px;font-weight:700;color:#17171a;margin-top:4px">Nice work.</div>
+<div style="font-size:13.5px;color:#8a8a8f;margin-top:14px;line-height:1.6">Estimated 45 — ran shorter. Just data.</div>
+<div style="margin-top:30px;background:#17171a;color:#fff;text-align:center;font-size:16px;font-weight:700;border-radius:26px;height:52px;display:flex;align-items:center;justify-content:center">Save</div>
+<div style="text-align:center;margin-top:16px;font-size:13px;color:#8a8a8f">Adjust · Don't count this one</div>
+</div>
+</div></div>
+
+<!-- C7 Time Map -->
+<div><div class="dv-screen-label">C7 · Time Map / Insights</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:26px 28px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:22px;font-weight:700;color:#17171a">Time Map</div>
+<div style="font-size:13px;color:#8a8a8f;margin-top:6px;line-height:1.5">A private look at how your time actually goes.</div>
+<div style="margin-top:36px;font-size:44px;font-weight:800;color:#17171a">22 min</div>
+<div style="font-size:13px;color:#8a8a8f;margin-top:4px">Typical focus session</div>
+<div style="margin-top:20px;font-size:16px;color:#17171a">14 sessions counted this month</div>
+<div style="margin-top:20px;font-size:13.5px;color:#8a8a8f;line-height:1.6">You're estimating coding tasks closer to reality than last month.</div>
+<div style="margin-top:30px;font-size:13px;font-weight:700;color:#e0a458">View sessions</div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;display:flex;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#17171a"></div><span style="font-size:11px;font-weight:700;color:#17171a">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Settings</span></div>
+</div>
+</div></div>
+
+<!-- C8 Settings -->
+<div><div class="dv-screen-label">C8 · Settings</div><div class="phone" style="background:#ffffff">
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex-shrink:0"><span style="font-size:15px;font-weight:600;color:#17171a">9:41</span><div style="width:20px;height:11px;border:1.5px solid #17171a;border-radius:3px"></div></div>
+<div style="flex:1;padding:20px 28px 0;overflow:hidden;font-family:system-ui">
+<div style="font-size:22px;font-weight:700;color:#17171a;margin-bottom:20px">Settings</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid #ececee">
+<div><div style="font-size:16px;font-weight:600;color:#17171a">Maya Chen</div><div style="font-size:13px;color:#8a8a8f">maya.chen@cs.edu</div></div>
+<div style="font-size:13px;color:#8a8a8f">Sign out</div>
+</div>
+<div style="font-size:12px;color:#8a8a8f;margin:20px 0 10px">Preferred time estimation</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="width:18px;height:18px;border-radius:9px;background:#17171a"></div><span style="font-size:15px;color:#17171a;font-weight:600">Quick / Medium / Long</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c9cd"></div><span style="font-size:15px;color:#17171a">Minute presets</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="width:18px;height:18px;border-radius:9px;border:1.5px solid #c9c9cd"></div><span style="font-size:15px;color:#17171a">Custom time entry</span></div>
+<div style="font-size:12px;color:#8a8a8f;margin:20px 0 10px">Appearance</div>
+<div style="display:flex;gap:24px"><span style="font-size:15px;font-weight:700;color:#17171a;border-bottom:2px solid #17171a;padding-bottom:2px">Light</span><span style="font-size:15px;color:#8a8a8f">Dark</span></div>
+</div>
+<div style="height:82px;border-top:1px solid #ececee;display:flex;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Today</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Tasks</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px"></div><span style="font-size:11px;color:#8a8a8f">Time Map</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div style="width:5px;height:5px;border-radius:3px;background:#17171a"></div><span style="font-size:11px;font-weight:700;color:#17171a">Settings</span></div>
+</div>
+</div></div>
+
+</div>
+</div>
+<!-- ============ END DIRECTION C ============ -->
+
+</div>
+
+<div class="dv-tradeoffs">
+<h4>Cognitive-load tradeoffs</h4>
+<b><a class="dv-oid" href="#1a">1a</a> Warm &amp; Editorial</b> — the serif voice and rule-line lists make the app feel personal and low-pressure, and grouping by rule instead of boxes keeps density down. Tradeoff: the richer type hierarchy (serif headline + sans body + italic asides) asks a reader to parse more visual registers than B or C — good for someone who enjoys texture, harder for someone who wants zero styling to parse.
+<br><br>
+<b><a class="dv-oid" href="#1b">1b</a> Calm &amp; Softly Structured</b> — flat tinted blocks give every item a soft, consistent visual boundary without shadows or borders, which is easy to scan and feels supportive rather than clinical. Tradeoff: more surface area is "designed" (rounded blocks everywhere), so it carries slightly more visual weight per screen than 1c, and the sage/blue tinting needs restraint or it starts to read busy.
+<br><br>
+<b><a class="dv-oid" href="#1c">1c</a> Extremely Minimal</b> — the lowest moment-to-moment load: one task foregrounded on Today, hairline-only lists, a single accent used once per screen. Best for reducing decision fatigue and overwhelm in the moment. Tradeoff: it hides more behind taps (notes, subtasks review, session history), which costs a bit more navigation for a user who wants everything visible at once, and offers less warmth/personality than A or B.
+<br><br>
+<b>Recommendation:</b> <a class="dv-oid" href="#1c">1c</a> for the core task/timer loop (Today, Tasks, Add, Details, Timer, Review) — those are the highest-frequency, highest-distraction-risk screens, where minimal chrome matters most. Pair it with <a class="dv-oid" href="#1b">1b</a>'s softer, flat-block treatment for Time Map and Settings, which are lower-frequency and benefit from a bit more visual warmth once the user is in a reflective, less time-pressured mode. Avoid mixing in 1a's serif system, since a second typographic voice adds load without a clear payoff here.
+</div>
+
+<p class="dv-next">Try next: "mock up 1c's Tasks and Timer with 1b's Time Map and Settings" · "show light/dark for <a class="dv-oid" href="#1c">1c</a>" · "add a manual time-entry screen to <a class="dv-oid" href="#1b">1b</a>"</p>
+</section>
+
+</x-dc>
+</body>
+</html>
