@@ -152,3 +152,26 @@ func TestHandleGenerateSubtasksRejectsInvalidRequests(t *testing.T) {
 		})
 	}
 }
+func TestHandleHealth(t *testing.T) {
+	request := httptest.NewRequest(
+		http.MethodGet,
+		"/health",
+		nil,
+		
+	)
+
+	recorder := httptest.NewRecorder()
+
+	handleHealth(recorder, request)
+
+	response := recorder.Result()
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.StatusCode,
+		)
+	}
+}
