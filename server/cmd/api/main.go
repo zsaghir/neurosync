@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
-)
 
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 type GenerateSubtasksRequest struct {
 	TaskTitle string `json:"taskTitle"`
 }
@@ -34,13 +37,33 @@ type ErrorResponse struct {
 }
 
 func main() {
+	//fetch database url to establish pool connection
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL not set")
+	}
+	pool, err := pgxpool.New(
+		context.Background(),
+		databaseURL,
+	)
+	if err != nil {
+		log.Fatalf("could not create connection: %v", err)
+	}
+	
+	defer pool.Close()
+	
+	if err := pool.Ping(context.Background()); err != nil {
+		log.Fatalf("could not connect to PostgreSQL: %v", err)
+	}
+	
+	log.Println("Connected to PostgreSQL")
+	
 	http.HandleFunc("/health", withCORS(handleHealth))
 	http.HandleFunc("/subtasks", withCORS(handleGenerateSubtasks))
-
+	
 	log.Println("Starting server on port 8080")
-
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
+	
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
 }
