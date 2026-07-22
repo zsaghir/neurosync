@@ -34,14 +34,41 @@ type ErrorResponse struct {
 }
 
 func main() {
-	http.HandleFunc("/health", handleHealth)
-	http.HandleFunc("/subtasks", handleGenerateSubtasks)
+	http.HandleFunc("/health", withCORS(handleHealth))
+	http.HandleFunc("/subtasks", withCORS(handleGenerateSubtasks))
 
 	log.Println("Starting server on port 8080")
 
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+func withCORS(next http.HandlerFunc) http.HandlerFunc {
+	// 1. Check the request's origin
+	const allowedOrigin = "http://localhost:8081"
+	return func (w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		// A browser origin was supplied, but it isn't one we allow.
+		if (origin != ("") &&  origin != allowedOrigin ){
+			http.Error(w,"origin not allowed", http.StatusForbidden)
+			return
+		}
+		// Give the approved browser origin permission.
+		if (origin == allowedOrigin) {
+			//alllow origin
+			w.Header().Set("Access-Control-Allow-Origin",allowedOrigin)
+			//allow method
+			w.Header().Set("Access-Control-Allow-Methods","POST,GET, OPTIONS")
+			//allow headers
+			w.Header().Set("Access-Control-Allow-Headers","Content-Type")
+		}
+        //check if method for preflight request is allowed 
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next(w, r)
 	}
 }
 

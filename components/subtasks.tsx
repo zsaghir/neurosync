@@ -3,10 +3,9 @@ import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
 import {
   addSubtask,
-  setTaskSubtasks,
   toggleSubtaskComplete,
   type TaskDocument,
-  type TaskInput,
+  type TaskInput
 } from "@/lib/sanity/tasks";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
@@ -16,7 +15,10 @@ type Subtask = NonNullable<TaskInput["subtasks"]>[number];
 
 type GenerateSubtasksResponse = {
   subtasks?: NonNullable<TaskInput["subtasks"]>;
-  error?: string;
+  error?: {
+    code: string;
+    message: string;
+  };
 };
 
 type SubtasksProps = {
@@ -48,33 +50,44 @@ const Subtasks = ({
   const hasSubtasks = subtasks.length > 0;
 
   const handleGenerateSubtasks = async () => {
-    setError("");
-    setIsGenerating(true);
-
     try {
-      const response = await fetch("/api/subtasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ taskId: task._id, userId }),
-      });
-      const body = (await response.json()) as GenerateSubtasksResponse;
-
+      setIsGenerating(true)
+      setError("")
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL
+      if(!apiUrl) {
+        throw new Error("Missing API URL")
+      }
+      const taskTitle = task.title?.trim()
+      if (!taskTitle) {
+        throw new Error("This task needs a title before generating subtasks.");
+      }
+      const response = await fetch(`${apiUrl}/subtasks`,{
+        method : "POST",
+        headers: {"Content-type": "application/json"},
+        body: JSON.stringify({taskTitle})
+      })
+      const body = (await response.json() as GenerateSubtasksResponse)
       if (!response.ok) {
-        throw new Error(body?.error ?? "Failed to generate subtasks.");
+        throw new Error("failed to generate subtasks")
       }
-
-      if (!body.subtasks) {
-        throw new Error("The subtasks API did not return any subtasks.");
+      if (!response.body) {
+        throw new Error("Server didnot return subtasks")
       }
+      if (!Array.isArray(body.subtasks)) {
+        throw new Error("The server returned an invalid subtask response.");
+      }
+      onSubtasksChanged(task._id, body.subtasks);
+    }
+    catch (error){
+      const message =
+    error instanceof Error
+      ? error.message
+      : "Something went wrong.";
 
-      const savedTask = await setTaskSubtasks(task._id, body.subtasks);
-      onSubtasksChanged(task._id, savedTask.subtasks ?? body.subtasks);
-    } catch (generateError) {
-      console.error("Error generating subtasks:", generateError);
-      setError("Could not generate subtasks. Please try again.");
-    } finally {
+  console.error("Error generating subtasks:", error);
+  setError(message);
+    }
+    finally {
       setIsGenerating(false);
     }
   };
