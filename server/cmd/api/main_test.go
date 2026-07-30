@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestHandleGenerateSubtasksSuccess(t *testing.T) {
@@ -152,12 +155,108 @@ func TestHandleGenerateSubtasksRejectsInvalidRequests(t *testing.T) {
 		})
 	}
 }
+
+type fakeDatabasePinger struct {
+	err error
+}
+
+func (fake *fakeDatabasePinger) Ping(context.Context) error {
+	return fake.err
+}
+
+func TestHandleReadySuccess(t *testing.T) {
+	api := &API{
+		database:         &fakeDatabasePinger{},
+		readinessTimeout: time.Second,
+	}
+	request := httptest.NewRequest(http.MethodGet, "/ready", nil)
+	recorder := httptest.NewRecorder()
+
+	api.handleReady(recorder, request)
+
+	response := recorder.Result()
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.StatusCode,
+		)
+	}
+
+	if recorder.Body.String() != "ready" {
+		t.Errorf("expected ready response, got %q", recorder.Body.String())
+	}
+}
+
+func TestHandleReadyWhenDatabaseUnavailable(t *testing.T) {
+	api := &API{
+		database: &fakeDatabasePinger{
+			err: errors.New("connection failed with sensitive details"),
+		},
+		readinessTimeout: time.Second,
+	}
+	request := httptest.NewRequest(http.MethodGet, "/ready", nil)
+	recorder := httptest.NewRecorder()
+
+	api.handleReady(recorder, request)
+
+	response := recorder.Result()
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusServiceUnavailable,
+			response.StatusCode,
+		)
+	}
+
+	if strings.Contains(recorder.Body.String(), "sensitive details") {
+		t.Fatal("readiness response exposed the database error")
+	}
+
+	var body ErrorResponse
+	if err := json.NewDecoder(response.Body).Decode(&body); err != nil {
+		t.Fatalf("could not decode readiness response: %v", err)
+	}
+
+	if body.Error.Code != "database_unavailable" {
+		t.Errorf(
+			"expected database_unavailable, got %q",
+			body.Error.Code,
+		)
+	}
+}
+
+func TestHandleReadyRejectsWrongMethod(t *testing.T) {
+	api := &API{
+		database:         &fakeDatabasePinger{},
+		readinessTimeout: time.Second,
+	}
+	request := httptest.NewRequest(http.MethodPost, "/ready", nil)
+	recorder := httptest.NewRecorder()
+
+	api.handleReady(recorder, request)
+
+	response := recorder.Result()
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusMethodNotAllowed {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusMethodNotAllowed,
+			response.StatusCode,
+		)
+	}
+}
+
 func TestHandleHealth(t *testing.T) {
 	request := httptest.NewRequest(
 		http.MethodGet,
 		"/health",
 		nil,
-		
 	)
 
 	recorder := httptest.NewRecorder()

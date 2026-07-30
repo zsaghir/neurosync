@@ -8,9 +8,21 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
-	"github.com/jackc/pgx/v5/pgxpool"
+	"time"
 )
+
+// DatabasePinger is the database behavior required by readiness checks.
+// pgxpool.Pool satisfies this interface.
+type DatabasePinger interface {
+	Ping(context.Context) error
+}
+
+// API contains dependencies shared by HTTP handlers.
+type API struct {
+	database         DatabasePinger
+	readinessTimeout time.Duration
+}
+
 type GenerateSubtasksRequest struct {
 	TaskTitle string `json:"taskTitle"`
 }
@@ -37,56 +49,59 @@ type ErrorResponse struct {
 }
 
 func main() {
-	//fetch database url to establish pool connection
-	databaseURL := os.Getenv("DATABASE_URL")
-	if databaseURL == "" {
-		log.Fatal("DATABASE_URL not set")
-	}
-	pool, err := pgxpool.New(
-		context.Background(),
-		databaseURL,
-	)
+	databaseConfig, err := loadDatabaseConfig(os.Getenv)
 	if err != nil {
-		log.Fatalf("could not create connection: %v", err)
+		log.Fatalf("invalid database configuration: %v", err)
 	}
-	
+
+	pool, err := connectDatabase(context.Background(), databaseConfig)
+	if err != nil {
+		log.Fatal("could not initialize PostgreSQL")
+	}
 	defer pool.Close()
-	
-	if err := pool.Ping(context.Background()); err != nil {
-		log.Fatalf("could not connect to PostgreSQL: %v", err)
+
+	api := &API{
+		database:         pool,
+		readinessTimeout: databaseConfig.ReadinessTimeout,
 	}
-	
+
 	log.Println("Connected to PostgreSQL")
-	
-	http.HandleFunc("/health", withCORS(handleHealth))
-	http.HandleFunc("/subtasks", withCORS(handleGenerateSubtasks))
-	
 	log.Println("Starting server on port 8080")
-	
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+
+	if err := http.ListenAndServe(":8080", api.routes()); err != nil {
 		log.Fatal(err)
 	}
 }
+
+func (api *API) routes() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", withCORS(handleHealth))
+	mux.HandleFunc("/ready", withCORS(api.handleReady))
+	mux.HandleFunc("/subtasks", withCORS(handleGenerateSubtasks))
+
+	return mux
+}
+
 func withCORS(next http.HandlerFunc) http.HandlerFunc {
 	// 1. Check the request's origin
 	const allowedOrigin = "http://localhost:8081"
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		// A browser origin was supplied, but it isn't one we allow.
-		if (origin != ("") &&  origin != allowedOrigin ){
-			http.Error(w,"origin not allowed", http.StatusForbidden)
+		if origin != "" && origin != allowedOrigin {
+			http.Error(w, "origin not allowed", http.StatusForbidden)
 			return
 		}
 		// Give the approved browser origin permission.
-		if (origin == allowedOrigin) {
-			//alllow origin
-			w.Header().Set("Access-Control-Allow-Origin",allowedOrigin)
-			//allow method
-			w.Header().Set("Access-Control-Allow-Methods","POST,GET, OPTIONS")
-			//allow headers
-			w.Header().Set("Access-Control-Allow-Headers","Content-Type")
+		if origin == allowedOrigin {
+			// allow origin
+			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+			// allow method
+			w.Header().Set("Access-Control-Allow-Methods", "POST,GET, OPTIONS")
+			// allow headers
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		}
-        //check if method for preflight request is allowed 
+		// check if method for preflight request is allowed
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -97,6 +112,45 @@ func withCORS(next http.HandlerFunc) http.HandlerFunc {
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "healthy")
+}
+
+func (api *API) handleReady(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		writeJSON(w, http.StatusMethodNotAllowed, ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "method_not_allowed",
+				Message: "Only GET requests are allowed",
+			},
+		})
+		return
+	}
+
+	if api.database == nil {
+		writeJSON(w, http.StatusServiceUnavailable, ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "database_unavailable",
+				Message: "The service is not ready",
+			},
+		})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), api.readinessTimeout)
+	defer cancel()
+
+	if err := api.database.Ping(ctx); err != nil {
+		log.Print("database readiness check failed")
+		writeJSON(w, http.StatusServiceUnavailable, ErrorResponse{
+			Error: ErrorDetails{
+				Code:    "database_unavailable",
+				Message: "The service is not ready",
+			},
+		})
+		return
+	}
+
+	fmt.Fprint(w, "ready")
 }
 
 func handleGenerateSubtasks(w http.ResponseWriter, r *http.Request) {
