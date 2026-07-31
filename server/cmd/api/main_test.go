@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func TestHandleGenerateSubtasksSuccess(t *testing.T) {
@@ -156,17 +158,25 @@ func TestHandleGenerateSubtasksRejectsInvalidRequests(t *testing.T) {
 	}
 }
 
-type fakeDatabasePinger struct {
+type fakeDatabase struct {
 	err error
 }
 
-func (fake *fakeDatabasePinger) Ping(context.Context) error {
+func (fake *fakeDatabase) Ping(context.Context) error {
 	return fake.err
+}
+
+func (fake *fakeDatabase) QueryRow(
+	context.Context,
+	string,
+	...any,
+) pgx.Row {
+	return nil
 }
 
 func TestHandleReadySuccess(t *testing.T) {
 	api := &API{
-		database:         &fakeDatabasePinger{},
+		database:         &fakeDatabase{},
 		readinessTimeout: time.Second,
 	}
 	request := httptest.NewRequest(http.MethodGet, "/ready", nil)
@@ -192,7 +202,7 @@ func TestHandleReadySuccess(t *testing.T) {
 
 func TestHandleReadyWhenDatabaseUnavailable(t *testing.T) {
 	api := &API{
-		database: &fakeDatabasePinger{
+		database: &fakeDatabase{
 			err: errors.New("connection failed with sensitive details"),
 		},
 		readinessTimeout: time.Second,
@@ -232,7 +242,7 @@ func TestHandleReadyWhenDatabaseUnavailable(t *testing.T) {
 
 func TestHandleReadyRejectsWrongMethod(t *testing.T) {
 	api := &API{
-		database:         &fakeDatabasePinger{},
+		database:         &fakeDatabase{},
 		readinessTimeout: time.Second,
 	}
 	request := httptest.NewRequest(http.MethodPost, "/ready", nil)

@@ -11,15 +11,9 @@ import (
 	"time"
 )
 
-// DatabasePinger is the database behavior required by readiness checks.
-// pgxpool.Pool satisfies this interface.
-type DatabasePinger interface {
-	Ping(context.Context) error
-}
-
 // API contains dependencies shared by HTTP handlers.
 type API struct {
-	database         DatabasePinger
+	database         Database
 	readinessTimeout time.Duration
 }
 

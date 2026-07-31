@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -19,6 +20,15 @@ const (
 	defaultDatabaseStartupTimeout = 10 * time.Second
 	defaultDatabaseReadyTimeout   = 2 * time.Second
 )
+
+// Database contains the PostgreSQL behavior used by HTTP handlers.
+// pgxpool.Pool satisfies this interface.
+type Database interface {
+	Ping(context.Context) error
+	QueryRow(context.Context, string, ...any) pgx.Row
+}
+
+var _ Database = (*pgxpool.Pool)(nil)
 
 // DatabaseConfig contains server-only PostgreSQL connection settings.
 type DatabaseConfig struct {
