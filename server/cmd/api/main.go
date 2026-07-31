@@ -14,6 +14,7 @@ import (
 // API contains dependencies shared by HTTP handlers.
 type API struct {
 	database         Database
+	protect          func(http.Handler) http.Handler
 	readinessTimeout time.Duration
 }
 
@@ -43,6 +44,11 @@ type ErrorResponse struct {
 }
 
 func main() {
+	protect, err := newClerkAuthMiddleware(os.Getenv)
+	if err != nil {
+		log.Fatalf("invalid Clerk configuration: %v", err)
+	}
+
 	databaseConfig, err := loadDatabaseConfig(os.Getenv)
 	if err != nil {
 		log.Fatalf("invalid database configuration: %v", err)
@@ -56,6 +62,7 @@ func main() {
 
 	api := &API{
 		database:         pool,
+		protect:          protect,
 		readinessTimeout: databaseConfig.ReadinessTimeout,
 	}
 
@@ -69,17 +76,21 @@ func main() {
 
 func (api *API) routes() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", withCORS(handleHealth))
-	mux.HandleFunc("/ready", withCORS(api.handleReady))
-	mux.HandleFunc("/subtasks", withCORS(handleGenerateSubtasks))
+	mux.Handle("/health", withCORS(http.HandlerFunc(handleHealth)))
+	mux.Handle("/ready", withCORS(http.HandlerFunc(api.handleReady)))
+	mux.Handle("/subtasks", withCORS(http.HandlerFunc(handleGenerateSubtasks)))
+	mux.Handle(
+		"/v1/settings",
+		withCORS(api.protect(http.HandlerFunc(api.handleSettings))),
+	)
 
 	return mux
 }
 
-func withCORS(next http.HandlerFunc) http.HandlerFunc {
+func withCORS(next http.Handler) http.Handler {
 	// 1. Check the request's origin
 	const allowedOrigin = "http://localhost:8081"
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		// A browser origin was supplied, but it isn't one we allow.
 		if origin != "" && origin != allowedOrigin {
@@ -91,17 +102,17 @@ func withCORS(next http.HandlerFunc) http.HandlerFunc {
 			// allow origin
 			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 			// allow method
-			w.Header().Set("Access-Control-Allow-Methods", "POST,GET, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, PATCH, POST, OPTIONS")
 			// allow headers
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 		}
 		// check if method for preflight request is allowed
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		next(w, r)
-	}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
