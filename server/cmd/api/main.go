@@ -81,6 +81,8 @@ func (api *API) routes() http.Handler {
 		"/v1/settings",
 		withCORS(api.protect(api.settingsHandler)),
 	)
+	mux.Handle("/v1/tasks", withCORS(api.protect(api.tasksHandler)))
+    mux.Handle("/v1/tasks/{id}", withCORS(api.protect(api.tasksHandler))) 
 
 	return mux
 }
