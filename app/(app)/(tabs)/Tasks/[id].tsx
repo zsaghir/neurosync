@@ -1,4 +1,3 @@
-import Subtasks from "@/components/subtasks";
 import { ManualTimeSheet } from "@/components/tasks/ManualTimeSheet";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { PillButton } from "@/components/ui/PillButton";
@@ -16,10 +15,9 @@ import {
   setTaskNotes,
   toggleTaskComplete,
   type TaskDocument,
-  type TaskInput,
-} from "@/lib/sanity/tasks";
+} from "@/lib/api/tasks";
 import { formatDurationLabel } from "@/lib/utils/time-wisdom";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter, type Href } from "expo-router";
@@ -38,6 +36,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function TaskDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
 
@@ -57,7 +56,7 @@ export default function TaskDetails() {
     setIsLoading(true);
     try {
       const [nextTask, nextSessions] = await Promise.all([
-        fetchTaskById(id),
+        fetchTaskById(getToken, id),
         fetchTaskSessions(user.id),
       ]);
       setTask(nextTask);
@@ -68,7 +67,7 @@ export default function TaskDetails() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, id]);
+  }, [getToken, user, id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -119,18 +118,11 @@ export default function TaskDetails() {
     const nextCompleted = !task.completed;
     setTask((current) => (current ? { ...current, completed: nextCompleted } : current));
     try {
-      await toggleTaskComplete(task._id, nextCompleted);
+      await toggleTaskComplete(getToken, task._id, nextCompleted);
     } catch (error) {
       console.error("Error toggling task:", error);
       setTask((current) => (current ? { ...current, completed: task.completed } : current));
     }
-  };
-
-  const handleSubtasksChanged = (
-    taskId: string,
-    subtasks: NonNullable<TaskInput["subtasks"]>,
-  ) => {
-    setTask((current) => (current && current._id === taskId ? { ...current, subtasks } : current));
   };
 
   const handleSaveNotes = async () => {
@@ -138,7 +130,7 @@ export default function TaskDetails() {
 
     setTask((current) => (current ? { ...current, notes: notesDraft } : current));
     try {
-      await setTaskNotes(task._id, notesDraft || null);
+      await setTaskNotes(getToken, task._id, notesDraft || null);
     } catch (error) {
       console.error("Error saving notes:", error);
     }
@@ -146,7 +138,7 @@ export default function TaskDetails() {
 
   const handleDelete = async () => {
     try {
-      await deleteTask(task._id);
+      await deleteTask(getToken, task._id);
       router.back();
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -163,9 +155,6 @@ export default function TaskDetails() {
     session.openManualTime();
     setIsManualSheetOpen(true);
   };
-
-  const subtasks = task.subtasks ?? [];
-  const completedSubtasks = subtasks.filter((subtask) => subtask.completed).length;
 
   const metaParts: string[] = [];
   if (task.estimatedMinutes != null) {
@@ -228,17 +217,8 @@ export default function TaskDetails() {
           </PillButton>
         ) : null}
 
-        <SectionLabel style={styles.sectionLabel}>
-          Subtasks{subtasks.length > 0 ? ` · ${completedSubtasks} of ${subtasks.length}` : ""}
-        </SectionLabel>
-        {user ? (
-          <Subtasks
-            task={task}
-            userId={user.id}
-            isVisible
-            onSubtasksChanged={handleSubtasksChanged}
-          />
-        ) : null}
+        <SectionLabel style={styles.sectionLabel}>Subtasks</SectionLabel>
+        <Text style={[styles.meta, { color: colors.textMuted }]}>Subtasks are temporarily unavailable.</Text>
 
         <Pressable
           style={styles.notesDisclosure}

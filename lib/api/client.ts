@@ -36,6 +36,10 @@ export const authenticatedAPIRequest = async <Response>(
     headers,
   });
 
+  if (response.status === 204) {
+    return undefined as Response;
+  }
+
   const body = (await response.json().catch(() => null)) as
     | Response
     | APIErrorResponse

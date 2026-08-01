@@ -10,14 +10,14 @@ import {
   updateTaskSessionExclusion,
   type TaskSessionDocument,
 } from "@/lib/sanity/taskSessions";
-import { addTimeToTask } from "@/lib/sanity/tasks";
+import { addTimeToTask } from "@/lib/api/tasks";
 import { getWeeklyMinutesByDay } from "@/lib/utils/today";
 import {
   formatDurationLabel,
   isCleanCountedSession,
   median,
 } from "@/lib/utils/time-wisdom";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
@@ -42,6 +42,7 @@ const RECENT_SESSIONS_PREVIEW = 5;
 
 export default function TimeMap() {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const { colors } = useAppTheme();
   const [sessions, setSessions] = useState<TaskSessionDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -157,7 +158,11 @@ export default function TimeMap() {
     );
 
     if (!session.excludedFromInsights) {
-      await addTimeToTask(session.taskId, nextActualSeconds - session.actualSeconds);
+      await addTimeToTask(
+        getToken,
+        session.taskId,
+        nextActualSeconds - session.actualSeconds,
+      );
     }
 
     setSessions((currentSessions) =>
@@ -179,6 +184,7 @@ export default function TimeMap() {
     );
 
     await addTimeToTask(
+      getToken,
       session.taskId,
       session.excludedFromInsights ? session.actualSeconds : -session.actualSeconds,
     );

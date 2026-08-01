@@ -17,10 +17,10 @@ import {
   fetchTasks,
   toggleTaskComplete,
   type TaskDocument,
-} from "@/lib/sanity/tasks";
+} from "@/lib/api/tasks";
 import { formatDurationLabel } from "@/lib/utils/time-wisdom";
 import { getPreviousDaySeconds, selectRandomTasks } from "@/lib/utils/today";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter, type Href } from "expo-router";
@@ -29,6 +29,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function Today() {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
   const [tasks, setTasks] = useState<TaskDocument[]>([]);
@@ -49,7 +50,7 @@ export default function Today() {
     setError("");
     try {
       const [nextTasks, nextSessions] = await Promise.all([
-        fetchTasks(user.id),
+        fetchTasks(getToken),
         fetchTaskSessions(user.id),
       ]);
       setTasks(nextTasks);
@@ -61,7 +62,7 @@ export default function Today() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [getToken, user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,9 +85,8 @@ export default function Today() {
     setIsCreating(true);
     setError("");
     try {
-      const createdTask = await createTask({
+      const createdTask = await createTask(getToken, {
         title: nextTitle,
-        userId: user.id,
         estimatedMinutes: null,
       });
       setTasks((current) => [createdTask, ...current]);
@@ -104,7 +104,7 @@ export default function Today() {
 
   const handleComplete = async (task: TaskDocument) => {
     try {
-      await toggleTaskComplete(task._id, true);
+      await toggleTaskComplete(getToken, task._id, true);
       const remainingTasks = tasks.map((currentTask) =>
         currentTask._id === task._id
           ? { ...currentTask, completed: true }

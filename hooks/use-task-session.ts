@@ -1,4 +1,4 @@
-import { addTimeToTask, type TaskDocument } from "@/lib/sanity/tasks";
+import { addTimeToTask, type TaskDocument } from "@/lib/api/tasks";
 import {
   createTaskSession,
   type TaskSessionDocument,
@@ -11,6 +11,7 @@ import {
   shouldPromptForShortSession,
   shouldShowDoneReflection,
 } from "@/lib/utils/time-wisdom";
+import { useAuth } from "@clerk/clerk-expo";
 import { useMemo, useState } from "react";
 
 export type ReviewReason = "adjust" | "long" | "short" | "manual";
@@ -31,7 +32,8 @@ const parseMinutes = (value: string) => {
 };
 
 type UseTaskSessionArgs = {
-  task: TaskDocument;
+  task: Pick<TaskDocument, "_id"> &
+    Partial<Pick<TaskDocument, "title" | "estimatedMinutes">>;
   userId: string;
   sessions: TaskSessionDocument[];
   startedAt: string | null;
@@ -54,6 +56,7 @@ export function useTaskSession({
   onComplete,
   onSessionSaved,
 }: UseTaskSessionArgs) {
+  const { getToken } = useAuth();
   const [reviewState, setReviewState] = useState<ReviewState | null>(null);
   const [actualMinutesInput, setActualMinutesInput] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -122,7 +125,7 @@ export function useTaskSession({
       });
 
       if (!excludedFromInsights && actualSeconds > 0) {
-        await addTimeToTask(task._id, Math.round(actualSeconds));
+        await addTimeToTask(getToken, task._id, Math.round(actualSeconds));
         onTimeCommitted?.(task._id, actualSeconds);
       }
 

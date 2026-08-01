@@ -1,7 +1,7 @@
 import { design } from "@/constants/design";
 import { useActiveTimer } from "@/context/ActiveTimerContext";
 import { useAppTheme } from "@/context/AppThemeContext";
-import type { TaskDocument } from "@/lib/sanity/tasks";
+import type { TaskDocument } from "@/lib/api/tasks";
 import formattime from "@/lib/utils/formattime";
 import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";

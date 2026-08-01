@@ -6,14 +6,14 @@ import {
   fetchTaskSessions,
   type TaskSessionDocument,
 } from "@/lib/sanity/taskSessions";
-import { fetchTaskById, type TaskDocument } from "@/lib/sanity/tasks";
+import { fetchTaskById, type TaskDocument } from "@/lib/api/tasks";
 import formattime from "@/lib/utils/formattime";
 import {
   formatDurationLabel,
   shouldPromptForLongSession,
   shouldPromptForShortSession,
 } from "@/lib/utils/time-wisdom";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -46,6 +46,7 @@ function varianceMessage(estimatedMinutes: number | null, actualSeconds: number)
 export default function FocusTimerScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const { setActiveTimer } = useActiveTimer();
 
@@ -75,7 +76,7 @@ export default function FocusTimerScreen() {
     setIsLoading(true);
     try {
       const [nextTask, nextSessions] = await Promise.all([
-        fetchTaskById(taskId),
+        fetchTaskById(getToken, taskId),
         fetchTaskSessions(user.id),
       ]);
       setTask(nextTask);
@@ -85,7 +86,7 @@ export default function FocusTimerScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, taskId]);
+  }, [getToken, user, taskId]);
 
   useEffect(() => {
     void load();

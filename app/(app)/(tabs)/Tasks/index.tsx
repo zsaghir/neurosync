@@ -6,12 +6,12 @@ import {
   fetchTasks,
   toggleTaskComplete,
   type TaskDocument,
-} from "@/lib/sanity/tasks";
+} from "@/lib/api/tasks";
 import {
   fetchUserSettings,
-  type UserSettingsDocument,
-} from "@/lib/sanity/userSettings";
-import { useUser } from "@clerk/clerk-expo";
+  type UserSettings,
+} from "@/lib/api/settings";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter, type Href } from "expo-router";
@@ -28,11 +28,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TasksList() {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
 
   const [tasks, setTasks] = useState<TaskDocument[]>([]);
-  const [settings, setSettings] = useState<UserSettingsDocument | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -48,8 +49,8 @@ export default function TasksList() {
     setError("");
     try {
       const [userTasks, userSettings] = await Promise.all([
-        fetchTasks(user.id),
-        fetchUserSettings(user.id),
+        fetchTasks(getToken),
+        fetchUserSettings(getToken),
       ]);
       setTasks(userTasks);
       setSettings(userSettings);
@@ -59,7 +60,7 @@ export default function TasksList() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [getToken, user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -80,7 +81,7 @@ export default function TasksList() {
       ),
     );
     try {
-      await toggleTaskComplete(task._id, nextCompleted);
+      await toggleTaskComplete(getToken, task._id, nextCompleted);
     } catch (toggleError) {
       console.error("Error toggling task:", toggleError);
       setTasks((current) =>
@@ -191,7 +192,6 @@ export default function TasksList() {
         <AddTaskSheet
           visible={isAddOpen}
           onClose={() => setIsAddOpen(false)}
-          userId={user.id}
           timeSettings={settings}
           onCreated={(task) => setTasks((current) => [task, ...current])}
         />

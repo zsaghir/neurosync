@@ -3,7 +3,7 @@ import { EstimateChip } from "@/components/ui/design-system";
 import { PillButton } from "@/components/ui/PillButton";
 import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
-import { createTask, type TaskDocument } from "@/lib/sanity/tasks";
+import { createTask, type TaskDocument } from "@/lib/api/tasks";
 import {
   DEFAULT_USER_TIME_SETTINGS,
   getEstimateChoicesForMode,
@@ -12,13 +12,13 @@ import {
   type UserTimeSettings,
 } from "@/lib/utils/time-wisdom";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useAuth } from "@clerk/clerk-expo";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 type AddTaskSheetProps = {
   visible: boolean;
   onClose: () => void;
-  userId: string;
   timeSettings: UserTimeSettings | null;
   onCreated: (task: TaskDocument) => void;
 };
@@ -26,11 +26,11 @@ type AddTaskSheetProps = {
 export function AddTaskSheet({
   visible,
   onClose,
-  userId,
   timeSettings,
   onCreated,
 }: AddTaskSheetProps) {
   const { colors } = useAppTheme();
+  const { getToken } = useAuth();
   const activeSettings = timeSettings ?? DEFAULT_USER_TIME_SETTINGS;
   const estimateChoices = getEstimateChoicesForMode(
     activeSettings.preferredTimeEstimationMode,
@@ -94,9 +94,8 @@ export function AddTaskSheet({
     setTitleError("");
 
     try {
-      const createdTask = await createTask({
+      const createdTask = await createTask(getToken, {
         title: title.trim(),
-        userId,
         estimatedMinutes: getTaskEstimateMinutes(),
       });
 

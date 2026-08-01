@@ -520,3 +520,78 @@ test("Sanity task helpers save generated subtasks and toggle a subtask", async (
     },
   );
 });
+
+test("authenticated task helpers call the Go API and normalize task IDs", async () => {
+  clearProjectModule("lib/api/tasks.ts");
+
+  const calls = [];
+  const getToken = async () => "session-token";
+  const apiTask = {
+    id: "0f1cf89d-d998-40c7-a8ac-43b89ff5c777",
+    title: "Clean kitchen",
+    completed: false,
+    timeSpentSeconds: 0,
+    estimatedMinutes: 15,
+    notes: null,
+    alarmAt: null,
+    notificationId: null,
+    completedAt: null,
+    createdAt: "2026-08-01T12:00:00Z",
+  };
+
+  const authenticatedAPIRequest = async (path, suppliedGetToken, init = {}) => {
+    calls.push({ path, suppliedGetToken, init });
+    if (path === "/v1/tasks" && !init.method) {
+      return { tasks: [apiTask] };
+    }
+    if (init.method === "DELETE") return undefined;
+    return apiTask;
+  };
+
+  await withMocks(
+    [
+      [
+        path.join(projectRoot, "lib/api/client"),
+        { authenticatedAPIRequest },
+      ],
+      [
+        path.join(projectRoot, "lib/api/client.ts"),
+        { authenticatedAPIRequest },
+      ],
+    ],
+    async () => {
+      const {
+        addTimeToTask,
+        createTask,
+        deleteTask,
+        fetchTasks,
+      } = require(path.join(projectRoot, "lib/api/tasks.ts"));
+
+      const tasks = await fetchTasks(getToken);
+      assert.equal(tasks[0]._id, apiTask.id);
+      assert.equal(tasks[0].title, apiTask.title);
+      assert.equal("id" in tasks[0], false);
+
+      await createTask(getToken, {
+        title: "Clean kitchen",
+        estimatedMinutes: 15,
+      });
+      assert.equal(calls[1].path, "/v1/tasks");
+      assert.equal(calls[1].init.method, "POST");
+      assert.deepEqual(JSON.parse(calls[1].init.body), {
+        title: "Clean kitchen",
+        estimatedMinutes: 15,
+      });
+
+      await addTimeToTask(getToken, apiTask.id, 59.6);
+      assert.equal(calls[2].init.method, "PATCH");
+      assert.deepEqual(JSON.parse(calls[2].init.body), {
+        timeSpentSecondsDelta: 60,
+      });
+
+      await deleteTask(getToken, apiTask.id);
+      assert.equal(calls[3].init.method, "DELETE");
+      assert.equal(calls[3].suppliedGetToken, getToken);
+    },
+  );
+});
