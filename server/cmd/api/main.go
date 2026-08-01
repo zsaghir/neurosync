@@ -13,6 +13,7 @@ import (
 	"github.com/zsaghir/neurosync/server/internal/auth"
 	"github.com/zsaghir/neurosync/server/internal/httpx"
 	"github.com/zsaghir/neurosync/server/internal/settings"
+	"github.com/zsaghir/neurosync/server/internal/tasks"
 )
 
 // API contains dependencies shared by HTTP handlers.
@@ -20,6 +21,7 @@ type API struct {
 	database         Database
 	protect          func(http.Handler) http.Handler
 	settingsHandler  http.Handler
+	tasksHandler     http.Handler
 	readinessTimeout time.Duration
 }
 
@@ -61,6 +63,7 @@ func main() {
 		database:         pool,
 		protect:          protect,
 		settingsHandler:  settings.NewHandler(pool),
+		tasksHandler:     tasks.NewHandler(pool),
 		readinessTimeout: databaseConfig.ReadinessTimeout,
 	}
 
@@ -82,7 +85,7 @@ func (api *API) routes() http.Handler {
 		withCORS(api.protect(api.settingsHandler)),
 	)
 	mux.Handle("/v1/tasks", withCORS(api.protect(api.tasksHandler)))
-    mux.Handle("/v1/tasks/{id}", withCORS(api.protect(api.tasksHandler))) 
+	mux.Handle("/v1/tasks/{id}", withCORS(api.protect(api.tasksHandler)))
 
 	return mux
 }
@@ -102,7 +105,7 @@ func withCORS(next http.Handler) http.Handler {
 			// allow origin
 			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 			// allow method
-			w.Header().Set("Access-Control-Allow-Methods", "GET, PATCH, POST, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, PATCH, POST, DELETE, OPTIONS")
 			// allow headers
 			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 		}
