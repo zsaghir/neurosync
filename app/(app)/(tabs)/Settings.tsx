@@ -6,15 +6,15 @@ import { useAppTheme } from "@/context/AppThemeContext";
 import {
   fetchUserSettings,
   updateUserSettings,
-  type UserSettingsDocument,
-} from "@/lib/sanity/userSettings";
+  type UserSettings,
+} from "@/lib/api/settings";
 import {
   DEFAULT_USER_TIME_SETTINGS,
   getTimeEstimationModeLabel,
   type ThemeMode,
   type TimeEstimationMode,
 } from "@/lib/utils/time-wisdom";
-import { useClerk, useUser } from "@clerk/clerk-expo";
+import { useAuth, useClerk, useUser } from "@clerk/clerk-expo";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -24,15 +24,14 @@ const timeEstimationModes: TimeEstimationMode[] = ["relative", "minutes", "custo
 
 export default function Settings() {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const clerk = useClerk();
   const { colors, refreshSettings } = useAppTheme();
-  const [settings, setSettings] = useState<UserSettingsDocument | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState("");
 
   const activeSettings = settings ?? {
-    _id: "default",
-    userId: user?.id ?? "",
     ...DEFAULT_USER_TIME_SETTINGS,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -42,13 +41,13 @@ export default function Settings() {
     if (!user) return;
 
     try {
-      const nextSettings = await fetchUserSettings(user.id);
+      const nextSettings = await fetchUserSettings(getToken);
       setSettings(nextSettings);
     } catch (error) {
       console.error("Error loading settings:", error);
       setStatus("Could not load settings.");
     }
-  }, [user]);
+  }, [getToken, user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -67,7 +66,7 @@ export default function Settings() {
     setIsSaving(true);
     setStatus("");
     try {
-      const updatedSettings = await updateUserSettings(settings._id, input);
+      const updatedSettings = await updateUserSettings(getToken, input);
       setSettings(updatedSettings);
       // Keep the app-wide theme (tab bar, screens) in sync immediately.
       await refreshSettings();
