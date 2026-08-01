@@ -1,6 +1,8 @@
-package main
+// Package settings handles authenticated user settings stored in PostgreSQL.
+package settings
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -9,11 +11,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/clerk/clerk-sdk-go/v2"
-	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
+	"github.com/jackc/pgx/v5"
+
+	"github.com/zsaghir/neurosync/server/internal/auth"
+	"github.com/zsaghir/neurosync/server/internal/httpx"
 )
 
-const getSettingsQuery = `
+const getQuery = `
 WITH ensured_user AS (
 	INSERT INTO users (clerk_user_id)
 	VALUES ($1)
@@ -32,7 +36,7 @@ RETURNING
 	created_at,
 	updated_at`
 
-const updateSettingsQuery = `
+const updateQuery = `
 WITH ensured_user AS (
 	INSERT INTO users (clerk_user_id)
 	VALUES ($1)
@@ -64,128 +68,94 @@ RETURNING
 	created_at,
 	updated_at`
 
-// SettingsResponse is the authenticated user's persisted NeuroSync settings.
-type SettingsResponse struct {
+// Database is the PostgreSQL behavior required by the settings handler.
+type Database interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}
+
+// Handler serves the authenticated user's settings endpoint.
+type Handler struct {
+	database Database
+}
+
+// Response is the authenticated user's persisted NeuroSync settings.
+type Response struct {
 	PreferredTimeEstimationMode string    `json:"preferredTimeEstimationMode"`
 	ThemeMode                   string    `json:"themeMode"`
 	CreatedAt                   time.Time `json:"createdAt"`
 	UpdatedAt                   time.Time `json:"updatedAt"`
 }
 
-// UpdateSettingsRequest contains the settings a user is allowed to change.
+// UpdateRequest contains the settings a user is allowed to change.
 // Pointers distinguish a missing field from a supplied field.
-type UpdateSettingsRequest struct {
+type UpdateRequest struct {
 	PreferredTimeEstimationMode *string `json:"preferredTimeEstimationMode"`
 	ThemeMode                   *string `json:"themeMode"`
 }
 
-func newClerkAuthMiddleware(
-	getenv func(string) string,
-) (func(http.Handler) http.Handler, error) {
-	secretKey := strings.TrimSpace(getenv("CLERK_SECRET_KEY"))
-	if secretKey == "" {
-		return nil, errors.New("CLERK_SECRET_KEY is required")
-	}
-
-	clerk.SetKey(secretKey)
-
-	authorizationFailure := http.HandlerFunc(
-		func(w http.ResponseWriter, _ *http.Request) {
-			writeUnauthorized(w)
-		},
-	)
-	verifyAuthorization := clerkhttp.WithHeaderAuthorization(
-		clerkhttp.AuthorizationFailureHandler(authorizationFailure),
-	)
-
-	return func(next http.Handler) http.Handler {
-		requireVerifiedUser := http.HandlerFunc(
-			func(w http.ResponseWriter, r *http.Request) {
-				claims, ok := clerk.SessionClaimsFromContext(r.Context())
-				if !ok || claims == nil || strings.TrimSpace(claims.Subject) == "" {
-					writeUnauthorized(w)
-					return
-				}
-
-				next.ServeHTTP(w, r)
-			},
-		)
-
-		return verifyAuthorization(requireVerifiedUser)
-	}, nil
+// NewHandler creates the settings HTTP handler with its database dependency.
+func NewHandler(database Database) *Handler {
+	return &Handler{database: database}
 }
 
-func writeUnauthorized(w http.ResponseWriter) {
-	writeJSON(w, http.StatusUnauthorized, ErrorResponse{
-		Error: ErrorDetails{
-			Code:    "unauthorized",
-			Message: "A valid Clerk session is required",
-		},
-	})
-}
-
-func clerkUserIDFromRequest(r *http.Request) (string, bool) {
-	claims, ok := clerk.SessionClaimsFromContext(r.Context())
-	if !ok || claims == nil {
-		return "", false
-	}
-
-	clerkUserID := strings.TrimSpace(claims.Subject)
-	return clerkUserID, clerkUserID != ""
-}
-
-func (api *API) handleSettings(w http.ResponseWriter, r *http.Request) {
-	clerkUserID, ok := clerkUserIDFromRequest(r)
+// ServeHTTP dispatches supported settings operations.
+func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	clerkUserID, ok := auth.UserIDFromContext(r.Context())
 	if !ok {
-		writeUnauthorized(w)
+		httpx.WriteError(
+			w,
+			http.StatusUnauthorized,
+			"unauthorized",
+			"A valid Clerk session is required",
+		)
 		return
 	}
 
 	switch r.Method {
 	case http.MethodGet:
-		api.getSettings(w, r, clerkUserID)
+		handler.get(w, r, clerkUserID)
 	case http.MethodPatch:
-		api.updateSettings(w, r, clerkUserID)
+		handler.update(w, r, clerkUserID)
 	default:
 		w.Header().Set("Allow", "GET, PATCH")
-		writeJSON(w, http.StatusMethodNotAllowed, ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "method_not_allowed",
-				Message: "Only GET and PATCH requests are allowed",
-			},
-		})
+		httpx.WriteError(
+			w,
+			http.StatusMethodNotAllowed,
+			"method_not_allowed",
+			"Only GET and PATCH requests are allowed",
+		)
 	}
 }
 
-func (api *API) getSettings(
+func (handler *Handler) get(
 	w http.ResponseWriter,
 	r *http.Request,
 	clerkUserID string,
 ) {
-	settings, err := scanSettings(
-		api.database.QueryRow(r.Context(), getSettingsQuery, clerkUserID),
+	settings, err := scan(
+		handler.database.QueryRow(r.Context(), getQuery, clerkUserID),
 	)
 	if err != nil {
-		writeSettingsDatabaseError(w)
+		writeDatabaseError(w)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, settings)
+	httpx.WriteJSON(w, http.StatusOK, settings)
 }
 
-func (api *API) updateSettings(
+func (handler *Handler) update(
 	w http.ResponseWriter,
 	r *http.Request,
 	clerkUserID string,
 ) {
-	request, err := decodeUpdateSettingsRequest(r)
+	request, err := decodeUpdateRequest(r)
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "invalid_request",
-				Message: err.Error(),
-			},
-		})
+		httpx.WriteError(
+			w,
+			http.StatusBadRequest,
+			"invalid_request",
+			err.Error(),
+		)
 		return
 	}
 
@@ -199,45 +169,43 @@ func (api *API) updateSettings(
 		themeMode = *request.ThemeMode
 	}
 
-	settings, err := scanSettings(
-		api.database.QueryRow(
+	settings, err := scan(
+		handler.database.QueryRow(
 			r.Context(),
-			updateSettingsQuery,
+			updateQuery,
 			clerkUserID,
 			preferredTimeEstimationMode,
 			themeMode,
 		),
 	)
 	if err != nil {
-		writeSettingsDatabaseError(w)
+		writeDatabaseError(w)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, settings)
+	httpx.WriteJSON(w, http.StatusOK, settings)
 }
 
-func decodeUpdateSettingsRequest(
-	r *http.Request,
-) (UpdateSettingsRequest, error) {
-	var request UpdateSettingsRequest
+func decodeUpdateRequest(r *http.Request) (UpdateRequest, error) {
+	var request UpdateRequest
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
 	if err := decoder.Decode(&request); err != nil {
-		return UpdateSettingsRequest{}, errors.New(
+		return UpdateRequest{}, errors.New(
 			"Request body must contain valid JSON",
 		)
 	}
 
 	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
-		return UpdateSettingsRequest{}, errors.New(
+		return UpdateRequest{}, errors.New(
 			"Request body must contain exactly one JSON object",
 		)
 	}
 
 	if request.PreferredTimeEstimationMode == nil && request.ThemeMode == nil {
-		return UpdateSettingsRequest{}, errors.New(
+		return UpdateRequest{}, errors.New(
 			"At least one setting must be provided",
 		)
 	}
@@ -245,7 +213,7 @@ func decodeUpdateSettingsRequest(
 	if request.PreferredTimeEstimationMode != nil {
 		value := strings.TrimSpace(*request.PreferredTimeEstimationMode)
 		if !isAllowedValue(value, "relative", "minutes", "custom") {
-			return UpdateSettingsRequest{}, errors.New(
+			return UpdateRequest{}, errors.New(
 				"preferredTimeEstimationMode must be relative, minutes, or custom",
 			)
 		}
@@ -255,7 +223,7 @@ func decodeUpdateSettingsRequest(
 	if request.ThemeMode != nil {
 		value := strings.TrimSpace(*request.ThemeMode)
 		if !isAllowedValue(value, "dark", "light") {
-			return UpdateSettingsRequest{}, errors.New(
+			return UpdateRequest{}, errors.New(
 				"themeMode must be dark or light",
 			)
 		}
@@ -274,13 +242,13 @@ func isAllowedValue(value string, allowed ...string) bool {
 	return false
 }
 
-type settingsRow interface {
+type row interface {
 	Scan(...any) error
 }
 
-func scanSettings(row settingsRow) (SettingsResponse, error) {
-	var settings SettingsResponse
-	err := row.Scan(
+func scan(result row) (Response, error) {
+	var settings Response
+	err := result.Scan(
 		&settings.PreferredTimeEstimationMode,
 		&settings.ThemeMode,
 		&settings.CreatedAt,
@@ -289,12 +257,12 @@ func scanSettings(row settingsRow) (SettingsResponse, error) {
 	return settings, err
 }
 
-func writeSettingsDatabaseError(w http.ResponseWriter) {
+func writeDatabaseError(w http.ResponseWriter) {
 	log.Print("settings database operation failed")
-	writeJSON(w, http.StatusInternalServerError, ErrorResponse{
-		Error: ErrorDetails{
-			Code:    "internal_error",
-			Message: "The settings operation could not be completed",
-		},
-	})
+	httpx.WriteError(
+		w,
+		http.StatusInternalServerError,
+		"internal_error",
+		"The settings operation could not be completed",
+	)
 }

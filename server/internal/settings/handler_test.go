@@ -1,4 +1,4 @@
-package main
+package settings
 
 import (
 	"context"
@@ -15,17 +15,13 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type fakeSettingsDatabase struct {
+type fakeDatabase struct {
 	row   pgx.Row
 	query string
 	args  []any
 }
 
-func (fake *fakeSettingsDatabase) Ping(context.Context) error {
-	return nil
-}
-
-func (fake *fakeSettingsDatabase) QueryRow(
+func (fake *fakeDatabase) QueryRow(
 	_ context.Context,
 	query string,
 	args ...any,
@@ -35,12 +31,12 @@ func (fake *fakeSettingsDatabase) QueryRow(
 	return fake.row
 }
 
-type fakeSettingsRow struct {
-	settings SettingsResponse
+type fakeRow struct {
+	settings Response
 	err      error
 }
 
-func (fake *fakeSettingsRow) Scan(destinations ...any) error {
+func (fake *fakeRow) Scan(destinations ...any) error {
 	if fake.err != nil {
 		return fake.err
 	}
@@ -52,65 +48,16 @@ func (fake *fakeSettingsRow) Scan(destinations ...any) error {
 	return nil
 }
 
-func TestNewClerkAuthMiddlewareRequiresSecretKey(t *testing.T) {
-	_, err := newClerkAuthMiddleware(func(string) string {
-		return ""
-	})
-
-	if err == nil {
-		t.Fatal("expected missing CLERK_SECRET_KEY to return an error")
+func TestHandlerGetsDefaultsForVerifiedUser(t *testing.T) {
+	expected := testResponse()
+	database := &fakeDatabase{
+		row: &fakeRow{settings: expected},
 	}
-}
-
-func TestClerkAuthMiddlewareRejectsMissingToken(t *testing.T) {
-	protect, err := newClerkAuthMiddleware(func(name string) string {
-		if name == "CLERK_SECRET_KEY" {
-			return "sk_test_not-a-real-secret"
-		}
-		return ""
-	})
-	if err != nil {
-		t.Fatalf("could not create Clerk middleware: %v", err)
-	}
-
-	handler := protect(http.HandlerFunc(func(
-		w http.ResponseWriter,
-		_ *http.Request,
-	) {
-		t.Fatal("protected handler ran without an authenticated user")
-	}))
-	request := httptest.NewRequest(http.MethodGet, "/v1/settings", nil)
+	handler := NewHandler(database)
+	request := authenticatedRequest(http.MethodGet, nil)
 	recorder := httptest.NewRecorder()
 
 	handler.ServeHTTP(recorder, request)
-
-	if recorder.Code != http.StatusUnauthorized {
-		t.Fatalf(
-			"expected status %d, got %d",
-			http.StatusUnauthorized,
-			recorder.Code,
-		)
-	}
-
-	var response ErrorResponse
-	if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
-		t.Fatalf("could not decode response: %v", err)
-	}
-	if response.Error.Code != "unauthorized" {
-		t.Errorf("expected unauthorized, got %q", response.Error.Code)
-	}
-}
-
-func TestHandleSettingsGetsDefaultsForVerifiedUser(t *testing.T) {
-	expected := testSettingsResponse()
-	database := &fakeSettingsDatabase{
-		row: &fakeSettingsRow{settings: expected},
-	}
-	api := &API{database: database}
-	request := authenticatedSettingsRequest(http.MethodGet, nil)
-	recorder := httptest.NewRecorder()
-
-	api.handleSettings(recorder, request)
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, recorder.Code)
@@ -122,7 +69,7 @@ func TestHandleSettingsGetsDefaultsForVerifiedUser(t *testing.T) {
 		t.Fatal("expected GET to ensure the PostgreSQL user exists")
 	}
 
-	var response SettingsResponse
+	var response Response
 	if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
 		t.Fatalf("could not decode response: %v", err)
 	}
@@ -135,20 +82,20 @@ func TestHandleSettingsGetsDefaultsForVerifiedUser(t *testing.T) {
 	}
 }
 
-func TestHandleSettingsUpdatesVerifiedUsersSettings(t *testing.T) {
-	expected := testSettingsResponse()
+func TestHandlerUpdatesVerifiedUsersSettings(t *testing.T) {
+	expected := testResponse()
 	expected.ThemeMode = "light"
-	database := &fakeSettingsDatabase{
-		row: &fakeSettingsRow{settings: expected},
+	database := &fakeDatabase{
+		row: &fakeRow{settings: expected},
 	}
-	api := &API{database: database}
-	request := authenticatedSettingsRequest(
+	handler := NewHandler(database)
+	request := authenticatedRequest(
 		http.MethodPatch,
 		strings.NewReader(`{"themeMode":"light"}`),
 	)
 	recorder := httptest.NewRecorder()
 
-	api.handleSettings(recorder, request)
+	handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, recorder.Code)
@@ -167,16 +114,16 @@ func TestHandleSettingsUpdatesVerifiedUsersSettings(t *testing.T) {
 	}
 }
 
-func TestHandleSettingsRejectsInvalidUpdate(t *testing.T) {
-	database := &fakeSettingsDatabase{}
-	api := &API{database: database}
-	request := authenticatedSettingsRequest(
+func TestHandlerRejectsInvalidUpdate(t *testing.T) {
+	database := &fakeDatabase{}
+	handler := NewHandler(database)
+	request := authenticatedRequest(
 		http.MethodPatch,
 		strings.NewReader(`{"themeMode":"blue"}`),
 	)
 	recorder := httptest.NewRecorder()
 
-	api.handleSettings(recorder, request)
+	handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf(
@@ -190,12 +137,12 @@ func TestHandleSettingsRejectsInvalidUpdate(t *testing.T) {
 	}
 }
 
-func TestHandleSettingsRejectsMissingVerifiedUser(t *testing.T) {
-	api := &API{database: &fakeSettingsDatabase{}}
+func TestHandlerRejectsMissingVerifiedUser(t *testing.T) {
+	handler := NewHandler(&fakeDatabase{})
 	request := httptest.NewRequest(http.MethodGet, "/v1/settings", nil)
 	recorder := httptest.NewRecorder()
 
-	api.handleSettings(recorder, request)
+	handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusUnauthorized {
 		t.Fatalf(
@@ -206,17 +153,17 @@ func TestHandleSettingsRejectsMissingVerifiedUser(t *testing.T) {
 	}
 }
 
-func TestHandleSettingsHidesDatabaseErrors(t *testing.T) {
-	database := &fakeSettingsDatabase{
-		row: &fakeSettingsRow{
+func TestHandlerHidesDatabaseErrors(t *testing.T) {
+	database := &fakeDatabase{
+		row: &fakeRow{
 			err: errors.New("sensitive database connection details"),
 		},
 	}
-	api := &API{database: database}
-	request := authenticatedSettingsRequest(http.MethodGet, nil)
+	handler := NewHandler(database)
+	request := authenticatedRequest(http.MethodGet, nil)
 	recorder := httptest.NewRecorder()
 
-	api.handleSettings(recorder, request)
+	handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusInternalServerError {
 		t.Fatalf(
@@ -230,10 +177,7 @@ func TestHandleSettingsHidesDatabaseErrors(t *testing.T) {
 	}
 }
 
-func authenticatedSettingsRequest(
-	method string,
-	body io.Reader,
-) *http.Request {
+func authenticatedRequest(method string, body io.Reader) *http.Request {
 	request := httptest.NewRequest(method, "/v1/settings", body)
 	claims := &clerk.SessionClaims{
 		RegisteredClaims: clerk.RegisteredClaims{
@@ -244,9 +188,9 @@ func authenticatedSettingsRequest(
 	return request.WithContext(ctx)
 }
 
-func testSettingsResponse() SettingsResponse {
+func testResponse() Response {
 	createdAt := time.Date(2026, time.July, 30, 12, 0, 0, 0, time.UTC)
-	return SettingsResponse{
+	return Response{
 		PreferredTimeEstimationMode: "relative",
 		ThemeMode:                   "dark",
 		CreatedAt:                   createdAt,

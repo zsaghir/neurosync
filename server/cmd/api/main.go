@@ -9,12 +9,17 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/zsaghir/neurosync/server/internal/auth"
+	"github.com/zsaghir/neurosync/server/internal/httpx"
+	"github.com/zsaghir/neurosync/server/internal/settings"
 )
 
 // API contains dependencies shared by HTTP handlers.
 type API struct {
 	database         Database
 	protect          func(http.Handler) http.Handler
+	settingsHandler  http.Handler
 	readinessTimeout time.Duration
 }
 
@@ -32,19 +37,11 @@ type GenerateSubtasksResponse struct {
 	Subtasks []Subtask `json:"subtasks"`
 }
 
-// ErrorDetails describes why an operation failed.
-type ErrorDetails struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-// ErrorResponse gives every API error the same structure.
-type ErrorResponse struct {
-	Error ErrorDetails `json:"error"`
-}
+type ErrorDetails = httpx.ErrorDetails
+type ErrorResponse = httpx.ErrorResponse
 
 func main() {
-	protect, err := newClerkAuthMiddleware(os.Getenv)
+	protect, err := auth.NewMiddleware(os.Getenv)
 	if err != nil {
 		log.Fatalf("invalid Clerk configuration: %v", err)
 	}
@@ -63,6 +60,7 @@ func main() {
 	api := &API{
 		database:         pool,
 		protect:          protect,
+		settingsHandler:  settings.NewHandler(pool),
 		readinessTimeout: databaseConfig.ReadinessTimeout,
 	}
 
@@ -81,7 +79,7 @@ func (api *API) routes() http.Handler {
 	mux.Handle("/subtasks", withCORS(http.HandlerFunc(handleGenerateSubtasks)))
 	mux.Handle(
 		"/v1/settings",
-		withCORS(api.protect(http.HandlerFunc(api.handleSettings))),
+		withCORS(api.protect(api.settingsHandler)),
 	)
 
 	return mux
@@ -227,12 +225,6 @@ func handleGenerateSubtasks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, response)
 }
 
-// writeJSON converts a Go value into an HTTP JSON response.
 func writeJSON(w http.ResponseWriter, status int, value any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	if err := json.NewEncoder(w).Encode(value); err != nil {
-		log.Printf("could not encode JSON response: %v", err)
-	}
+	httpx.WriteJSON(w, status, value)
 }
