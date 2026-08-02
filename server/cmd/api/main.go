@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/zsaghir/neurosync/server/internal/auth"
@@ -25,19 +23,7 @@ type API struct {
 	readinessTimeout time.Duration
 }
 
-type GenerateSubtasksRequest struct {
-	TaskTitle string `json:"taskTitle"`
-}
 
-type Subtask struct {
-	Key       string `json:"_key"`
-	Title     string `json:"title"`
-	Completed bool   `json:"completed"`
-}
-
-type GenerateSubtasksResponse struct {
-	Subtasks []Subtask `json:"subtasks"`
-}
 
 type ErrorDetails = httpx.ErrorDetails
 type ErrorResponse = httpx.ErrorResponse
@@ -79,7 +65,6 @@ func (api *API) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/health", withCORS(http.HandlerFunc(handleHealth)))
 	mux.Handle("/ready", withCORS(http.HandlerFunc(api.handleReady)))
-	mux.Handle("/subtasks", withCORS(http.HandlerFunc(handleGenerateSubtasks)))
 	mux.Handle(
 		"/v1/settings",
 		withCORS(api.protect(api.settingsHandler)),
