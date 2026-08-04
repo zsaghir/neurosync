@@ -13,7 +13,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-
 type fakeDatabase struct {
 	err error
 }

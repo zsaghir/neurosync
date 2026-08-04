@@ -23,8 +23,6 @@ type API struct {
 	readinessTimeout time.Duration
 }
 
-
-
 type ErrorDetails = httpx.ErrorDetails
 type ErrorResponse = httpx.ErrorResponse
 
@@ -144,75 +142,6 @@ func (api *API) handleReady(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprint(w, "ready")
-}
-
-func handleGenerateSubtasks(w http.ResponseWriter, r *http.Request) {
-	// Only POST represents the operation supported by this endpoint.
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-
-		writeJSON(w, http.StatusMethodNotAllowed, ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "method_not_allowed",
-				Message: "Only POST requests are allowed",
-			},
-		})
-		return
-	}
-
-	var request GenerateSubtasksRequest
-
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-
-	if err := decoder.Decode(&request); err != nil {
-		writeJSON(w, http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "invalid_json",
-				Message: "Request body must contain valid JSON",
-			},
-		})
-		return
-	}
-
-	taskTitle := strings.TrimSpace(request.TaskTitle)
-
-	if taskTitle == "" {
-		writeJSON(w, http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "invalid_request",
-				Message: "taskTitle is required",
-			},
-		})
-		return
-	}
-
-	if len([]rune(taskTitle)) > 200 {
-		writeJSON(w, http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetails{
-				Code:    "invalid_request",
-				Message: "taskTitle must be 200 characters or fewer",
-			},
-		})
-		return
-	}
-
-	response := GenerateSubtasksResponse{
-		Subtasks: []Subtask{
-			{
-				Key:       "step-1",
-				Title:     "Walk to the kitchen sink",
-				Completed: false,
-			},
-			{
-				Key:       "step-2",
-				Title:     "Put one dirty dish beside the sink",
-				Completed: false,
-			},
-		},
-	}
-
-	writeJSON(w, http.StatusOK, response)
 }
 
 func writeJSON(w http.ResponseWriter, status int, value any) {
