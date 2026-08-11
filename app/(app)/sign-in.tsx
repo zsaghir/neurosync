@@ -76,7 +76,7 @@ export default function Page() {
               opacity={0.7}
               style={{ textAlign: "center" }}
             >
-              Sign in to clarity.journal to continue
+              Sign in to NeuroSync to continue
             </Paragraph>
           </YStack>
 

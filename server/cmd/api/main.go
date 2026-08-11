@@ -23,6 +23,8 @@ type API struct {
 	readinessTimeout time.Duration
 }
 
+
+
 type ErrorDetails = httpx.ErrorDetails
 type ErrorResponse = httpx.ErrorResponse
 

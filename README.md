@@ -2,7 +2,7 @@
 
 **An open, ADHD-friendly task and time-awareness app—and an invitation to help build it.**
 
-NeuroSync is an early-stage Expo app (currently branded `clarity.journal` in the app configuration) exploring how technology might adapt to an individual ADHD brain instead of asking every person to adapt to the same productivity system.
+NeuroSync is an early-stage Expo app exploring how technology might adapt to an individual ADHD brain instead of asking every person to adapt to the same productivity system.
 
 The goal is not to squeeze more output from people. It is to help each person discover what supports them, make their patterns easier to understand, and offer help that feels personal rather than prescriptive.
 

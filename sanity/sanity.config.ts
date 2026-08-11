@@ -5,7 +5,7 @@ import {schemaTypes} from './schemaTypes'
 
 export default defineConfig({
   name: 'default',
-  title: 'journal.ai',
+  title: 'NeuroSync',
 
   projectId: 'w9srkdut',
   dataset: 'production',

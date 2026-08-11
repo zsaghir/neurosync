@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "clarity.journal",
-    "slug": "clarity.journal",
+    "name": "NeuroSync",
+    "slug": "neurosync",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "clarityjournal",
+    "scheme": "neurosync",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.clarity.journal"
+      "bundleIdentifier": "com.zsaghir.neurosync"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.clarity.journal"
+      "package": "com.zsaghir.neurosync"
     },
     "web": {
       "output": "static",
