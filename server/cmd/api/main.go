@@ -16,6 +16,7 @@ import (
 
 // API contains dependencies shared by HTTP handlers.
 type API struct {
+	allowedOrigins   map[string]struct{}
 	database         Database
 	protect          func(http.Handler) http.Handler
 	settingsHandler  http.Handler
@@ -23,12 +24,15 @@ type API struct {
 	readinessTimeout time.Duration
 }
 
-
-
 type ErrorDetails = httpx.ErrorDetails
 type ErrorResponse = httpx.ErrorResponse
 
 func main() {
+	allowedOrigins, err := loadAllowedOrigins(os.Getenv)
+	if err != nil {
+		log.Fatalf("invalid CORS configuration: %v", err)
+	}
+
 	protect, err := auth.NewMiddleware(os.Getenv)
 	if err != nil {
 		log.Fatalf("invalid Clerk configuration: %v", err)
@@ -46,6 +50,7 @@ func main() {
 	defer pool.Close()
 
 	api := &API{
+		allowedOrigins:   allowedOrigins,
 		database:         pool,
 		protect:          protect,
 		settingsHandler:  settings.NewHandler(pool),
@@ -63,44 +68,28 @@ func main() {
 
 func (api *API) routes() http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle("/health", withCORS(http.HandlerFunc(handleHealth)))
-	mux.Handle("/ready", withCORS(http.HandlerFunc(api.handleReady)))
+	mux.Handle(
+		"/health",
+		withCORS(api.allowedOrigins, http.HandlerFunc(handleHealth)),
+	)
+	mux.Handle(
+		"/ready",
+		withCORS(api.allowedOrigins, http.HandlerFunc(api.handleReady)),
+	)
 	mux.Handle(
 		"/v1/settings",
-		withCORS(api.protect(api.settingsHandler)),
+		withCORS(api.allowedOrigins, api.protect(api.settingsHandler)),
 	)
-	mux.Handle("/v1/tasks", withCORS(api.protect(api.tasksHandler)))
-	mux.Handle("/v1/tasks/{id}", withCORS(api.protect(api.tasksHandler)))
+	mux.Handle(
+		"/v1/tasks",
+		withCORS(api.allowedOrigins, api.protect(api.tasksHandler)),
+	)
+	mux.Handle(
+		"/v1/tasks/{id}",
+		withCORS(api.allowedOrigins, api.protect(api.tasksHandler)),
+	)
 
 	return mux
-}
-
-func withCORS(next http.Handler) http.Handler {
-	// 1. Check the request's origin
-	const allowedOrigin = "http://localhost:8081"
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		// A browser origin was supplied, but it isn't one we allow.
-		if origin != "" && origin != allowedOrigin {
-			http.Error(w, "origin not allowed", http.StatusForbidden)
-			return
-		}
-		// Give the approved browser origin permission.
-		if origin == allowedOrigin {
-			// allow origin
-			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-			// allow method
-			w.Header().Set("Access-Control-Allow-Methods", "GET, PATCH, POST, DELETE, OPTIONS")
-			// allow headers
-			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
-		}
-		// check if method for preflight request is allowed
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
