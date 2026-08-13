@@ -1,9 +1,10 @@
+import { design } from "@/constants/design";
+import { useAppTheme } from "@/context/AppThemeContext";
 import { useSSO } from "@clerk/clerk-expo";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import React, { useCallback, useEffect } from "react";
-import { Platform } from "react-native";
-import { Button } from "tamagui";
+import { Platform, Pressable, StyleSheet, Text } from "react-native";
 
 // Preloads the browser for Android devices to reduce authentication load time
 // See: https://docs.expo.dev/guides/authentication/#improving-user-experience
@@ -23,6 +24,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInWithGoogle() {
   useWarmUpBrowser();
+  const { colors } = useAppTheme();
 
   // Use the `useSSO()` hook to access the `startSSOFlow()` method
   const { startSSOFlow } = useSSO();
@@ -65,13 +67,46 @@ export default function SignInWithGoogle() {
   }, [startSSOFlow]);
 
   return (
-    <Button
-      variant="outlined"
-      borderColor="#904BFF"
-      borderWidth={1}
-      onPress={onPress}
+    <Pressable
+      accessibilityLabel="Sign in with Google"
+      accessibilityRole="button"
+      onPress={() => void onPress()}
+      style={({ pressed }) => [
+        styles.button,
+        {
+          backgroundColor: pressed ? colors.surfaceMuted : colors.surface,
+          borderColor: colors.border,
+        },
+      ]}
     >
-      Sign in with Google
-    </Button>
+      <Text accessible={false} style={styles.googleMark}>
+        G
+      </Text>
+      <Text style={[styles.label, { color: colors.text }]}>
+        Continue with Google
+      </Text>
+    </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: "center",
+    borderRadius: design.radius.pill,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: design.spacing.sm,
+    justifyContent: "center",
+    minHeight: 48,
+    paddingHorizontal: design.spacing.lg,
+  },
+  googleMark: {
+    color: "#4285F4",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  label: {
+    fontSize: design.type.body,
+    fontWeight: "700",
+  },
+});

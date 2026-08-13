@@ -1,55 +1,34 @@
+import { AppCard, AppScreen } from "@/components/ui/design-system";
+import { design } from "@/constants/design";
+import { useAppTheme } from "@/context/AppThemeContext";
 import { useModal } from "@/context/ModalContext";
 import { useSignUp } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import * as React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Button,
-  Card,
-  H1,
-  Input,
-  Label,
-  Paragraph,
-  ScrollView,
-  Spacer,
-  XStack,
-  YStack,
-} from "tamagui";
+import React, { useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const { colors } = useAppTheme();
+  const { showModal } = useModal();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [pendingVerification, setPendingVerification] = React.useState(false);
-  const [code, setCode] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const { showModal } = useModal();
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Handle submission of sign-up form
   const onSignUpPress = async () => {
     if (!isLoaded) return;
     setIsLoading(true);
 
-    // Start sign-up process using email and password provided
     try {
-      await signUp.create({
-        emailAddress,
-        password,
-      });
-
-      // Send user an email with verification code
+      await signUp.create({ emailAddress, password });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      // Set 'pendingVerification' to true to display second form
-      // and capture OTP code
       setPendingVerification(true);
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
-
       showModal({
         type: "alert",
         title: "Whoops",
@@ -60,32 +39,23 @@ export default function SignUpScreen() {
     }
   };
 
-  // Handle submission of verification form
   const onVerifyPress = async () => {
     if (!isLoaded) return;
     setIsLoading(true);
 
     try {
-      // Use the code the user provided to attempt verification
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
       });
 
-      // If verification was completed, set the session to active
-      // and redirect the user
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
         router.replace("/");
       } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
         console.error(JSON.stringify(signUpAttempt, null, 2));
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
-
       showModal({
         type: "alert",
         title: "Whoops",
@@ -96,174 +66,260 @@ export default function SignUpScreen() {
     }
   };
 
+  const disabled = !isLoaded || isLoading;
+
   if (pendingVerification) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
-        <ScrollView
-          flex={1}
-          bg="$background"
-          contentContainerStyle={{ flex: 1 }}
-        >
-          <YStack
-            flex={1}
-            p="$4"
-            gap="$4"
-            style={{ justifyContent: "center", minHeight: "100%" }}
+      <AppScreen contentContainerStyle={styles.screen}>
+        <View style={styles.header}>
+          <Text style={[styles.eyebrow, { color: colors.accent }]}>NEUROSYNC</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Check your email
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+            Enter the verification code sent to {emailAddress}.
+          </Text>
+        </View>
+
+        <AppCard style={styles.card}>
+          <View style={styles.field}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Verification code
+            </Text>
+            <TextInput
+              accessibilityLabel="Verification code"
+              autoComplete="one-time-code"
+              keyboardType="numeric"
+              onChangeText={setCode}
+              onSubmitEditing={() => void onVerifyPress()}
+              placeholder="Enter your code"
+              placeholderTextColor={colors.textFaint}
+              returnKeyType="done"
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surfaceMuted,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              value={code}
+            />
+          </View>
+
+          <PrimaryButton
+            disabled={disabled}
+            label={isLoading ? "Verifying…" : "Verify email"}
+            onPress={() => void onVerifyPress()}
+          />
+        </AppCard>
+
+        <View style={styles.footer}>
+          <Text style={[styles.footerText, { color: colors.textMuted }]}>
+            Need to use a different email?
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setPendingVerification(false)}
+            style={styles.textButton}
           >
-            <YStack gap="$2" style={{ alignItems: "center" }}>
-              <H1 color="$color" style={{ textAlign: "center" }}>
-                Verify Your Email
-              </H1>
-              <Paragraph
-                color="$color"
-                opacity={0.7}
-                style={{ textAlign: "center" }}
-              >
-                We&apos;ve sent a verification code to {emailAddress}
-              </Paragraph>
-            </YStack>
-
-            <Card padding="$4" gap="$2" backgroundColor="$background">
-              <YStack gap="$2">
-                <YStack gap="$2">
-                  <Label color="$color">Verification Code</Label>
-                  <Input
-                    value={code}
-                    placeholder="Enter verification code"
-                    onChangeText={setCode}
-                    borderColor="$borderColor"
-                    focusStyle={{
-                      borderColor: "$purple10",
-                    }}
-                    keyboardType="numeric"
-                    autoComplete="one-time-code"
-                  />
-                </YStack>
-
-                <Spacer />
-
-                <Button
-                  size="$4"
-                  bg="#904BFF"
-                  borderColor="#904BFF"
-                  onPress={onVerifyPress}
-                  disabled={!isLoaded || isLoading}
-                  opacity={!isLoaded || isLoading ? 0.5 : 1}
-                >
-                  {isLoading ? "Verifying..." : "Verify Email"}
-                </Button>
-              </YStack>
-            </Card>
-
-            <XStack
-              gap="$2"
-              style={{ justifyContent: "center", alignItems: "center" }}
-            >
-              <Paragraph color="$color" opacity={0.7}>
-                Didn&apos;t receive the code?
-              </Paragraph>
-              <Button
-                variant="outlined"
-                size="$3"
-                borderColor="#904BFF"
-                onPress={() => setPendingVerification(false)}
-              >
-                Resend
-              </Button>
-            </XStack>
-          </YStack>
-        </ScrollView>
-      </SafeAreaView>
+            <Text style={[styles.textButtonText, { color: colors.accent }]}>
+              Go back
+            </Text>
+          </Pressable>
+        </View>
+      </AppScreen>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
-      <ScrollView flex={1} bg="$background" contentContainerStyle={{ flex: 1 }}>
-        <YStack
-          flex={1}
-          p="$4"
-          gap="$4"
-          style={{ justifyContent: "center", minHeight: "100%" }}
+    <AppScreen contentContainerStyle={styles.screen}>
+      <View style={styles.header}>
+        <Text style={[styles.eyebrow, { color: colors.accent }]}>NEUROSYNC</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Create your account
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          Set up a private space for your tasks, timing, and support preferences.
+        </Text>
+      </View>
+
+      <AppCard style={styles.card}>
+        <View style={styles.field}>
+          <Text style={[styles.label, { color: colors.text }]}>Email address</Text>
+          <TextInput
+            accessibilityLabel="Email address"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            onChangeText={setEmailAddress}
+            placeholder="you@example.com"
+            placeholderTextColor={colors.textFaint}
+            returnKeyType="next"
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surfaceMuted,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
+            value={emailAddress}
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={[styles.label, { color: colors.text }]}>Password</Text>
+          <TextInput
+            accessibilityLabel="Password"
+            autoComplete="new-password"
+            onChangeText={setPassword}
+            onSubmitEditing={() => void onSignUpPress()}
+            placeholder="Create a password"
+            placeholderTextColor={colors.textFaint}
+            returnKeyType="done"
+            secureTextEntry
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surfaceMuted,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
+            value={password}
+          />
+        </View>
+
+        <PrimaryButton
+          disabled={disabled}
+          label={isLoading ? "Creating account…" : "Create account"}
+          onPress={() => void onSignUpPress()}
+        />
+      </AppCard>
+
+      <View style={styles.footer}>
+        <Text style={[styles.footerText, { color: colors.textMuted }]}>
+          Already have an account?
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.canGoBack() && router.back()}
+          style={styles.textButton}
         >
-          <YStack gap="$2" style={{ alignItems: "center" }}>
-            <H1 color="$color" style={{ textAlign: "center" }}>
-              Create Account
-            </H1>
-            <Paragraph
-              color="$color"
-              opacity={0.7}
-              style={{ textAlign: "center" }}
-            >
-              Sign up to get started with your account
-            </Paragraph>
-          </YStack>
-
-          <Card padding="$4" gap="$2" backgroundColor="$background">
-            <YStack gap="$2">
-              <YStack gap="$2">
-                <Label color="$color">Email Address</Label>
-                <Input
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  value={emailAddress}
-                  placeholder="Enter your email"
-                  onChangeText={setEmailAddress}
-                  borderColor="$borderColor"
-                  focusStyle={{
-                    borderColor: "$purple10",
-                  }}
-                />
-              </YStack>
-
-              <YStack gap="$2">
-                <Label color="$color">Password</Label>
-                <Input
-                  secureTextEntry
-                  value={password}
-                  placeholder="Create a password"
-                  onChangeText={setPassword}
-                  borderColor="$borderColor"
-                  focusStyle={{
-                    borderColor: "$purple10",
-                  }}
-                />
-              </YStack>
-
-              <Spacer />
-
-              <Button
-                size="$4"
-                bg="#904BFF"
-                borderColor="#904BFF"
-                onPress={onSignUpPress}
-                disabled={!isLoaded || isLoading}
-                opacity={!isLoaded || isLoading ? 0.5 : 1}
-              >
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </YStack>
-          </Card>
-
-          <XStack
-            gap="$2"
-            style={{ justifyContent: "center", alignItems: "center" }}
-          >
-            <Paragraph color="$color" opacity={0.7}>
-              Already have an account?
-            </Paragraph>
-
-            <Button
-              variant="outlined"
-              size="$3"
-              borderColor="#904BFF"
-              onPress={() => router.canGoBack() && router.back()}
-            >
-              Sign In
-            </Button>
-          </XStack>
-        </YStack>
-      </ScrollView>
-    </SafeAreaView>
+          <Text style={[styles.textButtonText, { color: colors.accent }]}>
+            Sign in
+          </Text>
+        </Pressable>
+      </View>
+    </AppScreen>
   );
 }
+
+function PrimaryButton({
+  disabled,
+  label,
+  onPress,
+}: {
+  disabled: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  const { colors } = useAppTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.primaryButton,
+        {
+          backgroundColor: pressed ? colors.accentPressed : colors.accent,
+          opacity: disabled ? 0.55 : 1,
+        },
+      ]}
+    >
+      <Text style={[styles.primaryButtonText, { color: colors.accentText }]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    gap: design.spacing.xl,
+    justifyContent: "center",
+    paddingBottom: design.spacing.xxxl,
+    paddingTop: design.spacing.xxxl,
+  },
+  header: {
+    alignItems: "center",
+    gap: design.spacing.xs,
+  },
+  eyebrow: {
+    fontSize: design.type.sectionLabel,
+    fontWeight: "800",
+    letterSpacing: 1.4,
+  },
+  title: {
+    fontSize: design.type.screenTitle,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: design.type.body,
+    lineHeight: 21,
+    maxWidth: 390,
+    textAlign: "center",
+  },
+  card: {
+    gap: design.spacing.md,
+  },
+  field: {
+    gap: design.spacing.xs,
+  },
+  label: {
+    fontSize: design.type.meta,
+    fontWeight: "700",
+  },
+  input: {
+    borderRadius: design.radius.md,
+    borderWidth: 1,
+    fontSize: design.type.body,
+    minHeight: 48,
+    paddingHorizontal: design.spacing.md,
+    paddingVertical: design.spacing.sm,
+  },
+  primaryButton: {
+    alignItems: "center",
+    borderRadius: design.radius.pill,
+    justifyContent: "center",
+    minHeight: 50,
+    paddingHorizontal: design.spacing.lg,
+  },
+  primaryButtonText: {
+    fontSize: design.type.body,
+    fontWeight: "700",
+  },
+  footer: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  footerText: {
+    fontSize: design.type.body,
+  },
+  textButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: design.touchTarget,
+    paddingHorizontal: design.spacing.xs,
+  },
+  textButtonText: {
+    fontSize: design.type.body,
+    fontWeight: "700",
+  },
+});
