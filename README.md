@@ -71,7 +71,6 @@ Task records contain alarm and notification fields, but the app does not yet req
 - Active timer state is held in memory and is not reliably recovered after the app process closes.
 - Automated checks cover core logic and API behavior, but not full user journeys on web or mobile.
 - Journal, mood, energy, focus, and “wall of awful” data models exist in Sanity, but their user-facing experience has not been built.
-- There is not yet a committed open-source license. Please discuss licensing with the maintainer before assuming reuse rights beyond contributing to this repository.
 
 ## What is being worked on now
 
@@ -421,3 +420,7 @@ If you are unsure where to start, a native test pass, a performance trace, an ac
 NeuroSync should be built *with* neurodivergent people, not merely for them. Lived experience is expertise, and different experiences may lead to entirely different ideas. Questions are welcome, experiments are encouraged, smaller contributions count, and feedback should be specific, kind, and free of shame.
 
 If that sounds like a project you want to help shape, please open an issue, share an idea, or send a pull request.
+
+## License
+
+NeuroSync is available under the [Apache License 2.0](LICENSE). Third-party dependencies remain subject to their respective licenses.
