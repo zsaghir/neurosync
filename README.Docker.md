@@ -1,22 +1,29 @@
-### Building and running your application
+# NeuroSync Docker development
 
-When you're ready, start your application by running:
-`docker compose up --build`.
+The Docker development stack includes Expo, the Go API, PostgreSQL, and a Goose migration runner. Clerk remains a hosted development service.
 
-Your application will be available at http://localhost:8081.
+## Start
 
-### Deploying your application to the cloud
+```bash
+cp .env.example .env.local
+```
 
-First, build your image, e.g.: `docker build -t myapp .`.
-If your cloud uses a different CPU architecture than your development
-machine (e.g., you are on a Mac M1 and your cloud provider is amd64),
-you'll want to build the image for that platform, e.g.:
-`docker build --platform=linux/amd64 -t myapp .`.
+Add the required development credentials to `.env.local`, start Docker Desktop, then run:
 
-Then, push it to your registry, e.g. `docker push myregistry.com/myapp`.
+```bash
+docker compose --env-file .env.local up --build
+```
 
-Consult Docker's [getting started](https://docs.docker.com/go/get-started-sharing/)
-docs for more detail on building and pushing.
+- Expo: [http://localhost:8081](http://localhost:8081)
+- API health: [http://localhost:8080/health](http://localhost:8080/health)
+- API readiness: [http://localhost:8080/ready](http://localhost:8080/ready)
 
-### References
-* [Docker's Node.js guide](https://docs.docker.com/language/nodejs/)
+## Stop
+
+```bash
+docker compose --env-file .env.local down
+```
+
+This keeps the PostgreSQL volume. Adding `--volumes` permanently deletes the local Docker database.
+
+See the root [README.md](README.md#contributor-quick-start) for environment variables, logs, migrations, native-device networking, troubleshooting, and the non-Docker setup.

@@ -10,6 +10,7 @@ import (
 
 	"github.com/zsaghir/neurosync/server/internal/auth"
 	"github.com/zsaghir/neurosync/server/internal/httpx"
+	"github.com/zsaghir/neurosync/server/internal/sessions"
 	"github.com/zsaghir/neurosync/server/internal/settings"
 	"github.com/zsaghir/neurosync/server/internal/tasks"
 )
@@ -19,6 +20,7 @@ type API struct {
 	allowedOrigins   map[string]struct{}
 	database         Database
 	protect          func(http.Handler) http.Handler
+	sessionsHandler  http.Handler
 	settingsHandler  http.Handler
 	tasksHandler     http.Handler
 	readinessTimeout time.Duration
@@ -53,6 +55,7 @@ func main() {
 		allowedOrigins:   allowedOrigins,
 		database:         pool,
 		protect:          protect,
+		sessionsHandler:  sessions.NewHandler(pool),
 		settingsHandler:  settings.NewHandler(pool),
 		tasksHandler:     tasks.NewHandler(pool),
 		readinessTimeout: databaseConfig.ReadinessTimeout,
@@ -75,6 +78,10 @@ func (api *API) routes() http.Handler {
 	mux.Handle(
 		"/ready",
 		withCORS(api.allowedOrigins, http.HandlerFunc(api.handleReady)),
+	)
+	mux.Handle(
+		"/v1/task-sessions",
+		withCORS(api.allowedOrigins, api.protect(api.sessionsHandler)),
 	)
 	mux.Handle(
 		"/v1/settings",

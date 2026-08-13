@@ -1,0 +1,23 @@
+FROM golang:1.26.5-alpine AS build
+
+ARG GOOSE_VERSION=v3.27.3
+
+RUN CGO_ENABLED=0 GOBIN=/out go install \
+    github.com/pressly/goose/v3/cmd/goose@${GOOSE_VERSION}
+
+FROM alpine:3.22 AS runtime
+
+RUN apk add --no-cache ca-certificates \
+    && addgroup -S neurosync \
+    && adduser -S -G neurosync neurosync
+
+COPY --from=build /out/goose /usr/local/bin/goose
+COPY migrations /migrations
+
+ENV GOOSE_DRIVER=postgres
+ENV GOOSE_MIGRATION_DIR=/migrations
+
+USER neurosync
+
+ENTRYPOINT ["goose"]
+CMD ["up"]

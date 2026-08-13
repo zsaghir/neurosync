@@ -1,8 +1,8 @@
-import { addTimeToTask, type TaskDocument } from "@/lib/api/tasks";
 import {
   createTaskSession,
   type TaskSessionDocument,
-} from "@/lib/sanity/taskSessions";
+} from "@/lib/api/taskSessions";
+import type { TaskDocument } from "@/lib/api/tasks";
 import {
   type ActualSecondsSource,
   formatDurationLabel,
@@ -34,7 +34,6 @@ const parseMinutes = (value: string) => {
 type UseTaskSessionArgs = {
   task: Pick<TaskDocument, "_id"> &
     Partial<Pick<TaskDocument, "title" | "estimatedMinutes">>;
-  userId: string;
   sessions: TaskSessionDocument[];
   startedAt: string | null;
   onTimeCommitted?: (taskId: string, seconds: number) => void;
@@ -49,7 +48,6 @@ type UseTaskSessionArgs = {
  */
 export function useTaskSession({
   task,
-  userId,
   sessions,
   startedAt,
   onTimeCommitted,
@@ -109,10 +107,8 @@ export function useTaskSession({
     setIsSaving(true);
     try {
       const endedAt = new Date().toISOString();
-      const session = await createTaskSession({
+      const session = await createTaskSession(getToken, {
         taskId: task._id,
-        userId,
-        taskTitle: task.title ?? "Untitled task",
         estimatedMinutes,
         estimateInputType,
         timerMeasuredSeconds: Math.round(timerSeconds),
@@ -125,7 +121,6 @@ export function useTaskSession({
       });
 
       if (!excludedFromInsights && actualSeconds > 0) {
-        await addTimeToTask(getToken, task._id, Math.round(actualSeconds));
         onTimeCommitted?.(task._id, actualSeconds);
       }
 
@@ -151,8 +146,8 @@ export function useTaskSession({
         shouldReflect
           ? `Felt like ${estimatedMinutes} min, ran ${formatDurationLabel(
               actualSeconds,
-            )}. Your map learned a little more from this one.`
-          : "Saved. Your map is learning.",
+              )}. Your history learned a little more from this one.`
+          : "Saved to your history.",
       );
 
       return session;

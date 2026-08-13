@@ -5,7 +5,7 @@ import { useTimer } from "@/hooks/use-timer";
 import {
   fetchTaskSessions,
   type TaskSessionDocument,
-} from "@/lib/sanity/taskSessions";
+} from "@/lib/api/taskSessions";
 import { fetchTaskById, type TaskDocument } from "@/lib/api/tasks";
 import formattime from "@/lib/utils/formattime";
 import {
@@ -13,7 +13,7 @@ import {
   shouldPromptForLongSession,
   shouldPromptForShortSession,
 } from "@/lib/utils/time-wisdom";
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/clerk-expo";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -45,7 +45,6 @@ function varianceMessage(estimatedMinutes: number | null, actualSeconds: number)
 
 export default function FocusTimerScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
-  const { user } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
   const { setActiveTimer } = useActiveTimer();
@@ -68,7 +67,7 @@ export default function FocusTimerScreen() {
   } = timer;
 
   const load = useCallback(async () => {
-    if (!user || !taskId) {
+    if (!taskId) {
       setIsLoading(false);
       return;
     }
@@ -77,7 +76,7 @@ export default function FocusTimerScreen() {
     try {
       const [nextTask, nextSessions] = await Promise.all([
         fetchTaskById(getToken, taskId),
-        fetchTaskSessions(user.id),
+        fetchTaskSessions(getToken),
       ]);
       setTask(nextTask);
       setSessions(nextSessions);
@@ -86,7 +85,7 @@ export default function FocusTimerScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, user, taskId]);
+  }, [getToken, taskId]);
 
   useEffect(() => {
     void load();
@@ -94,7 +93,6 @@ export default function FocusTimerScreen() {
 
   const session = useTaskSession({
     task: task ?? { _id: taskId ?? "" },
-    userId: user?.id ?? "",
     sessions,
     startedAt,
     onTimeCommitted: undefined,

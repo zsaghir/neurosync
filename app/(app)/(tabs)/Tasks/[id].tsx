@@ -8,7 +8,7 @@ import { useTaskSession } from "@/hooks/use-task-session";
 import {
   fetchTaskSessions,
   type TaskSessionDocument,
-} from "@/lib/sanity/taskSessions";
+} from "@/lib/api/taskSessions";
 import {
   deleteTask,
   fetchTaskById,
@@ -17,7 +17,7 @@ import {
   type TaskDocument,
 } from "@/lib/api/tasks";
 import { formatDurationLabel } from "@/lib/utils/time-wisdom";
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter, type Href } from "expo-router";
@@ -35,7 +35,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TaskDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
@@ -48,7 +47,7 @@ export default function TaskDetails() {
   const [isManualSheetOpen, setIsManualSheetOpen] = useState(false);
 
   const load = useCallback(async () => {
-    if (!user || !id) {
+    if (!id) {
       setIsLoading(false);
       return;
     }
@@ -57,7 +56,7 @@ export default function TaskDetails() {
     try {
       const [nextTask, nextSessions] = await Promise.all([
         fetchTaskById(getToken, id),
-        fetchTaskSessions(user.id),
+        fetchTaskSessions(getToken),
       ]);
       setTask(nextTask);
       setSessions(nextSessions);
@@ -67,7 +66,7 @@ export default function TaskDetails() {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, user, id]);
+  }, [getToken, id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -77,7 +76,6 @@ export default function TaskDetails() {
 
   const session = useTaskSession({
     task: task ?? { _id: id ?? "" },
-    userId: user?.id ?? "",
     sessions,
     startedAt: null,
     onTimeCommitted: (_taskId, seconds) => {
