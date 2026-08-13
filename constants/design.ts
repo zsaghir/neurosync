@@ -1,7 +1,6 @@
 import type { ThemeMode } from "@/lib/utils/time-wisdom";
 
-// Light palette matches the "4a — Final design" tokens exactly
-// (.agents/claudedesign/design_handoff_adhd_redesign/README.md).
+// Light palette contains NeuroSync's shared application design tokens.
 const lightColors = {
   background: "#F7F4EF",
   surface: "#FFFEFB",

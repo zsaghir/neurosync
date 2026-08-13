@@ -9,6 +9,13 @@ dist/
 web-build/
 expo-env.d.ts
 
+# generated Tamagui extraction cache
+.tamagui/
+
+# local agent tooling and design artifacts
+.agents/
+skills-lock.json
+
 # Native
 .kotlin/
 *.orig.*
