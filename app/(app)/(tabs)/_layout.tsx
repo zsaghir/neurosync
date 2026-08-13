@@ -19,6 +19,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName="Tasks"
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: colors.background },
@@ -33,23 +34,9 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: "Today",
-          tabBarIcon: TabDot,
-        }}
-      />
-      <Tabs.Screen
         name="Tasks"
         options={{
           title: "Tasks",
-          tabBarIcon: TabDot,
-        }}
-      />
-      <Tabs.Screen
-        name="TimeMap"
-        options={{
-          title: "Time Map",
           tabBarIcon: TabDot,
         }}
       />
