@@ -23,29 +23,38 @@ const (
 
 // Response is one persisted check-in owned by the authenticated user.
 type Response struct {
-	ID             string       `json:"id"`
-	TaskID         *string      `json:"taskId"`
-	Blocker        Blocker      `json:"blocker"`
-	Reason         *string      `json:"reason"`
-	SupportAction  *string      `json:"supportAction"`
-	NextStep       *string      `json:"nextStep"`
-	PlannedMinutes *int         `json:"plannedMinutes"`
-	Helpfulness    *Helpfulness `json:"helpfulness"`
-	CreatedAt      time.Time    `json:"createdAt"`
-	UpdatedAt      time.Time    `json:"updatedAt"`
+	ID                    string       `json:"id"`
+	TaskID                *string      `json:"taskId"`
+	Blocker               Blocker      `json:"blocker"`
+	Reason                *string      `json:"reason"`
+	SupportAction         *string      `json:"supportAction"`
+	NextStep              *string      `json:"nextStep"`
+	PlannedMinutes        *int         `json:"plannedMinutes"`
+	StucknessBefore       int          `json:"stucknessBefore"`
+	StucknessAfter        *int         `json:"stucknessAfter"`
+	InterventionAttempted *bool        `json:"interventionAttempted"`
+	NextStepTaken         *bool        `json:"nextStepTaken"`
+	Helpfulness           *Helpfulness `json:"helpfulness"`
+	FollowedUpAt          *time.Time   `json:"followedUpAt"`
+	CreatedAt             time.Time    `json:"createdAt"`
+	UpdatedAt             time.Time    `json:"updatedAt"`
 }
 
 // CreateRequest contains fields accepted when creating a check-in.
 type CreateRequest struct {
-	TaskID         *string `json:"taskId"`
-	Blocker        Blocker `json:"blocker"`
-	Reason         *string `json:"reason"`
-	SupportAction  *string `json:"supportAction"`
-	NextStep       *string `json:"nextStep"`
-	PlannedMinutes *int    `json:"plannedMinutes"`
+	TaskID          *string `json:"taskId"`
+	Blocker         Blocker `json:"blocker"`
+	Reason          *string `json:"reason"`
+	SupportAction   *string `json:"supportAction"`
+	NextStep        *string `json:"nextStep"`
+	PlannedMinutes  *int    `json:"plannedMinutes"`
+	StucknessBefore *int    `json:"stucknessBefore"`
 }
 
 // OutcomeRequest records whether the chosen support action helped.
 type OutcomeRequest struct {
-	Helpfulness Helpfulness `json:"helpfulness"`
+	StucknessAfter        *int        `json:"stucknessAfter"`
+	InterventionAttempted *bool       `json:"interventionAttempted"`
+	NextStepTaken         *bool       `json:"nextStepTaken"`
+	Helpfulness           Helpfulness `json:"helpfulness"`
 }

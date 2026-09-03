@@ -12,12 +12,16 @@ const (
 	maxShortTextLength = 64
 	maxNextStepLength  = 280
 	maxPlannedMinutes  = 1440
+	maxStuckness       = 10
 )
 
 // ValidateCreate validates and trims a request to create a check-in.
 func ValidateCreate(request CreateRequest) (CreateRequest, error) {
 	if !validBlocker(request.Blocker) {
 		return CreateRequest{}, errors.New("blocker must be shame, task_initiation, or time_blindness")
+	}
+	if err := validateStuckness(request.StucknessBefore, "stucknessBefore"); err != nil {
+		return CreateRequest{}, err
 	}
 
 	if request.TaskID != nil {
@@ -54,8 +58,30 @@ func ValidateCreate(request CreateRequest) (CreateRequest, error) {
 
 // ValidateOutcome validates a request to record whether support helped.
 func ValidateOutcome(request OutcomeRequest) error {
+	if err := validateStuckness(request.StucknessAfter, "stucknessAfter"); err != nil {
+		return err
+	}
+	if request.InterventionAttempted == nil {
+		return errors.New("interventionAttempted is required")
+	}
+	if *request.InterventionAttempted && request.NextStepTaken == nil {
+		return errors.New("nextStepTaken is required when interventionAttempted is true")
+	}
+	if !*request.InterventionAttempted && request.NextStepTaken != nil {
+		return errors.New("nextStepTaken must be omitted when interventionAttempted is false")
+	}
 	if !validHelpfulness(request.Helpfulness) {
 		return errors.New("helpfulness must be yes, a_little, or not_yet")
+	}
+	return nil
+}
+
+func validateStuckness(value *int, field string) error {
+	if value == nil {
+		return fmt.Errorf("%s is required", field)
+	}
+	if *value < 0 || *value > maxStuckness {
+		return fmt.Errorf("%s must be between 0 and %d", field, maxStuckness)
 	}
 	return nil
 }
