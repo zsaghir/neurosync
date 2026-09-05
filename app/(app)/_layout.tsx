@@ -16,6 +16,10 @@ function ThemedAppStack({ isSignedIn }: { isSignedIn: boolean }) {
         <Stack.Protected guard={isSignedIn}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen
+            name="check-in"
+            options={{ presentation: "modal" }}
+          />
+          <Stack.Screen
             name="focus/[taskId]"
             options={{ presentation: "fullScreenModal" }}
           />

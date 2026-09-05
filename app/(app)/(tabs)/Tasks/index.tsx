@@ -103,7 +103,17 @@ export default function TasksList() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={styles.screen}>
-        <Text style={[styles.title, { color: colors.text }]}>Tasks</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.text }]}>Tasks</Text>
+          <Pressable
+            accessibilityLabel="Check in because I am stuck"
+            accessibilityRole="button"
+            onPress={() => router.push("/(app)/check-in" as Href)}
+            style={[styles.checkInButton, { backgroundColor: colors.accentSoft }]}
+          >
+            <Text style={[styles.checkInText, { color: colors.accentSoftText }]}>I’m stuck</Text>
+          </Pressable>
+        </View>
 
         {isLoading ? (
           <View style={styles.statusBlock}>
@@ -209,7 +219,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: design.type.screenTitle,
     fontWeight: "800",
+  },
+  titleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: design.spacing.sm + 2,
+  },
+  checkInButton: {
+    alignItems: "center",
+    borderRadius: design.radius.pill,
+    justifyContent: "center",
+    minHeight: design.touchTarget,
+    paddingHorizontal: design.spacing.md,
+  },
+  checkInText: {
+    fontSize: design.type.meta + 1,
+    fontWeight: "700",
   },
   listContent: {
     paddingBottom: design.spacing.huge * 2,

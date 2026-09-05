@@ -149,6 +149,12 @@ export default function TaskDetails() {
       params: { taskId: task._id },
     } as unknown as Href);
 
+  const openCheckIn = () =>
+    router.push({
+      pathname: "/(app)/check-in",
+      params: { taskId: task._id, taskTitle: task.title },
+    } as unknown as Href);
+
   const openAdjustOrManualTime = () => {
     session.openManualTime();
     setIsManualSheetOpen(true);
@@ -206,13 +212,18 @@ export default function TaskDetails() {
         ) : null}
 
         {!task.completed ? (
-          <PillButton
-            accessibilityLabel={`Start focus for ${task.title}`}
-            onPress={startFocus}
-            style={{ marginTop: design.spacing.md }}
-          >
-            Start focus
-          </PillButton>
+          <View style={styles.primaryActions}>
+            <PillButton
+              accessibilityLabel={`Start focus for ${task.title}`}
+              onPress={startFocus}
+              style={styles.growButton}
+            >
+              Start focus
+            </PillButton>
+            <PillButton variant="secondary" onPress={openCheckIn} style={styles.growButton}>
+              I’m stuck
+            </PillButton>
+          </View>
         ) : null}
 
         <SectionLabel style={styles.sectionLabel}>Subtasks</SectionLabel>
@@ -322,6 +333,15 @@ const styles = StyleSheet.create({
     fontSize: design.type.meta + 0.5,
     marginLeft: 38,
     marginTop: design.spacing.xs,
+  },
+  primaryActions: {
+    flexDirection: "row",
+    gap: design.spacing.sm,
+    marginLeft: 38,
+    marginTop: design.spacing.md,
+  },
+  growButton: {
+    flex: 1,
   },
   sectionLabel: {
     marginBottom: design.spacing.xs,

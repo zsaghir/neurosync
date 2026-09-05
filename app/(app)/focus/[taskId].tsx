@@ -44,7 +44,11 @@ function varianceMessage(estimatedMinutes: number | null, actualSeconds: number)
 }
 
 export default function FocusTimerScreen() {
-  const { taskId } = useLocalSearchParams<{ taskId: string }>();
+  const { taskId, checkInMinutes, checkInNextStep } = useLocalSearchParams<{
+    taskId: string;
+    checkInMinutes?: string;
+    checkInNextStep?: string;
+  }>();
   const { getToken } = useAuth();
   const router = useRouter();
   const { setActiveTimer } = useActiveTimer();
@@ -232,9 +236,14 @@ export default function FocusTimerScreen() {
       {!isReviewing ? (
         <View style={styles.runningBody}>
           <Text style={styles.taskName}>{task.title}</Text>
+          {checkInNextStep ? (
+            <Text style={styles.checkInStep}>{checkInNextStep}</Text>
+          ) : null}
           <Text style={styles.countdown}>{formattime(elapsedSeconds)}</Text>
           <Text style={styles.estimateLine}>
-            {task.estimatedMinutes != null
+            {checkInMinutes
+              ? `${checkInMinutes}-minute experiment`
+              : task.estimatedMinutes != null
               ? `${task.estimatedMinutes} min estimated`
               : "No estimate for this one"}
           </Text>
@@ -343,6 +352,15 @@ const styles = StyleSheet.create({
   taskName: {
     color: colors.focusMuted,
     fontSize: design.type.meta + 1,
+    textAlign: "center",
+  },
+  checkInStep: {
+    color: colors.focusText,
+    fontSize: design.type.body + 1,
+    fontWeight: "700",
+    lineHeight: 24,
+    marginTop: design.spacing.sm,
+    maxWidth: 440,
     textAlign: "center",
   },
   countdown: {
