@@ -169,3 +169,33 @@ func TestRoutesProtectTaskSessions(t *testing.T) {
 		t.Fatal("task-session route did not pass through authentication protection")
 	}
 }
+
+func TestRoutesProtectCheckIns(t *testing.T) {
+	protected := false
+	handled := false
+	api := &API{
+		allowedOrigins: map[string]struct{}{"http://localhost:8081": {}},
+		protect: func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				protected = true
+				next.ServeHTTP(w, r)
+			})
+		},
+		checkInsHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handled = true
+			w.WriteHeader(http.StatusCreated)
+		}),
+	}
+	request := httptest.NewRequest(http.MethodPost, "/v1/check-ins", nil)
+	request.Header.Set("Origin", "http://localhost:8081")
+	recorder := httptest.NewRecorder()
+
+	api.routes().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusCreated {
+		t.Fatalf("expected status %d, got %d", http.StatusCreated, recorder.Code)
+	}
+	if !protected || !handled {
+		t.Fatal("check-in route did not pass through authentication protection")
+	}
+}

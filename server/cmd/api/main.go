@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/zsaghir/neurosync/server/internal/auth"
+	"github.com/zsaghir/neurosync/server/internal/checkins"
 	"github.com/zsaghir/neurosync/server/internal/httpx"
 	"github.com/zsaghir/neurosync/server/internal/sessions"
 	"github.com/zsaghir/neurosync/server/internal/settings"
@@ -18,6 +19,7 @@ import (
 // API contains dependencies shared by HTTP handlers.
 type API struct {
 	allowedOrigins   map[string]struct{}
+	checkInsHandler  http.Handler
 	database         Database
 	protect          func(http.Handler) http.Handler
 	sessionsHandler  http.Handler
@@ -53,6 +55,7 @@ func main() {
 
 	api := &API{
 		allowedOrigins:   allowedOrigins,
+		checkInsHandler:  checkins.NewHandler(pool),
 		database:         pool,
 		protect:          protect,
 		sessionsHandler:  sessions.NewHandler(pool),
@@ -78,6 +81,14 @@ func (api *API) routes() http.Handler {
 	mux.Handle(
 		"/ready",
 		withCORS(api.allowedOrigins, http.HandlerFunc(api.handleReady)),
+	)
+	mux.Handle(
+		"/v1/check-ins",
+		withCORS(api.allowedOrigins, api.protect(api.checkInsHandler)),
+	)
+	mux.Handle(
+		"/v1/check-ins/{id}/outcome",
+		withCORS(api.allowedOrigins, api.protect(api.checkInsHandler)),
 	)
 	mux.Handle(
 		"/v1/task-sessions",
