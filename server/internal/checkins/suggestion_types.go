@@ -73,6 +73,20 @@ type SuggestionRequest struct {
 	Difficulties    []Difficulty  `json:"difficulties"`
 }
 
+// SuggestionInput is the validated context sent to a suggestion provider.
+// It deliberately excludes the Clerk user ID and database task ID.
+type SuggestionInput struct {
+	TaskTitle       *string
+	Blocker         Blocker
+	BrainDump       string
+	Capacity        *Capacity
+	Sleep           *SleepQuality
+	BasicNeeds      *BasicNeeds
+	MedicationShift *bool
+	SubstanceImpact *bool
+	Difficulties    []Difficulty
+}
+
 // Suggestion is one concrete, bounded action returned to the user.
 type Suggestion struct {
 	Strategy       Strategy `json:"strategy"`

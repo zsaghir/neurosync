@@ -31,6 +31,14 @@ func decodeOutcomeRequest(r *http.Request) (OutcomeRequest, error) {
 	return request, nil
 }
 
+func decodeSuggestionRequest(r *http.Request) (SuggestionRequest, error) {
+	var request SuggestionRequest
+	if err := decodeOneJSON(r, &request); err != nil {
+		return SuggestionRequest{}, err
+	}
+	return ValidateSuggestionRequest(request)
+}
+
 func decodeOneJSON(r *http.Request, destination any) error {
 	decoder := json.NewDecoder(io.LimitReader(r.Body, maxRequestBodySize))
 	decoder.DisallowUnknownFields()

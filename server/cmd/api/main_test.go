@@ -199,3 +199,33 @@ func TestRoutesProtectCheckIns(t *testing.T) {
 		t.Fatal("check-in route did not pass through authentication protection")
 	}
 }
+
+func TestRoutesProtectCheckInSuggestions(t *testing.T) {
+	protected := false
+	handled := false
+	api := &API{
+		allowedOrigins: map[string]struct{}{"http://localhost:8081": {}},
+		protect: func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				protected = true
+				next.ServeHTTP(w, r)
+			})
+		},
+		suggestionsHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handled = true
+			w.WriteHeader(http.StatusOK)
+		}),
+	}
+	request := httptest.NewRequest(http.MethodPost, "/v1/check-in-suggestions", nil)
+	request.Header.Set("Origin", "http://localhost:8081")
+	recorder := httptest.NewRecorder()
+
+	api.routes().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, recorder.Code)
+	}
+	if !protected || !handled {
+		t.Fatal("check-in suggestion route did not pass through authentication protection")
+	}
+}

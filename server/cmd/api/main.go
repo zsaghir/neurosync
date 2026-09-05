@@ -18,14 +18,15 @@ import (
 
 // API contains dependencies shared by HTTP handlers.
 type API struct {
-	allowedOrigins   map[string]struct{}
-	checkInsHandler  http.Handler
-	database         Database
-	protect          func(http.Handler) http.Handler
-	sessionsHandler  http.Handler
-	settingsHandler  http.Handler
-	tasksHandler     http.Handler
-	readinessTimeout time.Duration
+	allowedOrigins     map[string]struct{}
+	checkInsHandler    http.Handler
+	database           Database
+	protect            func(http.Handler) http.Handler
+	sessionsHandler    http.Handler
+	settingsHandler    http.Handler
+	suggestionsHandler http.Handler
+	tasksHandler       http.Handler
+	readinessTimeout   time.Duration
 }
 
 type ErrorDetails = httpx.ErrorDetails
@@ -54,12 +55,16 @@ func main() {
 	defer pool.Close()
 
 	api := &API{
-		allowedOrigins:   allowedOrigins,
-		checkInsHandler:  checkins.NewHandler(pool),
-		database:         pool,
-		protect:          protect,
-		sessionsHandler:  sessions.NewHandler(pool),
-		settingsHandler:  settings.NewHandler(pool),
+		allowedOrigins:  allowedOrigins,
+		checkInsHandler: checkins.NewHandler(pool),
+		database:        pool,
+		protect:         protect,
+		sessionsHandler: sessions.NewHandler(pool),
+		settingsHandler: settings.NewHandler(pool),
+		suggestionsHandler: checkins.NewSuggestionHandler(
+			pool,
+			checkins.UnavailableSuggester{},
+		),
 		tasksHandler:     tasks.NewHandler(pool),
 		readinessTimeout: databaseConfig.ReadinessTimeout,
 	}
@@ -89,6 +94,10 @@ func (api *API) routes() http.Handler {
 	mux.Handle(
 		"/v1/check-ins/{id}/outcome",
 		withCORS(api.allowedOrigins, api.protect(api.checkInsHandler)),
+	)
+	mux.Handle(
+		"/v1/check-in-suggestions",
+		withCORS(api.allowedOrigins, api.protect(api.suggestionsHandler)),
 	)
 	mux.Handle(
 		"/v1/task-sessions",
