@@ -17,7 +17,7 @@ import {
 } from "@/lib/api/checkins";
 import { useAuth } from "@clerk/clerk-expo";
 import { useRouter, type Href } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -29,7 +29,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Phase = "dump" | "context" | "suggestions" | "outcome" | "complete";
+type Phase = "dump" | "context" | "suggestions" | "manual" | "outcome" | "complete";
 
 type GuidedCheckInProps = {
   mode: "home" | "modal";
@@ -75,6 +75,8 @@ const difficultyOptions: { id: CheckInDifficulty; label: string }[] = [
   { id: "emotionally_overwhelmed", label: "I feel emotionally overwhelmed" },
 ];
 
+const manualDurationOptions = [5, 10, 15, 25];
+
 export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckInProps) {
   const { getToken } = useAuth();
   const router = useRouter();
@@ -93,6 +95,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
   const [suggestionResponse, setSuggestionResponse] = useState<CheckInSuggestionResponse | null>(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState<CheckInSuggestion | null>(null);
   const [nextStep, setNextStep] = useState("");
+  const [manualMinutes, setManualMinutes] = useState(5);
   const [checkIn, setCheckIn] = useState<CheckIn | null>(null);
   const [stucknessAfter, setStucknessAfter] = useState<number | null>(null);
   const [attempted, setAttempted] = useState<boolean | null>(null);
@@ -120,6 +123,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
     setSuggestionResponse(null);
     setSelectedSuggestion(null);
     setNextStep("");
+    setManualMinutes(5);
     setCheckIn(null);
     setStucknessAfter(null);
     setAttempted(null);
@@ -170,6 +174,13 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
     setNextStep(suggestion.nextStep);
   };
 
+  const openManualStep = () => {
+    setSelectedSuggestion(null);
+    setNextStep("");
+    setError("");
+    setPhase("manual");
+  };
+
   const openTimer = (created: CheckIn) => {
     setPhase("outcome");
 
@@ -195,8 +206,12 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
     } as unknown as Href);
   };
 
-  const saveCheckIn = async (startTimer: boolean) => {
-    if (!blocker || stucknessBefore == null || !selectedSuggestion || !nextStep.trim()) return;
+  const saveCheckIn = async (
+    supportAction: string,
+    plannedMinutes: number,
+    startTimer: boolean,
+  ) => {
+    if (!blocker || stucknessBefore == null || !nextStep.trim()) return;
 
     setIsLoading(true);
     setError("");
@@ -204,9 +219,9 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
       const created = await createCheckIn(getToken, {
         ...(taskId ? { taskId } : {}),
         blocker,
-        supportAction: selectedSuggestion.strategy,
+        supportAction,
         nextStep: nextStep.trim(),
-        plannedMinutes: selectedSuggestion.plannedMinutes,
+        plannedMinutes,
         stucknessBefore,
       });
       setCheckIn(created);
@@ -289,6 +304,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
             </View>
             {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
             <PillButton disabled={isLoading} onPress={() => void loadSuggestions()} style={styles.primaryButton}>{isLoading ? <ActivityIndicator color={colors.accentText} /> : "Find a way forward"}</PillButton>
+            <PillButton disabled={isLoading} variant="secondary" onPress={openManualStep} style={styles.secondaryButton}>Continue without AI</PillButton>
             <PillButton variant="text" onPress={() => setPhase("dump")}>Back</PillButton>
           </>
         ) : null}
@@ -302,9 +318,25 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
             isLoading={isLoading}
             onSelect={chooseSuggestion}
             onNextStep={setNextStep}
-            onStart={() => void saveCheckIn(true)}
-            onAlreadyTried={() => void saveCheckIn(false)}
+            onStart={() => selectedSuggestion && void saveCheckIn(selectedSuggestion.strategy, selectedSuggestion.plannedMinutes, true)}
+            onAlreadyTried={() => selectedSuggestion && void saveCheckIn(selectedSuggestion.strategy, selectedSuggestion.plannedMinutes, false)}
+            onGenerateAgain={() => void loadSuggestions()}
+            onContinueWithoutAI={openManualStep}
             onBack={() => setPhase("context")}
+          />
+        ) : null}
+
+        {phase === "manual" ? (
+          <ManualStepPhase
+            nextStep={nextStep}
+            plannedMinutes={manualMinutes}
+            error={error}
+            isLoading={isLoading}
+            onNextStep={setNextStep}
+            onMinutes={setManualMinutes}
+            onStart={() => void saveCheckIn("self_directed", manualMinutes, true)}
+            onAlreadyTried={() => void saveCheckIn("self_directed", manualMinutes, false)}
+            onBack={() => setPhase(suggestionResponse ? "suggestions" : "context")}
           />
         ) : null}
 
@@ -364,8 +396,9 @@ function DumpPhase({ blocker, brainDump, stuckness, onBlocker, onBrainDump, onSt
   );
 }
 
-function SuggestionsPhase({ response, selected, nextStep, error, isLoading, onSelect, onNextStep, onStart, onAlreadyTried, onBack }: { response: CheckInSuggestionResponse; selected: CheckInSuggestion | null; nextStep: string; error: string; isLoading: boolean; onSelect: (value: CheckInSuggestion) => void; onNextStep: (value: string) => void; onStart: () => void; onAlreadyTried: () => void; onBack: () => void }) {
+function SuggestionsPhase({ response, selected, nextStep, error, isLoading, onSelect, onNextStep, onStart, onAlreadyTried, onGenerateAgain, onContinueWithoutAI, onBack }: { response: CheckInSuggestionResponse; selected: CheckInSuggestion | null; nextStep: string; error: string; isLoading: boolean; onSelect: (value: CheckInSuggestion) => void; onNextStep: (value: string) => void; onStart: () => void; onAlreadyTried: () => void; onGenerateAgain: () => void; onContinueWithoutAI: () => void; onBack: () => void }) {
   const { colors } = useAppTheme();
+  const nextStepInput = useRef<TextInput>(null);
   return (
     <>
       <Text style={[styles.eyebrow, { color: colors.accent }]}>Three ways forward</Text>
@@ -375,15 +408,43 @@ function SuggestionsPhase({ response, selected, nextStep, error, isLoading, onSe
       <View style={styles.optionList}>{response.suggestions.map((suggestion) => <SuggestionCard key={suggestion.strategy} suggestion={suggestion} selected={selected?.strategy === suggestion.strategy} onPress={() => onSelect(suggestion)} />)}</View>
       {selected ? (
         <>
-          <Text style={[styles.fieldLabel, { color: colors.text }]}>Your next step</Text>
-          <TextInput maxLength={280} multiline onChangeText={onNextStep} style={[styles.input, styles.nextStepInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} textAlignVertical="top" value={nextStep} />
+          <View style={styles.editHeading}>
+            <Text style={[styles.fieldLabel, styles.editFieldLabel, { color: colors.text }]}>Your next step</Text>
+            <Pressable accessibilityRole="button" onPress={() => nextStepInput.current?.focus()} style={styles.editTarget}>
+              <Text style={[styles.editText, { color: colors.accent }]}>Edit</Text>
+            </Pressable>
+          </View>
+          <TextInput ref={nextStepInput} accessibilityLabel="Edit your next step" maxLength={280} multiline onChangeText={onNextStep} style={[styles.input, styles.nextStepInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} textAlignVertical="top" value={nextStep} />
           <Text style={[styles.helper, { color: colors.textMuted }]}>{selected.plannedMinutes}-minute experiment</Text>
         </>
       ) : null}
       {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
       <PillButton disabled={!selected || !nextStep.trim() || isLoading} onPress={onStart} style={styles.primaryButton}>{isLoading ? <ActivityIndicator color={colors.accentText} /> : "Use this step"}</PillButton>
       <PillButton disabled={!selected || !nextStep.trim() || isLoading} variant="secondary" onPress={onAlreadyTried} style={styles.secondaryButton}>I already tried it</PillButton>
+      <PillButton disabled={isLoading} variant="secondary" onPress={onGenerateAgain} style={styles.secondaryButton}>{isLoading ? "Generating…" : "Generate again"}</PillButton>
+      <PillButton disabled={isLoading} variant="text" onPress={onContinueWithoutAI}>Continue without AI</PillButton>
       <PillButton variant="text" onPress={onBack}>Back</PillButton>
+    </>
+  );
+}
+
+function ManualStepPhase({ nextStep, plannedMinutes, error, isLoading, onNextStep, onMinutes, onStart, onAlreadyTried, onBack }: { nextStep: string; plannedMinutes: number; error: string; isLoading: boolean; onNextStep: (value: string) => void; onMinutes: (value: number) => void; onStart: () => void; onAlreadyTried: () => void; onBack: () => void }) {
+  const { colors } = useAppTheme();
+  return (
+    <>
+      <Text style={[styles.eyebrow, { color: colors.accent }]}>Your choice</Text>
+      <Text style={[styles.title, { color: colors.text }]}>Choose your own next step</Text>
+      <Text style={[styles.subtitle, { color: colors.textMuted }]}>Ignore the generated suggestions and write one action that feels useful now.</Text>
+      <Text style={[styles.fieldLabel, { color: colors.text }]}>Next step</Text>
+      <TextInput accessibilityLabel="Your own next step" autoFocus maxLength={280} multiline onChangeText={onNextStep} placeholder="What is one small action you can take?" placeholderTextColor={colors.textFaint} style={[styles.input, styles.nextStepInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} textAlignVertical="top" value={nextStep} />
+      <QuestionText>How long do you want to try it?</QuestionText>
+      <View style={styles.chipList}>
+        {manualDurationOptions.map((minutes) => <SmallChoice key={minutes} label={`${minutes} min`} selected={plannedMinutes === minutes} onPress={() => onMinutes(minutes)} />)}
+      </View>
+      {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
+      <PillButton disabled={!nextStep.trim() || isLoading} onPress={onStart} style={styles.primaryButton}>{isLoading ? <ActivityIndicator color={colors.accentText} /> : "Start my timer"}</PillButton>
+      <PillButton disabled={!nextStep.trim() || isLoading} variant="secondary" onPress={onAlreadyTried} style={styles.secondaryButton}>I already tried it</PillButton>
+      <PillButton disabled={isLoading} variant="text" onPress={onBack}>Back to suggestions</PillButton>
     </>
   );
 }
@@ -426,7 +487,7 @@ function QuestionText({ children }: { children: React.ReactNode }) {
 
 function SuggestionCard({ suggestion, selected, onPress }: { suggestion: CheckInSuggestion; selected: boolean; onPress: () => void }) {
   const { colors } = useAppTheme();
-  return <Pressable accessibilityRole="radio" accessibilityState={{ checked: selected }} onPress={onPress} style={[styles.choiceCard, { backgroundColor: selected ? colors.accentSoft : colors.surface, borderColor: selected ? colors.accent : colors.border }]}><View style={styles.suggestionHeader}><Text style={[styles.choiceTitle, { color: colors.text }]}>{suggestion.title}</Text><Text style={[styles.minutes, { color: colors.accent }]}>{suggestion.plannedMinutes} min</Text></View><Text style={[styles.suggestionStep, { color: colors.text }]}>{suggestion.nextStep}</Text><Text style={[styles.choiceDescription, { color: colors.textMuted }]}>{suggestion.why}</Text></Pressable>;
+  return <Pressable accessibilityRole="radio" accessibilityState={{ checked: selected }} onPress={onPress} style={[styles.choiceCard, { backgroundColor: selected ? colors.accentSoft : colors.surface, borderColor: selected ? colors.accent : colors.border }]}><View style={styles.suggestionHeader}><Text style={[styles.choiceTitle, { color: colors.text }]}>{suggestion.title}</Text><Text style={[styles.minutes, { color: colors.accent }]}>{suggestion.plannedMinutes} min</Text></View><Text style={[styles.suggestionStep, { color: colors.text }]}>{suggestion.nextStep}</Text><Text style={[styles.whyLabel, { color: colors.textMuted }]}>Why this may help</Text><Text style={[styles.choiceDescription, styles.whyText, { color: colors.textMuted }]}>{suggestion.why}</Text></Pressable>;
 }
 
 function ChoiceCard({ title, description, selected, onPress }: { title: string; description: string; selected: boolean; onPress: () => void }) {
@@ -457,6 +518,10 @@ const styles = StyleSheet.create({
   title: { fontSize: design.type.screenTitle, fontWeight: "800", lineHeight: 34, marginTop: design.spacing.xs },
   subtitle: { fontSize: design.type.body, lineHeight: 22, marginTop: design.spacing.xs },
   fieldLabel: { fontSize: design.type.body, fontWeight: "700", marginBottom: design.spacing.xs, marginTop: design.spacing.xl },
+  editHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginTop: design.spacing.xl },
+  editFieldLabel: { marginBottom: design.spacing.xs, marginTop: 0 },
+  editTarget: { justifyContent: "center", minHeight: design.touchTarget, paddingLeft: design.spacing.md },
+  editText: { fontSize: design.type.meta + 1, fontWeight: "700" },
   input: { borderRadius: design.radius.md, borderWidth: 1, fontSize: design.type.body, minHeight: design.touchTarget, paddingHorizontal: design.spacing.md, paddingVertical: design.spacing.md },
   brainDumpInput: { minHeight: 150 },
   nextStepInput: { minHeight: 90 },
@@ -467,6 +532,8 @@ const styles = StyleSheet.create({
   choiceCard: { borderRadius: design.radius.lg, borderWidth: 1, padding: design.spacing.md },
   choiceTitle: { flex: 1, fontSize: design.type.body + 1, fontWeight: "700" },
   choiceDescription: { fontSize: design.type.meta + 1, lineHeight: 19, marginTop: design.spacing.xs },
+  whyLabel: { fontSize: design.type.caption, fontWeight: "800", letterSpacing: design.letterSpacing.sectionLabel, marginTop: design.spacing.md, textTransform: "uppercase" },
+  whyText: { marginTop: design.spacing.xxs },
   numberScale: { flexDirection: "row", flexWrap: "wrap", gap: design.spacing.xs, marginTop: design.spacing.sm },
   chipList: { flexDirection: "row", flexWrap: "wrap", gap: design.spacing.xs, marginTop: design.spacing.sm },
   smallChoice: { alignItems: "center", borderRadius: design.radius.pill, borderWidth: 1, justifyContent: "center", minHeight: design.touchTarget, paddingHorizontal: design.spacing.md },
