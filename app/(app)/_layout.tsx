@@ -20,6 +20,10 @@ function ThemedAppStack({ isSignedIn }: { isSignedIn: boolean }) {
             options={{ presentation: "modal" }}
           />
           <Stack.Screen
+            name="focus/check-in"
+            options={{ presentation: "fullScreenModal" }}
+          />
+          <Stack.Screen
             name="focus/[taskId]"
             options={{ presentation: "fullScreenModal" }}
           />

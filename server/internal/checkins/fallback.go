@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-const fallbackObservation = "Personalized suggestions are unavailable right now, so here are three reliable starting points."
+const fallbackObservation = "AI personalization was unavailable for this request. These three suggestions come from NeuroSync's built-in support library."
 
 const fallbackMedicalNote = "Follow your existing care plan. If medication or substance effects concern you, contact a qualified professional."
 
