@@ -12,6 +12,22 @@ import (
 	"testing"
 )
 
+type recoveringSuggester struct {
+	calls    int
+	response SuggestionResponse
+}
+
+func (suggester *recoveringSuggester) Suggest(
+	_ context.Context,
+	_ SuggestionInput,
+) (SuggestionResponse, error) {
+	suggester.calls++
+	if suggester.calls == 1 {
+		return SuggestionResponse{}, errors.New("temporary provider failure")
+	}
+	return suggester.response, nil
+}
+
 func TestPresetSuggesterReturnsValidChoicesForEveryBlocker(t *testing.T) {
 	tests := []struct {
 		blocker    Blocker
@@ -112,6 +128,26 @@ func TestFallbackSuggesterReturnsValidPrimaryResponse(t *testing.T) {
 	}
 }
 
+func TestFallbackSuggesterRecoversOnSecondPrimaryAttempt(t *testing.T) {
+	primaryResponse := validSuggestionResponse()
+	primary := &recoveringSuggester{response: primaryResponse}
+	suggester := NewFallbackSuggester(primary)
+
+	response, err := suggester.Suggest(
+		context.Background(),
+		SuggestionInput{Blocker: BlockerTaskInitiation},
+	)
+	if err != nil {
+		t.Fatalf("expected retry to recover, got %v", err)
+	}
+	if primary.calls != 2 {
+		t.Fatalf("expected two primary attempts, got %d", primary.calls)
+	}
+	if response.Observation != primaryResponse.Observation {
+		t.Fatal("recovered personalized response was replaced")
+	}
+}
+
 func TestFallbackSuggesterUsesPresetForProviderErrorsAndTimeouts(t *testing.T) {
 	tests := []struct {
 		name string
@@ -136,6 +172,9 @@ func TestFallbackSuggesterUsesPresetForProviderErrorsAndTimeouts(t *testing.T) {
 			}
 			if response.Observation != fallbackObservation {
 				t.Error("provider failure did not use the preset response")
+			}
+			if primary.calls != primarySuggestionAttempts {
+				t.Fatalf("expected %d primary attempts, got %d", primarySuggestionAttempts, primary.calls)
 			}
 			if strings.Contains(logs.String(), test.err.Error()) {
 				t.Fatal("provider error details were logged")

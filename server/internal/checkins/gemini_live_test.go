@@ -8,6 +8,10 @@ import (
 )
 
 func TestLiveGeminiStructuredSuggestion(t *testing.T) {
+	if os.Getenv("RUN_GEMINI_LIVE_TEST") != "1" {
+		t.Skip("set RUN_GEMINI_LIVE_TEST=1 to call Gemini")
+	}
+
 	suggester, err := NewGeminiSuggester(
 		os.Getenv("GOOGLE_GENERATIVE_AI_API_KEY"),
 		os.Getenv("GEMINI_MODEL"),

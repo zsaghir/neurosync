@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultGeminiModel   = "gemini-3.6-flash"
+	defaultGeminiModel   = "gemini-3.1-flash-lite"
 	defaultGeminiBaseURL = "https://generativelanguage.googleapis.com/v1beta/models"
 	maxGeminiResponse    = 1 << 20
 )
@@ -116,7 +116,7 @@ func NewGeminiSuggester(apiKey, model string) (*GeminiSuggester, error) {
 		apiKey:  apiKey,
 		model:   model,
 		baseURL: defaultGeminiBaseURL,
-		client:  &http.Client{Timeout: 20 * time.Second},
+		client:  &http.Client{Timeout: 12 * time.Second},
 	}, nil
 }
 

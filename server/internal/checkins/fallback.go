@@ -10,6 +10,8 @@ const fallbackObservation = "AI personalization was unavailable for this request
 
 const fallbackMedicalNote = "Follow your existing care plan. If medication or substance effects concern you, contact a qualified professional."
 
+const primarySuggestionAttempts = 2
+
 // PresetSuggester returns safe, deterministic choices for each blocker.
 type PresetSuggester struct{}
 
@@ -121,20 +123,19 @@ func (suggester *FallbackSuggester) Suggest(
 	ctx context.Context,
 	input SuggestionInput,
 ) (SuggestionResponse, error) {
-	response, err := suggester.primary.Suggest(ctx, input)
-	if err == nil {
-		validated, validationErr := ValidateSuggestionResponse(response)
-		if validationErr == nil {
-			return validated, nil
+	for attempt := 0; attempt < primarySuggestionAttempts; attempt++ {
+		response, err := suggester.primary.Suggest(ctx, input)
+		if err == nil {
+			validated, validationErr := ValidateSuggestionResponse(response)
+			if validationErr == nil {
+				return validated, nil
+			}
+		} else if ctx.Err() != nil {
+			return SuggestionResponse{}, ctx.Err()
 		}
-		log.Print("primary suggestion provider returned invalid output; using preset fallback")
-	} else {
-		log.Print("primary suggestion provider failed; using preset fallback")
 	}
 
-	if ctx.Err() != nil {
-		return SuggestionResponse{}, ctx.Err()
-	}
+	log.Print("primary suggestion provider failed after retry; using preset fallback")
 	return suggester.fallback.Suggest(ctx, input)
 }
 
