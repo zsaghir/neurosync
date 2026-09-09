@@ -85,14 +85,14 @@ func (handler *SuggestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		Difficulties:    request.Difficulties,
 	})
 	if err != nil {
-		log.Printf("check-in suggestion provider failed: %v", err)
+		log.Print("check-in suggestion provider failed")
 		writeSuggestionsUnavailable(w)
 		return
 	}
 
 	response, err = ValidateSuggestionResponse(response)
 	if err != nil {
-		log.Printf("check-in suggestion provider returned invalid output: %v", err)
+		log.Print("check-in suggestion provider returned invalid output")
 		writeSuggestionsUnavailable(w)
 		return
 	}

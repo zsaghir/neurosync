@@ -71,7 +71,7 @@ func main() {
 		settingsHandler: settings.NewHandler(pool),
 		suggestionsHandler: checkins.NewSuggestionHandler(
 			pool,
-			suggester,
+			checkins.NewFallbackSuggester(suggester),
 		),
 		tasksHandler:     tasks.NewHandler(pool),
 		readinessTimeout: databaseConfig.ReadinessTimeout,
