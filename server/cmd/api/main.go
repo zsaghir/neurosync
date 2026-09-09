@@ -48,6 +48,14 @@ func main() {
 		log.Fatalf("invalid database configuration: %v", err)
 	}
 
+	suggester, err := checkins.NewGeminiSuggester(
+		os.Getenv("GOOGLE_GENERATIVE_AI_API_KEY"),
+		os.Getenv("GEMINI_MODEL"),
+	)
+	if err != nil {
+		log.Fatalf("invalid Gemini configuration: %v", err)
+	}
+
 	pool, err := connectDatabase(context.Background(), databaseConfig)
 	if err != nil {
 		log.Fatal("could not initialize PostgreSQL")
@@ -63,7 +71,7 @@ func main() {
 		settingsHandler: settings.NewHandler(pool),
 		suggestionsHandler: checkins.NewSuggestionHandler(
 			pool,
-			checkins.UnavailableSuggester{},
+			suggester,
 		),
 		tasksHandler:     tasks.NewHandler(pool),
 		readinessTimeout: databaseConfig.ReadinessTimeout,

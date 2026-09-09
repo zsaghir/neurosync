@@ -76,15 +76,15 @@ type SuggestionRequest struct {
 // SuggestionInput is the validated context sent to a suggestion provider.
 // It deliberately excludes the Clerk user ID and database task ID.
 type SuggestionInput struct {
-	TaskTitle       *string
-	Blocker         Blocker
-	BrainDump       string
-	Capacity        *Capacity
-	Sleep           *SleepQuality
-	BasicNeeds      *BasicNeeds
-	MedicationShift *bool
-	SubstanceImpact *bool
-	Difficulties    []Difficulty
+	TaskTitle       *string       `json:"taskTitle,omitempty"`
+	Blocker         Blocker       `json:"blocker"`
+	BrainDump       string        `json:"brainDump"`
+	Capacity        *Capacity     `json:"capacity,omitempty"`
+	Sleep           *SleepQuality `json:"sleep,omitempty"`
+	BasicNeeds      *BasicNeeds   `json:"basicNeeds,omitempty"`
+	MedicationShift *bool         `json:"medicationShift,omitempty"`
+	SubstanceImpact *bool         `json:"substanceImpact,omitempty"`
+	Difficulties    []Difficulty  `json:"difficulties,omitempty"`
 }
 
 // Suggestion is one concrete, bounded action returned to the user.

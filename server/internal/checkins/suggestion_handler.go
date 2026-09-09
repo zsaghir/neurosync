@@ -24,19 +24,6 @@ type Suggester interface {
 	Suggest(context.Context, SuggestionInput) (SuggestionResponse, error)
 }
 
-// ErrSuggestionsUnavailable indicates that no suggestion provider is ready.
-var ErrSuggestionsUnavailable = errors.New("suggestion provider is unavailable")
-
-// UnavailableSuggester keeps the endpoint explicit until an AI provider is wired.
-type UnavailableSuggester struct{}
-
-func (UnavailableSuggester) Suggest(
-	context.Context,
-	SuggestionInput,
-) (SuggestionResponse, error) {
-	return SuggestionResponse{}, ErrSuggestionsUnavailable
-}
-
 // SuggestionHandler serves authenticated suggestion requests.
 type SuggestionHandler struct {
 	database  Database
