@@ -10,6 +10,42 @@ export type CheckInBlocker =
 
 export type CheckInHelpfulness = "yes" | "a_little" | "not_yet";
 
+export type CheckInCapacity =
+  | "about_normal"
+  | "lower_than_usual"
+  | "almost_nothing_left"
+  | "not_sure";
+
+export type CheckInSleep =
+  | "restful"
+  | "too_short"
+  | "restless"
+  | "prefer_not_to_say";
+
+export type CheckInBasicNeeds = "yes" | "not_really" | "prefer_not_to_say";
+
+export type CheckInDifficulty =
+  | "task_too_large"
+  | "first_step_unclear"
+  | "shame"
+  | "distracted"
+  | "time_unclear"
+  | "too_many_choices"
+  | "low_energy"
+  | "emotionally_overwhelmed";
+
+export type CheckInStrategy =
+  | "externalize"
+  | "tiny_step"
+  | "short_sprint"
+  | "make_visible"
+  | "reduce_choices"
+  | "body_double"
+  | "immediate_reward"
+  | "basic_needs_check"
+  | "reduce_distractions"
+  | "gentle_restart";
+
 export type CheckIn = {
   id: string;
   taskId: string | null;
@@ -44,6 +80,47 @@ export type CheckInOutcomeInput = {
   nextStepTaken?: boolean;
   helpfulness: CheckInHelpfulness;
 };
+
+export type CheckInSuggestionInput = {
+  taskId?: string;
+  blocker: CheckInBlocker;
+  brainDump: string;
+  capacity?: CheckInCapacity;
+  sleep?: CheckInSleep;
+  basicNeeds?: CheckInBasicNeeds;
+  medicationShift?: boolean;
+  substanceImpact?: boolean;
+  difficulties: CheckInDifficulty[];
+};
+
+export type CheckInSuggestion = {
+  strategy: CheckInStrategy;
+  title: string;
+  nextStep: string;
+  plannedMinutes: number;
+  why: string;
+};
+
+export type CheckInSuggestionResponse = {
+  reassurance: string;
+  observation: string;
+  suggestions: CheckInSuggestion[];
+  medicalNote: string | null;
+};
+
+export const requestCheckInSuggestions = (
+  getToken: GetClerkToken,
+  input: CheckInSuggestionInput,
+) =>
+  authenticatedAPIRequest<CheckInSuggestionResponse>(
+    "/v1/check-in-suggestions",
+    getToken,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    },
+  );
 
 export const createCheckIn = (
   getToken: GetClerkToken,

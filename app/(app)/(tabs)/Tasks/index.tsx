@@ -11,11 +11,11 @@ import {
   fetchUserSettings,
   type UserSettings,
 } from "@/lib/api/settings";
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter, type Href } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -27,10 +27,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TasksList() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
+  const getTokenRef = useRef(getToken);
 
   const [tasks, setTasks] = useState<TaskDocument[]>([]);
   const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -39,8 +39,12 @@ export default function TasksList() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
+  useEffect(() => {
+    getTokenRef.current = getToken;
+  }, [getToken]);
+
   const loadTasks = useCallback(async () => {
-    if (!user) {
+    if (!isLoaded || !isSignedIn) {
       setIsLoading(false);
       return;
     }
@@ -48,19 +52,29 @@ export default function TasksList() {
     setIsLoading(true);
     setError("");
     try {
-      const [userTasks, userSettings] = await Promise.all([
-        fetchTasks(getToken),
-        fetchUserSettings(getToken),
+      const [tasksResult, settingsResult] = await Promise.allSettled([
+        fetchTasks(getTokenRef.current),
+        fetchUserSettings(getTokenRef.current),
       ]);
-      setTasks(userTasks);
-      setSettings(userSettings);
+
+      if (tasksResult.status === "rejected") {
+        throw tasksResult.reason;
+      }
+
+      setTasks(tasksResult.value);
+      if (settingsResult.status === "fulfilled") {
+        setSettings(settingsResult.value);
+      } else {
+        console.warn("Could not load task time settings; using defaults.");
+        setSettings(null);
+      }
     } catch (loadError) {
       console.error("Error fetching tasks:", loadError);
       setError("We couldn't load your tasks. Check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, user]);
+  }, [isLoaded, isSignedIn]);
 
   useFocusEffect(
     useCallback(() => {
@@ -103,17 +117,7 @@ export default function TasksList() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={styles.screen}>
-        <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: colors.text }]}>Tasks</Text>
-          <Pressable
-            accessibilityLabel="Check in because I am stuck"
-            accessibilityRole="button"
-            onPress={() => router.push("/(app)/check-in" as Href)}
-            style={[styles.checkInButton, { backgroundColor: colors.accentSoft }]}
-          >
-            <Text style={[styles.checkInText, { color: colors.accentSoftText }]}>I’m stuck</Text>
-          </Pressable>
-        </View>
+        <Text style={[styles.title, { color: colors.text }]}>Tasks</Text>
 
         {isLoading ? (
           <View style={styles.statusBlock}>
@@ -198,7 +202,7 @@ export default function TasksList() {
         </Pressable>
       </View>
 
-      {user ? (
+      {isSignedIn ? (
         <AddTaskSheet
           visible={isAddOpen}
           onClose={() => setIsAddOpen(false)}
@@ -219,23 +223,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: design.type.screenTitle,
     fontWeight: "800",
-  },
-  titleRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
     marginBottom: design.spacing.sm + 2,
-  },
-  checkInButton: {
-    alignItems: "center",
-    borderRadius: design.radius.pill,
-    justifyContent: "center",
-    minHeight: design.touchTarget,
-    paddingHorizontal: design.spacing.md,
-  },
-  checkInText: {
-    fontSize: design.type.meta + 1,
-    fontWeight: "700",
   },
   listContent: {
     paddingBottom: design.spacing.huge * 2,

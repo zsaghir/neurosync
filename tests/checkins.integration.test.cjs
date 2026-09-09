@@ -91,3 +91,41 @@ test("check-in client creates a check-in and records its outcome", async () => {
     helpfulness: "yes",
   });
 });
+
+test("check-in client requests guided suggestions", async () => {
+  const calls = [];
+  const getToken = async () => "session-token";
+  authenticatedAPIRequest = async (...args) => {
+    calls.push(args);
+    return { suggestions: [] };
+  };
+  delete require.cache[require.resolve(checkInsPath)];
+  const { requestCheckInSuggestions } = require(checkInsPath);
+
+  await requestCheckInSuggestions(getToken, {
+    taskId: "task-id",
+    blocker: "task_initiation",
+    brainDump: "I have too many possible starting points.",
+    capacity: "lower_than_usual",
+    sleep: "too_short",
+    basicNeeds: "not_really",
+    medicationShift: false,
+    substanceImpact: false,
+    difficulties: ["task_too_large", "first_step_unclear"],
+  });
+
+  assert.equal(calls[0][0], "/v1/check-in-suggestions");
+  assert.equal(calls[0][1], getToken);
+  assert.equal(calls[0][2].method, "POST");
+  assert.deepEqual(JSON.parse(calls[0][2].body), {
+    taskId: "task-id",
+    blocker: "task_initiation",
+    brainDump: "I have too many possible starting points.",
+    capacity: "lower_than_usual",
+    sleep: "too_short",
+    basicNeeds: "not_really",
+    medicationShift: false,
+    substanceImpact: false,
+    difficulties: ["task_too_large", "first_step_unclear"],
+  });
+});
