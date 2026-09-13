@@ -7,6 +7,18 @@ type APIErrorResponse = {
   };
 };
 
+export class APIRequestError extends Error {
+  readonly code: string | undefined;
+  readonly status: number;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "APIRequestError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 const getAPIURL = () => {
   const apiURL = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, "");
 
@@ -47,9 +59,11 @@ export const authenticatedAPIRequest = async <Response>(
 
   if (!response.ok) {
     const errorBody = body as APIErrorResponse | null;
-    throw new Error(
+    throw new APIRequestError(
       errorBody?.error?.message ??
         `The server request failed with status ${response.status}`,
+      response.status,
+      errorBody?.error?.code,
     );
   }
 

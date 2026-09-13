@@ -1,6 +1,7 @@
 import { PillButton } from "@/components/ui/PillButton";
 import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
+import { APIRequestError } from "@/lib/api/client";
 import {
   createCheckIn,
   recordCheckInOutcome,
@@ -15,11 +16,13 @@ import {
   type CheckInSuggestion,
   type CheckInSuggestionResponse,
 } from "@/lib/api/checkins";
+import { requiresCrisisSupport } from "@/lib/safety/crisis";
 import { useAuth } from "@clerk/clerk-expo";
 import { useRouter, type Href } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -29,7 +32,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Phase = "dump" | "context" | "suggestions" | "manual" | "outcome" | "complete";
+type Phase = "dump" | "context" | "suggestions" | "manual" | "outcome" | "complete" | "crisis";
 
 type GuidedCheckInProps = {
   mode: "home" | "modal";
@@ -140,6 +143,19 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
     );
   };
 
+  const continueFromDump = () => {
+    if (requiresCrisisSupport(brainDump)) {
+      setPhase("crisis");
+      return;
+    }
+    setPhase("context");
+  };
+
+  const leaveCrisis = () => {
+    reset();
+    if (mode === "modal") onClose?.();
+  };
+
   const loadSuggestions = async () => {
     if (!blocker || brainDump.trim().length < 10 || stucknessBefore == null) return;
 
@@ -162,6 +178,14 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
       setNextStep("");
       setPhase("suggestions");
     } catch (loadError) {
+      if (
+        loadError instanceof APIRequestError &&
+        loadError.status === 422 &&
+        loadError.code === "crisis_support_required"
+      ) {
+        setPhase("crisis");
+        return;
+      }
       console.error("Error requesting check-in suggestions:", loadError);
       setError(loadError instanceof Error ? loadError.message : "Could not create suggestions.");
     } finally {
@@ -274,7 +298,9 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
       )}
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {taskTitle ? <Text style={[styles.taskContext, { color: colors.textMuted }]}>For {taskTitle}</Text> : null}
+        {phase !== "crisis" && taskTitle ? <Text style={[styles.taskContext, { color: colors.textMuted }]}>For {taskTitle}</Text> : null}
+
+        {phase === "crisis" ? <CrisisPhase onLeave={leaveCrisis} /> : null}
 
         {phase === "dump" ? (
           <DumpPhase
@@ -284,7 +310,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
             onBlocker={setBlocker}
             onBrainDump={setBrainDump}
             onStuckness={setStucknessBefore}
-            onContinue={() => setPhase("context")}
+            onContinue={continueFromDump}
           />
         ) : null}
 
@@ -449,6 +475,29 @@ function ManualStepPhase({ nextStep, plannedMinutes, error, isLoading, onNextSte
   );
 }
 
+function CrisisPhase({ onLeave }: { onLeave: () => void }) {
+  const { colors } = useAppTheme();
+  const openLink = (url: string) => {
+    void Linking.openURL(url).catch(() => undefined);
+  };
+
+  return (
+    <View style={styles.crisisBlock}>
+      <Text style={[styles.eyebrow, { color: colors.danger }]}>Immediate support</Text>
+      <Text style={[styles.title, { color: colors.text }]}>You deserve support from a person right now.</Text>
+      <Text style={[styles.subtitle, { color: colors.textMuted }]}>NeuroSync is not equipped to support an immediate crisis. If you are in immediate danger, call 911. If you are thinking about suicide in Canada, call or text 988.</Text>
+      <View style={[styles.crisisNotice, { backgroundColor: colors.dangerSoft }]}>
+        <Text style={[styles.crisisNoticeText, { color: colors.danger }]}>This check is limited and may not recognize every crisis. It is not a medical assessment.</Text>
+      </View>
+      <PillButton onPress={() => openLink("tel:911")} style={styles.primaryButton}>Call 911</PillButton>
+      <PillButton variant="secondary" onPress={() => openLink("tel:988")} style={styles.secondaryButton}>Call 988</PillButton>
+      <PillButton variant="secondary" onPress={() => openLink("sms:988")} style={styles.secondaryButton}>Text 988</PillButton>
+      <PillButton variant="text" onPress={() => openLink("https://www.canada.ca/en/public-health/services/mental-health-services/mental-health-get-help.html")}>Government of Canada support information</PillButton>
+      <PillButton variant="text" textColor={colors.textMuted} onPress={onLeave}>Leave check-in</PillButton>
+    </View>
+  );
+}
+
 function OutcomePhase({ stuckness, attempted, nextStepTaken, helpfulness, error, isLoading, onStuckness, onAttempted, onNextStepTaken, onHelpfulness, onSave }: { stuckness: number | null; attempted: boolean | null; nextStepTaken: boolean | null; helpfulness: CheckInHelpfulness | null; error: string; isLoading: boolean; onStuckness: (value: number) => void; onAttempted: (value: boolean) => void; onNextStepTaken: (value: boolean) => void; onHelpfulness: (value: CheckInHelpfulness) => void; onSave: () => void }) {
   const { colors } = useAppTheme();
   return (
@@ -549,4 +598,7 @@ const styles = StyleSheet.create({
   minutes: { fontSize: design.type.meta, fontWeight: "800" },
   completeBlock: { paddingTop: design.spacing.xxl },
   result: { fontSize: design.type.cardTitle, fontWeight: "700", marginTop: design.spacing.xl },
+  crisisBlock: { paddingTop: design.spacing.lg },
+  crisisNotice: { borderRadius: design.radius.md, marginTop: design.spacing.lg, padding: design.spacing.md },
+  crisisNoticeText: { fontSize: design.type.meta + 1, lineHeight: 20 },
 });

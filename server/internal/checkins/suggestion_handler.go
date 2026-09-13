@@ -52,6 +52,15 @@ func (handler *SuggestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		writeInvalidRequest(w, err.Error())
 		return
 	}
+	if requiresCrisisSupport(request.BrainDump) {
+		httpx.WriteError(
+			w,
+			http.StatusUnprocessableEntity,
+			"crisis_support_required",
+			"Immediate support information should be displayed",
+		)
+		return
+	}
 
 	var taskTitle *string
 	if request.TaskID != nil {

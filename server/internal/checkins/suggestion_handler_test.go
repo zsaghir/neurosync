@@ -165,6 +165,34 @@ func TestSuggestionHandlerRejectsInvalidInputBeforeDependencies(t *testing.T) {
 	}
 }
 
+func TestSuggestionHandlerStopsBeforeDependenciesForCrisisLanguage(t *testing.T) {
+	database := &fakeDatabase{}
+	suggester := &fakeSuggester{response: validSuggestionResponse()}
+	handler := NewSuggestionHandler(database, suggester)
+	request := authenticatedRequest(
+		http.MethodPost,
+		"/v1/check-in-suggestions",
+		strings.NewReader(`{
+			"taskId":"11111111-1111-4111-8111-111111111111",
+			"blocker":"shame",
+			"brainDump":"I am going to kill myself."
+		}`),
+	)
+	recorder := httptest.NewRecorder()
+
+	handler.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, recorder.Code)
+	}
+	if !strings.Contains(recorder.Body.String(), `"code":"crisis_support_required"`) {
+		t.Fatalf("unexpected response: %s", recorder.Body.String())
+	}
+	if len(database.calls) != 0 || suggester.calls != 0 {
+		t.Fatal("crisis language reached a task lookup or suggestion provider")
+	}
+}
+
 func TestSuggestionHandlerRejectsInvalidProviderOutput(t *testing.T) {
 	invalidResponse := validSuggestionResponse()
 	invalidResponse.Suggestions = invalidResponse.Suggestions[:2]
