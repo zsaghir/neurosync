@@ -48,6 +48,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="Insights"
+        options={{
+          title: "Insights",
+          tabBarIcon: TabDot,
+        }}
+      />
+      <Tabs.Screen
         name="Settings"
         options={{
           title: "Settings",
