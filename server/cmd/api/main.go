@@ -21,6 +21,7 @@ type API struct {
 	allowedOrigins     map[string]struct{}
 	checkInsHandler    http.Handler
 	database           Database
+	insightsHandler    http.Handler
 	protect            func(http.Handler) http.Handler
 	sessionsHandler    http.Handler
 	settingsHandler    http.Handler
@@ -66,6 +67,7 @@ func main() {
 		allowedOrigins:  allowedOrigins,
 		checkInsHandler: checkins.NewHandler(pool),
 		database:        pool,
+		insightsHandler: checkins.NewInsightsHandler(pool),
 		protect:         protect,
 		sessionsHandler: sessions.NewHandler(pool),
 		settingsHandler: settings.NewHandler(pool),
@@ -102,6 +104,10 @@ func (api *API) routes() http.Handler {
 	mux.Handle(
 		"/v1/check-ins/{id}/outcome",
 		withCORS(api.allowedOrigins, api.protect(api.checkInsHandler)),
+	)
+	mux.Handle(
+		"/v1/check-in-insights",
+		withCORS(api.allowedOrigins, api.protect(api.insightsHandler)),
 	)
 	mux.Handle(
 		"/v1/check-in-suggestions",
