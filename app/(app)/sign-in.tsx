@@ -33,7 +33,7 @@ export default function SignInScreen() {
         await setActive({ session: signInAttempt.createdSessionId });
         router.replace("/");
       } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
+        setErrorMessage("Your account requires an additional sign-in step that this app doesn't support yet. Try another sign-in method.");
       }
     } catch (err) {
       const clerkError = isClerkAPIResponseError(err)

@@ -1,6 +1,7 @@
 import { ModalProvider } from "@/context/ModalContext";
 import { tamaguiConfig } from "@/tamagui.config";
 import { ClerkProvider } from "@clerk/clerk-expo";
+import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -14,7 +15,7 @@ if (!publishableKey) {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <ClerkProvider publishableKey={publishableKey}>
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
         <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
           <ModalProvider>
             <Stack screenOptions={{ headerShown: false }} />

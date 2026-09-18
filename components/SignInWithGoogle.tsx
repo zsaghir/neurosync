@@ -3,8 +3,8 @@ import { useAppTheme } from "@/context/AppThemeContext";
 import { useSSO } from "@clerk/clerk-expo";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import React, { useCallback, useEffect } from "react";
-import { Platform, Pressable, StyleSheet, Text } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 // Preloads the browser for Android devices to reduce authentication load time
 // See: https://docs.expo.dev/guides/authentication/#improving-user-experience
@@ -25,11 +25,16 @@ WebBrowser.maybeCompleteAuthSession();
 export default function SignInWithGoogle() {
   useWarmUpBrowser();
   const { colors } = useAppTheme();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Use the `useSSO()` hook to access the `startSSOFlow()` method
   const { startSSOFlow } = useSSO();
 
   const onPress = useCallback(async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setErrorMessage("");
     try {
       // Start the authentication process by calling `startSSOFlow()`
       const { createdSessionId, setActive } = await startSSOFlow({
@@ -42,7 +47,7 @@ export default function SignInWithGoogle() {
 
       // If sign in was successful, set the active session
       if (createdSessionId) {
-        setActive!({
+        await setActive!({
           session: createdSessionId,
           // Check for session tasks and navigate to custom UI to help users resolve them
           // See https://clerk.com/docs/guides/development/custom-flows/overview#session-tasks
@@ -55,19 +60,24 @@ export default function SignInWithGoogle() {
           },
         });
       } else {
+        setErrorMessage("Google sign-in wasn't completed. Please try again or sign in with email.");
         // If there is no `createdSessionId`,
         // there are missing requirements, such as MFA
         // See https://clerk.com/docs/guides/development/custom-flows/authentication/oauth-connections#handle-missing-requirements
       }
-    } catch (err) {
+    } catch {
       // See https://clerk.com/docs/guides/development/custom-flows/error-handling
       // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
+      setErrorMessage("Could not sign in with Google. Please try again or sign in with email.");
+    } finally {
+      setIsLoading(false);
     }
-  }, [startSSOFlow]);
+  }, [startSSOFlow, isLoading]);
 
   return (
+    <View>
     <Pressable
+      disabled={isLoading}
       accessibilityLabel="Sign in with Google"
       accessibilityRole="button"
       onPress={() => void onPress()}
@@ -83,9 +93,15 @@ export default function SignInWithGoogle() {
         G
       </Text>
       <Text style={[styles.label, { color: colors.text }]}>
-        Continue with Google
+        {isLoading ? "Signing in…" : "Continue with Google"}
       </Text>
     </Pressable>
+    {errorMessage ? (
+      <Text accessibilityLiveRegion="polite" style={{ color: colors.danger, marginTop: design.spacing.sm }}>
+        {errorMessage}
+      </Text>
+    ) : null}
+    </View>
   );
 }
 
