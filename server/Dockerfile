@@ -1,17 +1,25 @@
-FROM golang:1.26.5-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.26.5-alpine AS build
 
+ARG TARGETARCH
+ARG VERSION=dev
 WORKDIR /src
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build \
+
+ARG TARGETARCH
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build \
     -trimpath \
-    -ldflags="-s -w" \
+    -ldflags="-s -w -X main.version=${VERSION}" \
     -o /out/neurosync-api \
     ./cmd/api
-
+// dont need go compile cache on runtime container so we can remove the cache mounts and use a smaller base image 
 FROM alpine:3.22 AS runtime
 
 RUN apk add --no-cache ca-certificates \
