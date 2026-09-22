@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     -ldflags="-s -w -X main.version=${VERSION}" \
     -o /out/neurosync-api \
     ./cmd/api
-// dont need go compile cache on runtime container so we can remove the cache mounts and use a smaller base image 
+ 
 FROM alpine:3.22 AS runtime
 
 RUN apk add --no-cache ca-certificates \
