@@ -2,7 +2,9 @@ import React, { createContext, useContext, useMemo, useState } from "react";
 
 type ActiveTimer = {
   taskId: string;
+  /** Epoch ms when the current running stretch began. */
   startedAt: number;
+  /** Seconds banked from earlier stretches, before the last pause. */
   accumulatedSeconds: number;
 } | null;
 

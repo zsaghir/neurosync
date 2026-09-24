@@ -3,20 +3,19 @@ import { AppCard, SectionLabel } from "@/components/ui/design-system";
 import { SignOutButton } from "@/components/SignOutButton";
 import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
-import {
-  fetchUserSettings,
-  updateUserSettings,
-  type UserSettings,
-} from "@/lib/api/settings";
+import { useUpdateUserSettings, useUserSettings } from "@/hooks/queries/settings";
+import { useQueryScope } from "@/hooks/queries/use-query-scope";
+import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
+import type { UserSettingsUpdate } from "@/lib/api/settings";
+import { queryKeys } from "@/lib/query/keys";
 import {
   DEFAULT_USER_TIME_SETTINGS,
   getTimeEstimationModeLabel,
   type ThemeMode,
   type TimeEstimationMode,
 } from "@/lib/utils/time-wisdom";
-import { useAuth, useClerk, useUser } from "@clerk/clerk-expo";
-import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import { useClerk, useUser } from "@clerk/clerk-expo";
+import React, { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -24,12 +23,17 @@ const timeEstimationModes: TimeEstimationMode[] = ["relative", "minutes", "custo
 
 export default function Settings() {
   const { user } = useUser();
-  const { getToken } = useAuth();
   const clerk = useClerk();
-  const { colors, refreshSettings } = useAppTheme();
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const { colors } = useAppTheme();
+  const { userId } = useQueryScope();
+  const settingsQuery = useUserSettings();
+  const updateSettings = useUpdateUserSettings();
+  useRefreshOnFocus(userId ? queryKeys.settings(userId) : null);
   const [status, setStatus] = useState("");
+
+  const settings = settingsQuery.data ?? null;
+  const isSaving = updateSettings.isPending;
+  const loadStatus = settingsQuery.isError && !settings ? "Could not load settings." : "";
 
   const activeSettings = settings ?? {
     ...DEFAULT_USER_TIME_SETTINGS,
@@ -37,45 +41,18 @@ export default function Settings() {
     updatedAt: new Date().toISOString(),
   };
 
-  const loadSettings = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const nextSettings = await fetchUserSettings(getToken);
-      setSettings(nextSettings);
-    } catch (error) {
-      console.error("Error loading settings:", error);
-      setStatus("Could not load settings.");
-    }
-  }, [getToken, user]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void loadSettings();
-    }, [loadSettings]),
-  );
-
-  const saveSettings = async (
-    input: Partial<{
-      preferredTimeEstimationMode: TimeEstimationMode;
-      themeMode: ThemeMode;
-    }>,
-  ) => {
+  const saveSettings = async (input: UserSettingsUpdate) => {
     if (!settings || isSaving) return;
 
-    setIsSaving(true);
     setStatus("");
     try {
-      const updatedSettings = await updateUserSettings(getToken, input);
-      setSettings(updatedSettings);
-      // Keep the app-wide theme (tab bar, screens) in sync immediately.
-      await refreshSettings();
+      // The mutation writes the saved settings into the shared cache, which
+      // also switches the app theme.
+      await updateSettings.mutateAsync(input);
       setStatus("Saved");
     } catch (error) {
       console.error("Error saving settings:", error);
       setStatus("Could not save settings.");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -208,8 +185,8 @@ export default function Settings() {
           })}
         </View>
 
-        {status ? (
-          <Text style={[styles.statusText, { color: colors.textMuted }]}>{status}</Text>
+        {status || loadStatus ? (
+          <Text style={[styles.statusText, { color: colors.textMuted }]}>{status || loadStatus}</Text>
         ) : null}
       </ScrollView>
     </SafeAreaView>

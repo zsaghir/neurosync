@@ -1,21 +1,17 @@
 import { design } from "@/constants/design";
 import { useActiveTimer } from "@/context/ActiveTimerContext";
+import { useTask, useTaskSessions } from "@/hooks/queries/tasks";
 import { useTaskSession } from "@/hooks/use-task-session";
 import { useTimer } from "@/hooks/use-timer";
-import {
-  fetchTaskSessions,
-  type TaskSessionDocument,
-} from "@/lib/api/taskSessions";
-import { fetchTaskById, type TaskDocument } from "@/lib/api/tasks";
+import { taskErrorMessage } from "@/lib/api/client";
 import formattime from "@/lib/utils/formattime";
 import {
   formatDurationLabel,
   shouldPromptForLongSession,
   shouldPromptForShortSession,
 } from "@/lib/utils/time-wisdom";
-import { useAuth } from "@clerk/clerk-expo";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -49,13 +45,15 @@ export default function FocusTimerScreen() {
     checkInMinutes?: string;
     checkInNextStep?: string;
   }>();
-  const { getToken } = useAuth();
   const router = useRouter();
   const { setActiveTimer } = useActiveTimer();
 
-  const [task, setTask] = useState<TaskDocument | null>(null);
-  const [sessions, setSessions] = useState<TaskSessionDocument[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Task Details already cached this task and its sessions, so the timer can
+  // render immediately instead of fetching them again behind a spinner.
+  const taskQuery = useTask(taskId);
+  const sessionsQuery = useTaskSessions();
+  const task = taskQuery.data ?? null;
+  const sessions = sessionsQuery.data ?? [];
   const [pendingElapsedSeconds, setPendingElapsedSeconds] = useState<number | null>(
     null,
   );
@@ -65,78 +63,49 @@ export default function FocusTimerScreen() {
     elapsedSeconds,
     accumulatedSeconds,
     isRunning,
+    runStartedAtMs,
     startedAt,
     start,
     pause,
   } = timer;
 
-  const load = useCallback(async () => {
-    if (!taskId) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const [nextTask, nextSessions] = await Promise.all([
-        fetchTaskById(getToken, taskId),
-        fetchTaskSessions(getToken),
-      ]);
-      setTask(nextTask);
-      setSessions(nextSessions);
-    } catch (error) {
-      console.error("Error loading focus task:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getToken, taskId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
   const session = useTaskSession({
     task: task ?? { _id: taskId ?? "" },
     sessions,
     startedAt,
-    onTimeCommitted: undefined,
   });
 
-  // Auto-start as soon as the task is ready.
+  // Auto-start once, as soon as the task is available.
+  const hasAutoStarted = useRef(false);
   useEffect(() => {
-    if (!isLoading && task && !isRunning && elapsedSeconds === 0) {
-      start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, task]);
+    if (!task || hasAutoStarted.current) return;
+    hasAutoStarted.current = true;
+    start();
+  }, [task, start]);
 
+  // This screen is the only writer of the shared active timer, and it
+  // publishes the exact values its own clock uses, so the task list's
+  // "Focusing" label always matches this countdown.
+  const activeTaskId = task?._id ?? null;
   useEffect(() => {
-    if (!task) return;
-
-    if (isRunning) {
-      setActiveTimer({
-        taskId: task._id,
-        startedAt: Date.now() - accumulatedSeconds * 1000,
-        accumulatedSeconds,
-      });
-    } else {
+    if (!activeTaskId || !isRunning || runStartedAtMs == null) {
       setActiveTimer(null);
+      return;
     }
-
-    return () => setActiveTimer(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning, task?._id]);
+    setActiveTimer({
+      taskId: activeTaskId,
+      startedAt: runStartedAtMs,
+      accumulatedSeconds,
+    });
+  }, [activeTaskId, isRunning, runStartedAtMs, accumulatedSeconds, setActiveTimer]);
+  useEffect(() => () => setActiveTimer(null), [setActiveTimer]);
 
   const isReviewing = pendingElapsedSeconds != null || session.reviewState != null;
 
-  const closeScreen = () => {
-    setActiveTimer(null);
-    router.back();
-  };
+  const closeScreen = () => router.back();
 
   const handleDone = async () => {
     const finalElapsed = Math.round(isRunning ? (await pause()) ?? elapsedSeconds : elapsedSeconds);
-    setActiveTimer(null);
 
     const longOrShort =
       shouldPromptForLongSession(finalElapsed, task?.estimatedMinutes ?? null) ||
@@ -152,7 +121,6 @@ export default function FocusTimerScreen() {
   const handlePauseResume = () => {
     if (isRunning) {
       void pause();
-      setActiveTimer(null);
     } else {
       start();
     }
@@ -209,11 +177,25 @@ export default function FocusTimerScreen() {
     [pendingElapsedSeconds, task?.estimatedMinutes],
   );
 
-  if (isLoading || !task) {
+  if (!task) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.focusBackground }]}>
         <View style={styles.centerFill}>
-          <ActivityIndicator color={colors.focusAccent} />
+          {taskQuery.isPending ? (
+            <ActivityIndicator color={colors.focusAccent} />
+          ) : (
+            <>
+              <Text accessibilityRole="alert" style={styles.loadErrorText}>
+                {taskErrorMessage(taskQuery.error, "Couldn't load this task.")}
+              </Text>
+              <Pressable accessibilityRole="button" onPress={() => void taskQuery.refetch()} style={styles.primaryTextTarget}>
+                <Text style={styles.doneText}>Retry</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" onPress={closeScreen} style={styles.secondaryTextTarget}>
+                <Text style={styles.pauseText}>Close</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -331,6 +313,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
+    paddingHorizontal: design.spacing.xl,
+  },
+  loadErrorText: {
+    color: colors.focusText,
+    fontSize: design.type.body,
+    textAlign: "center",
   },
   header: {
     alignItems: "center",

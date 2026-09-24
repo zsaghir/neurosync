@@ -1,11 +1,7 @@
 import { AppCard, AppScreen, SectionLabel, StatusMessage } from "@/components/ui/design-system";
 import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
-import {
-  fetchCheckInInsights,
-  type CheckInInsightPattern,
-  type CheckInInsights,
-} from "@/lib/api/insights";
+import type { CheckInInsightPattern } from "@/lib/api/insights";
 import {
   blockerLabel,
   describeInsufficientData,
@@ -16,49 +12,29 @@ import {
   groupInsightPatterns,
   insightAccessibilityLabel,
 } from "@/lib/insights/check-in-insights";
-import { useAuth } from "@clerk/clerk-expo";
-import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCheckInInsights } from "@/hooks/queries/insights";
+import { useQueryScope } from "@/hooks/queries/use-query-scope";
+import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
+import { queryKeys } from "@/lib/query/keys";
+import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function InsightsScreen() {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
   const { colors } = useAppTheme();
-  const getTokenRef = useRef(getToken);
-  const [insights, setInsights] = useState<CheckInInsights | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { userId } = useQueryScope();
+  const insightsQuery = useCheckInInsights();
+  useRefreshOnFocus(userId ? queryKeys.checkInInsights(userId) : null);
 
-  useEffect(() => {
-    getTokenRef.current = getToken;
-  }, [getToken]);
+  const insights = insightsQuery.data ?? null;
+  // Loading means "nothing to show yet"; a background refresh keeps the cards.
+  const isFirstLoad = userId != null && !insights && (insightsQuery.isPending || insightsQuery.isFetching);
+  // A failed refresh keeps showing the last good insights.
+  const error = insightsQuery.isError && !insights
+    ? "We couldn't load your insights. Check your connection and try again."
+    : "";
+  const loadInsights = () => insightsQuery.refetch();
 
-  const loadInsights = useCallback(async () => {
-    if (!isLoaded) return;
-    if (!isSignedIn) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-    try {
-      setInsights(await fetchCheckInInsights(getTokenRef.current));
-    } catch (loadError) {
-      console.error("Error loading check-in insights:", loadError);
-      setError("We couldn't load your insights. Check your connection and try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isLoaded, isSignedIn]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void loadInsights();
-    }, [loadInsights]),
-  );
-
-  const viewState = getInsightsViewState(isLoading, error, insights);
+  const viewState = getInsightsViewState(isFirstLoad, error, insights);
 
   return (
     <AppScreen contentContainerStyle={styles.content}>

@@ -29,29 +29,39 @@ function buildMeta(task: TaskDocument) {
   return parts.join(" · ");
 }
 
+/**
+ * Mirrors the focus screen's clock. It computes elapsed time from the same
+ * startedAt/accumulatedSeconds the focus screen publishes; the interval only
+ * repaints this label, so the rest of the row does not re-render every second.
+ */
+function FocusingLabel({ startedAt, accumulatedSeconds }: { startedAt: number; accumulatedSeconds: number }) {
+  const { colors } = useAppTheme();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const elapsed = accumulatedSeconds + Math.max(0, now - startedAt) / 1000;
+
+  return (
+    <Text style={[styles.meta, styles.focusingMeta, { color: colors.accent }]}>
+      ● Focusing · {formattime(elapsed)}
+    </Text>
+  );
+}
+
 export function TaskRow({ task, onToggleComplete, onPress }: TaskRowProps) {
   const { colors } = useAppTheme();
   const { activeTimer } = useActiveTimer();
-  const [, setTick] = useState(0);
 
-  const isFocusing = activeTimer?.taskId === task._id;
-
-  useEffect(() => {
-    if (!isFocusing) return;
-
-    const interval = setInterval(() => setTick((value) => value + 1), 1000);
-    return () => clearInterval(interval);
-  }, [isFocusing]);
-
+  const focusingTimer = activeTimer?.taskId === task._id ? activeTimer : null;
+  const isFocusing = focusingTimer != null;
   const meta = buildMeta(task);
-  const liveElapsed = isFocusing
-    ? activeTimer!.accumulatedSeconds + (Date.now() - activeTimer!.startedAt) / 1000
-    : 0;
 
   return (
-    <Pressable
-      accessibilityRole={onPress ? "button" : undefined}
-      onPress={onPress}
+    <View
       style={[
         styles.row,
         { borderTopColor: colors.border },
@@ -63,7 +73,13 @@ export function TaskRow({ task, onToggleComplete, onPress }: TaskRowProps) {
         label={task.completed ? "Mark task incomplete" : "Mark task complete"}
         onPress={onToggleComplete}
       />
-      <View style={styles.textColumn}>
+      <Pressable
+        accessibilityRole={onPress ? "button" : undefined}
+        accessibilityLabel={onPress ? `Open task: ${task.title || "Untitled task"}` : undefined}
+        onPress={onPress}
+        disabled={!onPress}
+        style={styles.textColumn}
+      >
         <Text
           numberOfLines={2}
           style={[
@@ -74,15 +90,16 @@ export function TaskRow({ task, onToggleComplete, onPress }: TaskRowProps) {
         >
           {task.title || "Untitled task"}
         </Text>
-        {isFocusing ? (
-          <Text style={[styles.meta, styles.focusingMeta, { color: colors.accent }]}>
-            ● Focusing · {formattime(liveElapsed)}
-          </Text>
+        {focusingTimer ? (
+          <FocusingLabel
+            startedAt={focusingTimer.startedAt}
+            accumulatedSeconds={focusingTimer.accumulatedSeconds}
+          />
         ) : meta ? (
           <Text style={[styles.meta, { color: colors.textMuted }]}>{meta}</Text>
         ) : null}
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 }
 
@@ -104,6 +121,8 @@ const styles = StyleSheet.create({
   textColumn: {
     flex: 1,
     minWidth: 0,
+    minHeight: design.touchTarget,
+    justifyContent: "center",
   },
   title: {
     fontSize: design.type.taskRowTitle,

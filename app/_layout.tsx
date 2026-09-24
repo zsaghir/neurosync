@@ -1,4 +1,5 @@
 import { ModalProvider } from "@/context/ModalContext";
+import { QueryProvider } from "@/context/QueryProvider";
 import { tamaguiConfig } from "@/tamagui.config";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
@@ -16,11 +17,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-        <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
-          <ModalProvider>
-            <Stack screenOptions={{ headerShown: false }} />
-          </ModalProvider>
-        </TamaguiProvider>
+        <QueryProvider>
+          <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+            <ModalProvider>
+              <Stack screenOptions={{ headerShown: false }} />
+            </ModalProvider>
+          </TamaguiProvider>
+        </QueryProvider>
       </ClerkProvider>
     </SafeAreaProvider>
   );

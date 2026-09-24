@@ -4,24 +4,23 @@ import { PillButton } from "@/components/ui/PillButton";
 import { SectionLabel } from "@/components/ui/design-system";
 import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
+import {
+  useDeleteTask,
+  useSaveTaskNotes,
+  useTask,
+  useTaskSessions,
+  useToggleTaskComplete,
+} from "@/hooks/queries/tasks";
+import { useQueryScope } from "@/hooks/queries/use-query-scope";
+import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
+import { useSingleNavigation } from "@/hooks/use-single-navigation";
 import { useTaskSession } from "@/hooks/use-task-session";
-import {
-  fetchTaskSessions,
-  type TaskSessionDocument,
-} from "@/lib/api/taskSessions";
-import {
-  deleteTask,
-  fetchTaskById,
-  setTaskNotes,
-  toggleTaskComplete,
-  type TaskDocument,
-} from "@/lib/api/tasks";
+import { APIRequestError, taskErrorMessage } from "@/lib/api/client";
+import { queryKeys } from "@/lib/query/keys";
 import { formatDurationLabel } from "@/lib/utils/time-wisdom";
-import { useAuth } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter, type Href } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -35,62 +34,73 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TaskDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getToken } = useAuth();
+  const { isAuthLoaded, isSignedIn, userId } = useQueryScope();
   const router = useRouter();
+  const navigate = useSingleNavigation();
   const { colors } = useAppTheme();
 
-  const [task, setTask] = useState<TaskDocument | null>(null);
-  const [sessions, setSessions] = useState<TaskSessionDocument[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const taskQuery = useTask(id);
+  const sessionsQuery = useTaskSessions();
+  useRefreshOnFocus(userId && id ? queryKeys.task(userId, id) : null);
+  useRefreshOnFocus(userId ? queryKeys.taskSessions(userId) : null);
+
+  const completion = useToggleTaskComplete();
+  const notesMutation = useSaveTaskNotes();
+  const deletion = useDeleteTask();
+
+  const task = taskQuery.data ?? null;
+  const sessions = sessionsQuery.data ?? [];
+  const isMissing = taskQuery.error instanceof APIRequestError && taskQuery.error.status === 404;
+  const actionError = completion.error
+    ? taskErrorMessage(completion.error, "Couldn't save completion. Please retry.")
+    : notesMutation.error
+      ? taskErrorMessage(notesMutation.error, "Couldn't save your notes. Your draft is still here; use Save notes to retry.")
+      : deletion.error
+        ? taskErrorMessage(deletion.error, "Couldn't delete this task. Please retry.")
+        : "";
+  const loadError = isMissing
+    ? "This task is no longer available."
+    : taskQuery.error
+      ? taskErrorMessage(taskQuery.error, "Couldn't load your tasks. Check your connection and retry.")
+      : "";
+  const error = actionError || loadError;
+
+  const notesDirty = useRef(false);
+  const draftRef = useRef("");
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [notesDraft, setNotesDraft] = useState("");
   const [isManualSheetOpen, setIsManualSheetOpen] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!id) {
-      setIsLoading(false);
-      return;
+  useEffect(() => {
+    notesDirty.current = false;
+    draftRef.current = "";
+    setNotesDraft("");
+    setIsNotesOpen(false);
+    setIsManualSheetOpen(false);
+  }, [userId, id]);
+  useEffect(() => {
+    if (!notesDirty.current) {
+      draftRef.current = task?.notes ?? "";
+      setNotesDraft(draftRef.current);
     }
-
-    setIsLoading(true);
-    try {
-      const [nextTask, nextSessions] = await Promise.all([
-        fetchTaskById(getToken, id),
-        fetchTaskSessions(getToken),
-      ]);
-      setTask(nextTask);
-      setSessions(nextSessions);
-      setNotesDraft(nextTask?.notes ?? "");
-    } catch (error) {
-      console.error("Error loading task details:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getToken, id]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void load();
-    }, [load]),
-  );
+  }, [task?.notes, userId, id]);
 
   const session = useTaskSession({
     task: task ?? { _id: id ?? "" },
     sessions,
     startedAt: null,
-    onTimeCommitted: (_taskId, seconds) => {
-      setTask((current) =>
-        current
-          ? {
-              ...current,
-              timeSpentSeconds: (current.timeSpentSeconds ?? 0) + Math.round(seconds),
-            }
-          : current,
-      );
-    },
   });
 
-  if (isLoading || !task) {
+  const retryLoad = () => {
+    completion.reset();
+    notesMutation.reset();
+    deletion.reset();
+    void taskQuery.refetch();
+  };
+
+  if (!task) {
+    // Spinner only for a task we have never loaded; never for a refresh.
+    const isFirstLoad = userId != null && taskQuery.isPending;
     return (
       <SafeAreaView
         edges={["top", "left", "right"]}
@@ -106,51 +116,52 @@ export default function TaskDetails() {
           </Pressable>
         </View>
         <View style={styles.statusBlock}>
-          <ActivityIndicator color={colors.accent} />
+          {!isAuthLoaded || isFirstLoad ? <ActivityIndicator color={colors.accent} /> : (
+            <>
+              <Text accessibilityRole="alert" style={{ color: colors.text }}>
+                {loadError || (!isSignedIn ? "Please sign in to view this task." : "This task is no longer available.")}
+              </Text>
+              {isSignedIn && !isMissing && (
+                <Pressable accessibilityRole="button" onPress={retryLoad}>
+                  <Text style={{ color: colors.accent }}>Retry</Text>
+                </Pressable>
+              )}
+            </>
+          )}
         </View>
       </SafeAreaView>
     );
   }
 
-  const handleToggleComplete = async () => {
-    const nextCompleted = !task.completed;
-    setTask((current) => (current ? { ...current, completed: nextCompleted } : current));
-    try {
-      await toggleTaskComplete(getToken, task._id, nextCompleted);
-    } catch (error) {
-      console.error("Error toggling task:", error);
-      setTask((current) => (current ? { ...current, completed: task.completed } : current));
-    }
-  };
-
   const handleSaveNotes = async () => {
-    if (notesDraft === (task.notes ?? "")) return;
-
-    setTask((current) => (current ? { ...current, notes: notesDraft } : current));
+    if (notesDraft === (task.notes ?? "") || notesMutation.isPending) return;
+    const savedDraft = notesDraft;
     try {
-      await setTaskNotes(getToken, task._id, notesDraft || null);
-    } catch (error) {
-      console.error("Error saving notes:", error);
+      await notesMutation.mutateAsync({ taskId: task._id, notes: savedDraft || null });
+      notesDirty.current = draftRef.current !== savedDraft;
+    } catch {
+      // The error is shown from notesMutation.error; the draft is kept.
     }
   };
 
   const handleDelete = async () => {
+    if (deletion.isPending) return;
     try {
-      await deleteTask(getToken, task._id);
+      await deletion.mutateAsync(task._id);
       router.back();
-    } catch (error) {
-      console.error("Error deleting task:", error);
+    } catch {
+      // The error is shown from deletion.error.
     }
   };
 
   const startFocus = () =>
-    router.push({
+    navigate({
       pathname: "/(app)/focus/[taskId]",
       params: { taskId: task._id },
     } as unknown as Href);
 
   const openCheckIn = () =>
-    router.push({
+    navigate({
       pathname: "/(app)/check-in",
       params: { taskId: task._id, taskTitle: task.title },
     } as unknown as Href);
@@ -187,12 +198,20 @@ export default function TaskDetails() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        {!!error && (
+          <View>
+            <Text accessibilityRole="alert" style={{ color: colors.danger }}>{error}</Text>
+            <Pressable accessibilityRole="button" onPress={retryLoad}>
+              <Text style={{ color: colors.accent }}>Retry loading</Text>
+            </Pressable>
+          </View>
+        )}
         <View style={styles.titleRow}>
           <Checkbox
             checked={Boolean(task.completed)}
             label={task.completed ? "Mark task incomplete" : "Mark task complete"}
             size={26}
-            onPress={() => void handleToggleComplete()}
+            onPress={() => completion.toggle(task)}
           />
           <Text
             style={[
@@ -253,11 +272,21 @@ export default function TaskDetails() {
             placeholder="Add a note..."
             placeholderTextColor={colors.textMuted}
             value={notesDraft}
-            onChangeText={setNotesDraft}
+            onChangeText={value => {
+              notesDirty.current = true;
+              draftRef.current = value;
+              setNotesDraft(value);
+            }}
             onBlur={() => void handleSaveNotes()}
             multiline
           />
         ) : null}
+
+        {isNotesOpen && notesDirty.current && (
+          <Pressable accessibilityRole="button" onPress={() => void handleSaveNotes()} style={styles.secondaryTarget}>
+            <Text style={[styles.secondaryText, { color: colors.accent }]}>Save notes</Text>
+          </Pressable>
+        )}
 
         <View style={styles.secondaryActions}>
           <Pressable onPress={openAdjustOrManualTime} style={styles.secondaryTarget}>

@@ -68,6 +68,8 @@ export const useTimer = (taskId: string) => {
     isRunning,
     elapsedSeconds,
     accumulatedSeconds,
+    /** Epoch ms when the current running stretch began; null while paused. */
+    runStartedAtMs: startedAt,
     startedAt: firstStartedAtRef.current,
     pause,
     reset,

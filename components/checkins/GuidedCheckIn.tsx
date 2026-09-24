@@ -17,8 +17,11 @@ import {
   type CheckInSuggestionResponse,
 } from "@/lib/api/checkins";
 import { requiresCrisisSupport } from "@/lib/safety/crisis";
-import { useAuth } from "@clerk/clerk-expo";
-import { useRouter, type Href } from "expo-router";
+import { useQueryScope } from "@/hooks/queries/use-query-scope";
+import { useSingleNavigation } from "@/hooks/use-single-navigation";
+import { queryKeys } from "@/lib/query/keys";
+import { useQueryClient } from "@tanstack/react-query";
+import { type Href } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -81,9 +84,14 @@ const difficultyOptions: { id: CheckInDifficulty; label: string }[] = [
 const manualDurationOptions = [5, 10, 15, 25];
 
 export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckInProps) {
-  const { getToken } = useAuth();
-  const router = useRouter();
+  const { getToken, scope } = useQueryScope();
+  const navigate = useSingleNavigation();
+  const queryClient = useQueryClient();
   const { colors } = useAppTheme();
+  // Check-in writes change the Insights numbers. Invalidating refreshes them in
+  // the background (or on next mount if Insights has not been opened yet).
+  const invalidateInsights = () =>
+    void queryClient.invalidateQueries({ queryKey: queryKeys.checkInInsights(scope) });
 
   const [phase, setPhase] = useState<Phase>("dump");
   const [blocker, setBlocker] = useState<CheckInBlocker | null>(null);
@@ -209,7 +217,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
     setPhase("outcome");
 
     if (taskId) {
-      router.push({
+      navigate({
         pathname: "/(app)/focus/[taskId]",
         params: {
           taskId,
@@ -220,7 +228,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
       return;
     }
 
-    router.push({
+    navigate({
       pathname: "/(app)/focus/check-in",
       params: {
         checkInId: created.id,
@@ -249,6 +257,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
         stucknessBefore,
       });
       setCheckIn(created);
+      invalidateInsights();
       if (startTimer) {
         openTimer(created);
       } else {
@@ -276,6 +285,7 @@ export function GuidedCheckIn({ mode, taskId, taskTitle, onClose }: GuidedCheckI
         helpfulness,
       });
       setCheckIn(updated);
+      invalidateInsights();
       setPhase("complete");
     } catch (saveError) {
       console.error("Error recording check-in outcome:", saveError);

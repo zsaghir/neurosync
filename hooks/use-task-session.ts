@@ -2,6 +2,7 @@ import {
   createTaskSession,
   type TaskSessionDocument,
 } from "@/lib/api/taskSessions";
+import { queryKeys } from "@/lib/query/keys";
 import type { TaskDocument } from "@/lib/api/tasks";
 import {
   type ActualSecondsSource,
@@ -11,8 +12,10 @@ import {
   shouldPromptForShortSession,
   shouldShowDoneReflection,
 } from "@/lib/utils/time-wisdom";
-import { useAuth } from "@clerk/clerk-expo";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { addSessionToCache, patchTaskInCache } from "./queries/tasks";
+import { useQueryScope } from "./queries/use-query-scope";
 
 export type ReviewReason = "adjust" | "long" | "short" | "manual";
 
@@ -36,9 +39,6 @@ type UseTaskSessionArgs = {
     Partial<Pick<TaskDocument, "title" | "estimatedMinutes">>;
   sessions: TaskSessionDocument[];
   startedAt: string | null;
-  onTimeCommitted?: (taskId: string, seconds: number) => void;
-  onComplete?: (taskId: string) => void;
-  onSessionSaved?: (session: TaskSessionDocument) => void;
 };
 
 /**
@@ -50,11 +50,9 @@ export function useTaskSession({
   task,
   sessions,
   startedAt,
-  onTimeCommitted,
-  onComplete,
-  onSessionSaved,
 }: UseTaskSessionArgs) {
-  const { getToken } = useAuth();
+  const { getToken, scope } = useQueryScope();
+  const queryClient = useQueryClient();
   const [reviewState, setReviewState] = useState<ReviewState | null>(null);
   const [actualMinutesInput, setActualMinutesInput] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -120,12 +118,16 @@ export function useTaskSession({
         excludeReason,
       });
 
+      // Show the new logged time everywhere at once, then let the server's
+      // totals replace the local estimate in the background.
       if (!excludedFromInsights && actualSeconds > 0) {
-        onTimeCommitted?.(task._id, actualSeconds);
+        patchTaskInCache(queryClient, scope, task._id, (current) => ({
+          ...current,
+          timeSpentSeconds: (current.timeSpentSeconds ?? 0) + Math.round(actualSeconds),
+        }));
       }
-
-      onSessionSaved?.(session);
-      onComplete?.(task._id);
+      addSessionToCache(queryClient, scope, session);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tasks(scope) });
       setReviewState(null);
       setActualMinutesInput("");
 

@@ -1,63 +1,38 @@
 import { getAppColors, type AppColors } from "@/constants/design";
-import {
-  fetchUserSettings,
-  type UserSettings,
-} from "@/lib/api/settings";
+import { useUserSettings } from "@/hooks/queries/settings";
+import type { UserSettings } from "@/lib/api/settings";
 import type { ThemeMode } from "@/lib/utils/time-wisdom";
-import { useAuth } from "@clerk/clerk-expo";
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useContext, useMemo } from "react";
 
 type AppThemeContextValue = {
   colors: AppColors;
   mode: ThemeMode;
   settings: UserSettings | null;
-  refreshSettings: () => Promise<void>;
-  setMode: (mode: ThemeMode) => void;
+  /** False only while a signed-in user's saved theme is still being fetched. */
+  isThemeResolved: boolean;
 };
 
 const AppThemeContext = createContext<AppThemeContextValue | null>(null);
 
+/**
+ * Derives the theme from the shared settings cache. Saving settings updates
+ * that cache, so the theme changes everywhere without a separate refresh.
+ */
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
-  const { getToken, isSignedIn } = useAuth();
-  const [mode, setMode] = useState<ThemeMode>("light");
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-
-  const refreshSettings = useCallback(async () => {
-    if (!isSignedIn) {
-      setSettings(null);
-      setMode("light");
-      return;
-    }
-
-    try {
-      const nextSettings = await fetchUserSettings(getToken);
-      setSettings(nextSettings);
-      setMode(nextSettings.themeMode);
-    } catch (error) {
-      console.error("Error loading app theme:", error);
-    }
-  }, [getToken, isSignedIn]);
-
-  useEffect(() => {
-    void refreshSettings();
-  }, [refreshSettings]);
+  const settingsQuery = useUserSettings();
+  const settings = settingsQuery.data ?? null;
+  const mode: ThemeMode = settings?.themeMode ?? "light";
+  // A disabled query (signed out) is also "pending", so check fetchStatus too.
+  const isThemeResolved = !(settingsQuery.isPending && settingsQuery.fetchStatus === "fetching");
 
   const value = useMemo(
     () => ({
       colors: getAppColors(mode),
       mode,
       settings,
-      refreshSettings,
-      setMode,
+      isThemeResolved,
     }),
-    [mode, refreshSettings, settings],
+    [isThemeResolved, mode, settings],
   );
 
   return (

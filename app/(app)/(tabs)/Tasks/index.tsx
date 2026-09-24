@@ -2,20 +2,18 @@ import { AddTaskSheet } from "@/components/tasks/AddTaskSheet";
 import { TaskRow } from "@/components/ui/TaskRow";
 import { design } from "@/constants/design";
 import { useAppTheme } from "@/context/AppThemeContext";
-import {
-  fetchTasks,
-  toggleTaskComplete,
-  type TaskDocument,
-} from "@/lib/api/tasks";
-import {
-  fetchUserSettings,
-  type UserSettings,
-} from "@/lib/api/settings";
-import { useAuth } from "@clerk/clerk-expo";
+import { useUserSettings } from "@/hooks/queries/settings";
+import { addTaskToCache, useTasks, useToggleTaskComplete } from "@/hooks/queries/tasks";
+import { useQueryScope } from "@/hooks/queries/use-query-scope";
+import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
+import { useSingleNavigation } from "@/hooks/use-single-navigation";
+import { taskErrorMessage } from "@/lib/api/client";
+import type { TaskDocument } from "@/lib/api/tasks";
+import { queryKeys } from "@/lib/query/keys";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useFocusEffect } from "@react-navigation/native";
-import { useRouter, type Href } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { type Href } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -27,89 +25,43 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TasksList() {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
-  const router = useRouter();
+  const { isAuthLoaded, isSignedIn, userId, scope } = useQueryScope();
   const { colors } = useAppTheme();
-  const getTokenRef = useRef(getToken);
+  const queryClient = useQueryClient();
+  const navigate = useSingleNavigation();
 
-  const [tasks, setTasks] = useState<TaskDocument[]>([]);
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const tasksQuery = useTasks();
+  // Optional display preferences; a failure here must not block the list.
+  const settingsQuery = useUserSettings();
+  const completion = useToggleTaskComplete();
+  useRefreshOnFocus(userId ? queryKeys.tasks(userId) : null);
+
+  const tasks = tasksQuery.data ?? [];
+  const settings = settingsQuery.data ?? null;
+  const error = completion.error
+    ? taskErrorMessage(completion.error, "Couldn't save completion. Please retry.")
+    : tasksQuery.error
+      ? taskErrorMessage(tasksQuery.error, "Couldn't load your tasks. Check your connection and retry.")
+      : "";
+  // Only a list with no data yet shows the spinner. A background refresh keeps
+  // the current rows on screen.
+  const isFirstLoad = userId != null && tasksQuery.isPending;
+
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
-  useEffect(() => {
-    getTokenRef.current = getToken;
-  }, [getToken]);
+  useEffect(() => { setIsAddOpen(false); setIsCompletedExpanded(false); }, [userId]);
 
-  const loadTasks = useCallback(async () => {
-    if (!isLoaded || !isSignedIn) {
-      setIsLoading(false);
-      return;
-    }
+  const activeTasks = tasks.filter((task) => !task.completed);
+  const completedTasks = tasks.filter((task) => task.completed);
 
-    setIsLoading(true);
-    setError("");
-    try {
-      const [tasksResult, settingsResult] = await Promise.allSettled([
-        fetchTasks(getTokenRef.current),
-        fetchUserSettings(getTokenRef.current),
-      ]);
-
-      if (tasksResult.status === "rejected") {
-        throw tasksResult.reason;
-      }
-
-      setTasks(tasksResult.value);
-      if (settingsResult.status === "fulfilled") {
-        setSettings(settingsResult.value);
-      } else {
-        console.warn("Could not load task time settings; using defaults.");
-        setSettings(null);
-      }
-    } catch (loadError) {
-      console.error("Error fetching tasks:", loadError);
-      setError("We couldn't load your tasks. Check your connection and try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isLoaded, isSignedIn]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void loadTasks();
-    }, [loadTasks]),
-  );
-
-  const activeTasks = useMemo(() => tasks.filter((task) => !task.completed), [tasks]);
-  const completedTasks = useMemo(() => tasks.filter((task) => task.completed), [tasks]);
-
-  const handleToggleTask = async (task: TaskDocument) => {
-    const nextCompleted = !task.completed;
-    setTasks((current) =>
-      current.map((currentTask) =>
-        currentTask._id === task._id
-          ? { ...currentTask, completed: nextCompleted }
-          : currentTask,
-      ),
-    );
-    try {
-      await toggleTaskComplete(getToken, task._id, nextCompleted);
-    } catch (toggleError) {
-      console.error("Error toggling task:", toggleError);
-      setTasks((current) =>
-        current.map((currentTask) =>
-          currentTask._id === task._id
-            ? { ...currentTask, completed: task.completed }
-            : currentTask,
-        ),
-      );
-    }
+  const retry = () => {
+    completion.reset();
+    void tasksQuery.refetch();
   };
 
   const openTaskDetails = (task: TaskDocument) =>
-    router.push({
+    navigate({
       pathname: "/(app)/(tabs)/Tasks/[id]",
       params: { id: task._id },
     } as unknown as Href);
@@ -119,27 +71,24 @@ export default function TasksList() {
       <View style={styles.screen}>
         <Text style={[styles.title, { color: colors.text }]}>Tasks</Text>
 
-        {isLoading ? (
+        {!!error && (
+          <View style={[styles.errorCard, { backgroundColor: colors.dangerSoft }]}>
+            <Text accessibilityRole="alert" style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
+            <Pressable accessibilityRole="button" onPress={retry}>
+              <Text style={[styles.retryText, { color: colors.danger }]}>Retry</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {!isAuthLoaded || isFirstLoad ? (
           <View style={styles.statusBlock}>
             <ActivityIndicator color={colors.accent} />
             <Text style={[styles.statusText, { color: colors.textMuted }]}>
               Loading your tasks…
             </Text>
           </View>
-        ) : error ? (
-          <View style={[styles.errorCard, { backgroundColor: colors.dangerSoft }]}>
-            <Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
-            <Pressable
-              onPress={() => void loadTasks()}
-              style={[
-                styles.retryButton,
-                { backgroundColor: colors.surface, borderColor: colors.danger },
-              ]}
-            >
-              <Text style={[styles.retryText, { color: colors.danger }]}>Retry</Text>
-            </Pressable>
-          </View>
-        ) : tasks.length === 0 ? (
+        ) : !isSignedIn ? <Text>Please sign in to view your tasks.</Text>
+          : !tasksQuery.data ? null : tasks.length === 0 ? (
           <View style={styles.emptyBlock}>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               Nothing on your list yet.
@@ -157,7 +106,7 @@ export default function TasksList() {
               <TaskRow
                 key={task._id}
                 task={task}
-                onToggleComplete={() => void handleToggleTask(task)}
+                onToggleComplete={() => completion.toggle(task)}
                 onPress={() => openTaskDetails(task)}
               />
             ))}
@@ -182,7 +131,7 @@ export default function TasksList() {
                       <TaskRow
                         key={task._id}
                         task={task}
-                        onToggleComplete={() => void handleToggleTask(task)}
+                        onToggleComplete={() => completion.toggle(task)}
                         onPress={() => openTaskDetails(task)}
                       />
                     ))
@@ -207,7 +156,7 @@ export default function TasksList() {
           visible={isAddOpen}
           onClose={() => setIsAddOpen(false)}
           timeSettings={settings}
-          onCreated={(task) => setTasks((current) => [task, ...current])}
+          onCreated={(task) => addTaskToCache(queryClient, scope, task)}
         />
       ) : null}
     </SafeAreaView>

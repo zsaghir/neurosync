@@ -23,6 +23,7 @@
     "@tamagui/config": "^2.0.0-rc.41",
     "@tamagui/metro-plugin": "^2.0.0-rc.41",
     "@tamagui/stacks": "^2.0.0-rc.41",
+    "@tanstack/react-query": "^5.103.2",
     "expo": "~54.0.33",
     "expo-auth-session": "~7.0.11",
     "expo-constants": "~18.0.13",
@@ -55,6 +56,7 @@
     "babel-preset-expo": "~54.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
   },
   "private": true
